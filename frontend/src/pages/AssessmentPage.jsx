@@ -25,8 +25,14 @@ import {
   Terminal,
   Zap,
   Trash2,
-  RotateCcw
+  RotateCcw,
+  Play,
+  Loader2,
+  XCircle,
+  AlertCircle,
+  ArrowRightLeft
 } from 'lucide-react';
+import { Button, Badge } from '../components/ui';
 
 export const AssessmentPage = () => {
   const { language } = useAuth();
@@ -39,6 +45,10 @@ export const AssessmentPage = () => {
   const [userCodeAnswers, setUserCodeAnswers] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [scoreResult, setScoreResult] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [runResults, setRunResults] = useState({}); // item_id -> compiler output of the student's own trial run
+  const [runningItemId, setRunningItemId] = useState(null);
 
   // AI Assistant Chat State for Post & Transfer Test phases
   const [chatMessages, setChatMessages] = useState([]);
@@ -52,7 +62,8 @@ export const AssessmentPage = () => {
   }, [examType]);
 
   useEffect(() => {
-    // Reset AI Assistant Chat when exam type or current question changes
+    // Reset AI Assistant Chat when the exam phase changes. Deliberately NOT keyed on the current
+    // question - navigating between questions must not wipe the conversation.
     setChatMessages([
       {
         sender: 'ai',
@@ -77,7 +88,7 @@ export const AssessmentPage = () => {
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       },
     ]);
-  }, [examType, currentIndex]);
+  }, [examType]);
 
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -122,8 +133,11 @@ export const AssessmentPage = () => {
 
   const loadItems = async (type) => {
     setIsSubmitted(false);
+    setScoreResult(null);
+    setSubmitError(null);
     setSelectedAnswers({});
     setUserCodeAnswers({});
+    setRunResults({});
     setCurrentIndex(0);
     const data = await apiService.getAssessmentItems(type);
     const itemsList = Array.isArray(data) ? data : (data?.items || data?.questions || []);
@@ -172,77 +186,68 @@ export const AssessmentPage = () => {
     }));
   };
 
+  // Trial run against the visible sample cases only - it never decides the grade, it just lets the
+  // student see what the compiler makes of their code before they commit to submitting.
+  const handleRunCode = async (item) => {
+    const lang = item.type === 'html_coding' ? 'html' : 'c';
+    const source = userCodeAnswers[item.id] !== undefined ? userCodeAnswers[item.id] : (item.code_snippet || '');
+    setRunningItemId(item.id);
+    setRunResults((prev) => ({ ...prev, [item.id]: null }));
+
+    try {
+      const res = await apiService.runCode(lang, source, item.sample_cases || [], 'run');
+      setRunResults((prev) => ({
+        ...prev,
+        [item.id]: {
+          status: res.status,
+          compile_output: res.compile_output || '',
+          testResults: res.test_results || [],
+          passed_count: res.passed_count ?? 0,
+        },
+      }));
+    } catch (err) {
+      setRunResults((prev) => ({ ...prev, [item.id]: { status: 'ERROR', error: err.message, testResults: [] } }));
+    } finally {
+      setRunningItemId(null);
+    }
+  };
+
+  // The server compiles and grades every item; the client only reports what comes back.
   const handleSubmitExam = async () => {
-    let scoreCount = 0;
-    filteredItems.forEach((item) => {
-      if (item.type === 'mcq' || item.type === 'concept_mcq') {
-        const correctKey = item.correct_option || item.keyed_answer;
-        if (selectedAnswers[item.id] === correctKey) {
-          scoreCount += 1;
-        }
-      } else {
-        // C / HTML Programming code evaluation
-        const studentCode = userCodeAnswers[item.id] || '';
-        const src = studentCode.trim();
+    setIsSubmitting(true);
+    setSubmitError(null);
 
-        // 1. Must be non-empty and edited
-        if (src.length > 25 && !src.includes('// Write your C program here')) {
-          // 2. Syntax & compiler structure check
-          const hasMain = src.includes('main');
-          const hasInclude = src.includes('stdio.h') || src.includes('html');
-          const openBraces = (src.match(/\{/g) || []).length;
-          const closeBraces = (src.match(/\}/g) || []).length;
-          const syntaxValid = hasMain && hasInclude && (openBraces === closeBraces);
+    try {
+      const res = await apiService.submitExam({
+        exam_type: examType,
+        chapter: selectedChapter,
+        answers: selectedAnswers,
+        code_answers: userCodeAnswers,
+      });
 
-          if (syntaxValid) {
-            // 3. Logic check for specific C problems
-            const itemTitle = (item.title || item.question || '').toLowerCase();
-            let logicValid = true;
+      setScoreResult({
+        pct: res.score_pct ?? 0,
+        correct: res.correct ?? 0,
+        total: res.total ?? filteredItems.length,
+        results: res.results || [],
+        submissionId: res.submission_id,
+      });
+      setIsSubmitted(true);
 
-            if (itemTitle.includes('product') || itemTitle.includes('factorial')) {
-              if (src.includes('product = 0') || src.includes('product=0') || (!src.includes('*=') && !src.includes('*'))) {
-                logicValid = false;
-              }
-            } else if (itemTitle.includes('sum')) {
-              if ((src.includes('sum = 1') && !src.includes('i = 1')) || (!src.includes('+=') && !src.includes('+'))) {
-                logicValid = false;
-              }
-            }
-
-            if (logicValid) {
-              scoreCount += 1;
-            }
-          }
-        }
-      }
-    });
-
-    const total = filteredItems.length || 1;
-    const scorePct = Math.round((scoreCount / total) * 100);
-
-    setScoreResult({
-      correct: scoreCount,
-      total: total,
-      pct: scorePct,
-    });
-    setIsSubmitted(true);
-
-    apiService.logTelemetry('SUBMIT_ASSESSMENT', {
-      exam_type: examType,
-      score: scorePct,
-      answers: selectedAnswers,
-      code_answers: userCodeAnswers,
-      timestamp: new Date().toISOString(),
-    });
-
-    await apiService.submitExam({
-      exam_type: examType,
-      chapter: selectedChapter,
-      score: scorePct,
-      answers: selectedAnswers,
-      code_answers: userCodeAnswers,
-      timestamp: new Date().toISOString(),
-    });
+      apiService.logTelemetry('SUBMIT_ASSESSMENT', {
+        exam_type: examType,
+        chapter: selectedChapter,
+        submission_id: res.submission_id,
+        score: res.score_pct,
+        correct: res.correct,
+        total: res.total,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err) {
+      setSubmitError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSendAiMessage = async (queryText) => {
@@ -580,14 +585,70 @@ export const AssessmentPage = () => {
               </div>
             )}
 
+            {/* I/O contract - the server grader matches output literally, so the student must see it before answering */}
+            {(currentItem.type === 'c_programming' || currentItem.type === 'html_coding') &&
+              (currentItem.input_format || currentItem.output_format || currentItem.sample_cases?.length > 0) && (
+              <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/30 space-y-3.5 shadow-inner">
+                <span className="text-[11px] font-mono font-bold text-on-surface-variant uppercase flex items-center gap-1.5">
+                  <ArrowRightLeft className="w-3.5 h-3.5 text-primary" /> ইনপুট / আউটপুট চুক্তি (Input / Output contract)
+                </span>
+
+                {currentItem.input_format && (
+                  <div>
+                    <span className="text-[11px] font-mono font-bold text-primary uppercase tracking-wider block">ইনপুট ফরম্যাট (Input format)</span>
+                    <p className="text-xs text-on-surface-variant font-mono leading-relaxed">{currentItem.input_format}</p>
+                  </div>
+                )}
+
+                {currentItem.output_format && (
+                  <div>
+                    <span className="text-[11px] font-mono font-bold text-primary uppercase tracking-wider block">আউটপুট ফরম্যাট (Output format)</span>
+                    <p className="text-xs text-on-surface-variant font-mono leading-relaxed">{currentItem.output_format}</p>
+                  </div>
+                )}
+
+                {currentItem.sample_cases?.length > 0 && (
+                  <div className="space-y-2">
+                    <span className="text-[11px] font-mono font-bold text-on-surface uppercase tracking-wider block">নমুনা কেস (Sample cases)</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {currentItem.sample_cases.map((sc, idx) => (
+                        <div key={idx} className="bg-surface-container-high p-3 rounded-xl border border-outline-variant/30 text-xs font-mono space-y-1">
+                          <div className="flex justify-between gap-2 text-on-surface-variant">
+                            <span>Input:</span> <span className="text-primary font-bold whitespace-pre-wrap text-right">{(sc.input || '').trim() || '(none)'}</span>
+                          </div>
+                          <div className="flex justify-between gap-2 text-on-surface-variant">
+                            <span>Output:</span> <span className="text-emerald-400 font-bold whitespace-pre-wrap text-right">{sc.output}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-[11px] text-amber-500 bg-amber-500/10 border border-amber-500/30 rounded-lg p-2 leading-relaxed">
+                  আউটপুট হুবহু মিলতে হবে — বাড়তি লেখা বা ভিন্ন বানান ভুল হিসেবে গণ্য হবে। (The grader compares your output exactly.)
+                </p>
+              </div>
+            )}
+
             {/* Interactive Workspace Code Editor for Coding Tasks */}
             {(currentItem.type === 'c_programming' || currentItem.type === 'html_coding') ? (
               <div className="space-y-2">
-                <label className="text-xs font-mono font-bold text-on-surface flex items-center justify-between">
+                <label className="text-xs font-mono font-bold text-on-surface flex flex-wrap items-center justify-between gap-2">
                   <span className="flex items-center gap-1.5">
                     <Code className="w-4 h-4 text-primary" /> Write Your Code Solution ({currentItem.type === 'html_coding' ? 'HTML Markup' : 'C Language'}):
                   </span>
-                  <span className="text-emerald-400 font-mono text-[11px] font-bold">Unsolved Student Workspace</span>
+                  <Button
+                    variant="surface"
+                    size="sm"
+                    onClick={() => handleRunCode(currentItem)}
+                    disabled={runningItemId === currentItem.id}
+                    title="জমা দেওয়ার আগে নিজের কোড পরীক্ষা করুন (Test your code before submitting)"
+                  >
+                    {runningItemId === currentItem.id
+                      ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> চলছে... (Running)</>
+                      : <><Play className="w-3.5 h-3.5 text-primary" /> রান করুন (Run)</>}
+                  </Button>
                 </label>
                 <textarea
                   rows={8}
@@ -596,6 +657,66 @@ export const AssessmentPage = () => {
                   placeholder="Write your complete code solution here..."
                   className="w-full bg-surface-container-lowest text-on-surface p-4 rounded-xl font-mono text-xs border border-outline-variant/40 focus:border-primary outline-none transition-all shadow-inner leading-relaxed"
                 />
+
+                {runResults[currentItem.id] && (
+                  <div className="bg-surface-container-lowest p-3.5 rounded-xl border border-outline-variant/30 space-y-2 text-xs shadow-inner">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-[11px] font-mono font-bold text-on-surface-variant uppercase flex items-center gap-1.5">
+                        <Terminal className="w-3.5 h-3.5 text-primary" /> ট্রায়াল রানের ফল (Trial run result)
+                      </span>
+                      {runResults[currentItem.id].testResults.length > 0 && (
+                        <Badge tone={runResults[currentItem.id].passed_count === runResults[currentItem.id].testResults.length ? 'success' : 'warning'}>
+                          {runResults[currentItem.id].passed_count}/{runResults[currentItem.id].testResults.length} পাস (passed)
+                        </Badge>
+                      )}
+                    </div>
+
+                    {runResults[currentItem.id].status === 'ERROR' && (
+                      <p className="text-rose-400 font-mono flex items-start gap-1.5">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" /> {runResults[currentItem.id].error}
+                      </p>
+                    )}
+
+                    {runResults[currentItem.id].status === 'COMPILE_ERROR' && (
+                      <p className="text-rose-400 font-bold flex items-start gap-1.5">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" /> কম্পাইল ব্যর্থ হয়েছে (Compilation failed)
+                      </p>
+                    )}
+
+                    {runResults[currentItem.id].compile_output && (
+                      <pre className="bg-surface-container p-2.5 rounded-lg border border-outline-variant/20 font-mono text-[10px] text-on-surface-variant whitespace-pre-wrap max-h-40 overflow-y-auto">
+                        {runResults[currentItem.id].compile_output}
+                      </pre>
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {runResults[currentItem.id].testResults.map((tr, idx) => (
+                        <div
+                          key={tr.id ?? idx}
+                          className={`bg-surface-container p-2.5 rounded-xl border space-y-1 ${tr.passed ? 'border-emerald-500/30' : 'border-rose-500/40 bg-rose-500/5'}`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-bold text-on-surface truncate">
+                              {tr.name || `নমুনা ${idx + 1} (Sample ${idx + 1})`}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded font-extrabold text-[10px] shrink-0 border ${tr.passed ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/40'}`}>
+                              {tr.passed ? 'PASSED' : tr.timed_out ? 'TIMEOUT' : 'FAILED'}
+                            </span>
+                          </div>
+                          {tr.expected !== undefined && (
+                            <div className="text-[10px] text-on-surface-variant font-mono">Expected: <strong className="text-emerald-400">{tr.expected || '(any)'}</strong></div>
+                          )}
+                          <div className="text-[10px] text-on-surface-variant font-mono">Actual: <strong className={tr.passed ? 'text-on-surface' : 'text-rose-400'}>{tr.actual || '(no output)'}</strong></div>
+                          {tr.stderr && <pre className="text-[10px] text-rose-400 whitespace-pre-wrap">{tr.stderr}</pre>}
+                        </div>
+                      ))}
+                    </div>
+
+                    <p className="text-[10px] text-on-surface-variant font-mono">
+                      এটি শুধু অনুশীলন রান; চূড়ান্ত নম্বর সার্ভার দেবে। (Trial run only - the server decides the final score.)
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               /* MCQ Options */
@@ -625,6 +746,15 @@ export const AssessmentPage = () => {
               </div>
             )}
 
+            {submitError && (
+              <div className="bg-rose-500/10 border border-rose-500/30 text-rose-400 rounded-xl p-3 text-xs font-medium flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>
+                  <strong>জমা দেওয়া যায়নি (Submission failed):</strong> {submitError}
+                </span>
+              </div>
+            )}
+
             {/* Navigation Controls */}
             <div className="flex items-center justify-between pt-4 border-t border-outline-variant/20">
               <button
@@ -645,9 +775,12 @@ export const AssessmentPage = () => {
               ) : (
                 <button
                   onClick={handleSubmitExam}
-                  className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-on-surface font-bold text-xs shadow-lg shadow-emerald-500/20 flex items-center gap-1.5 transition-all"
+                  disabled={isSubmitting}
+                  className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:pointer-events-none text-on-surface font-bold text-xs shadow-lg shadow-emerald-500/20 flex items-center gap-1.5 transition-all"
                 >
-                  Submit Assessment <CheckCircle2 className="w-4 h-4" />
+                  {isSubmitting
+                    ? <>গ্রেড হচ্ছে... (Grading) <Loader2 className="w-4 h-4 animate-spin" /></>
+                    : <>Submit Assessment <CheckCircle2 className="w-4 h-4" /></>}
                 </button>
               )}
             </div>
@@ -895,25 +1028,72 @@ export const AssessmentPage = () => {
         </div>
       )}
 
-      {/* Exam Result Screen */}
+      {/* Exam Result Screen - every number here comes from the server grader */}
       {isSubmitted && scoreResult && (
-        <div className="bg-surface-container p-8 sm:p-12 rounded-2xl border border-outline-variant/30 text-center space-y-6 shadow-2xl max-w-2xl mx-auto">
-          <div className="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
-            <Award className="w-12 h-12" />
+        <div className="space-y-6 max-w-3xl mx-auto">
+          <div className="bg-surface-container p-8 sm:p-12 rounded-2xl border border-outline-variant/30 text-center space-y-6 shadow-2xl">
+            <div className="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
+              <Award className="w-12 h-12" />
+            </div>
+
+            <h2 className="text-3xl font-extrabold text-on-surface">Assessment Complete!</h2>
+            <div className="text-5xl font-black text-primary font-mono">{scoreResult.pct}%</div>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              You completed {scoreResult.correct} out of {scoreResult.total} items correctly in this {examType.toUpperCase()} assessment session.
+            </p>
+
+            <button
+              onClick={() => loadItems(examType)}
+              className="px-6 py-3 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold text-xs inline-flex items-center gap-2 border border-outline-variant/30 shadow-md"
+            >
+              <RefreshCw className="w-4 h-4" /> Retake Assessment
+            </button>
           </div>
 
-          <h2 className="text-3xl font-extrabold text-on-surface">Assessment Complete!</h2>
-          <div className="text-5xl font-black text-primary font-mono">{scoreResult.pct}%</div>
-          <p className="text-xs text-on-surface-variant leading-relaxed">
-            You completed {scoreResult.correct} out of {scoreResult.total} items correctly in this {examType.toUpperCase()} assessment session.
-          </p>
+          {scoreResult.results?.length > 0 && (
+            <div className="bg-surface-container p-6 rounded-2xl border border-outline-variant/30 space-y-3 shadow-xl">
+              <div className="flex items-center justify-between border-b border-outline-variant/20 pb-3">
+                <span className="text-xs font-bold text-on-surface flex items-center gap-2">
+                  <FileCheck className="w-4 h-4 text-primary" /> প্রতিটি প্রশ্নের ফলাফল (Per-question results)
+                </span>
+                <Badge tone="neutral">সার্ভার গ্রেডেড (Server graded)</Badge>
+              </div>
 
-          <button
-            onClick={() => loadItems(examType)}
-            className="px-6 py-3 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold text-xs inline-flex items-center gap-2 border border-outline-variant/30 shadow-md"
-          >
-            <RefreshCw className="w-4 h-4" /> Retake Assessment
-          </button>
+              {scoreResult.results.map((res, idx) => (
+                <div
+                  key={res.item_id || idx}
+                  className={`p-3.5 rounded-xl border space-y-1.5 ${res.correct ? 'bg-emerald-500/5 border-emerald-500/30' : 'bg-rose-500/5 border-rose-500/40'}`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-xs font-bold text-on-surface leading-snug">
+                      <span className="font-mono text-on-surface-variant mr-1.5">{idx + 1}.</span>{res.title}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded font-extrabold text-[10px] shrink-0 border flex items-center gap-1 ${res.correct ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/40'}`}>
+                      {res.correct ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                      {res.correct ? 'সঠিক (Correct)' : 'ভুল (Incorrect)'}
+                    </span>
+                  </div>
+
+                  {typeof res.total_tests === 'number' && res.total_tests > 0 && (
+                    <div className="text-[11px] font-mono text-on-surface-variant">
+                      {res.passed_count ?? 0}/{res.total_tests} {res.type === 'html_coding' ? 'শর্ত পাস (checks passed)' : 'টেস্ট কেস পাস (test cases passed)'}
+                    </div>
+                  )}
+
+                  {res.detail && <p className="text-[11px] text-on-surface-variant leading-relaxed">{res.detail}</p>}
+
+                  {res.compile_output && (
+                    <details className="text-[10px] text-on-surface-variant">
+                      <summary className="cursor-pointer font-mono font-bold text-rose-400">কম্পাইলার আউটপুট (Compiler output)</summary>
+                      <pre className="mt-1 bg-surface-container-lowest p-2.5 rounded-lg border border-outline-variant/20 font-mono whitespace-pre-wrap max-h-48 overflow-y-auto">
+                        {res.compile_output}
+                      </pre>
+                    </details>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

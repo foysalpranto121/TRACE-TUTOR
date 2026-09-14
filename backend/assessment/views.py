@@ -1,147 +1,265 @@
-import json
-from pathlib import Path
-
-from django.core.cache import caches
+from collections import defaultdict
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from .models import AssessmentItem, ExpertRating, ExamSubmission, ExpertGrade
 
-ITEM_BANK_PATH = Path(__file__).resolve().parent / 'item_bank.json'
+from . import scoring
+from .models import ExpertRating, ExamSubmission, ExpertGrade
+
+RATING_FIELDS = {
+    'alignment': 'alignment_score',
+    'accuracy': 'accuracy_score',
+    'clarity': 'clarity_score',
+    'difficulty': 'difficulty_score',
+    'answerability': 'answerability_score',
+}
+I_CVI_PASS = 0.78          # Lynn (1986) acceptance threshold for an item's content validity index
+ALIGNMENT_RELEVANT = 3     # 3 or 4 on the 1-4 scale counts the item as relevant
 
 
-def load_item_bank():
-    """Item bank JSON, held in the memory cache and keyed by the file's mtime so edits show up
-    without a restart."""
-    key = f'item-bank:{ITEM_BANK_PATH.stat().st_mtime_ns}'
-    bank = caches['default'].get(key)
-    if bank is None:
-        with open(ITEM_BANK_PATH, encoding='utf-8') as fh:
-            bank = json.load(fh)
-        caches['default'].set(key, bank, 3600)
-    return bank
+def _current_expert(request):
+    """AllowAny endpoints: anonymous raters/graders share the null-expert row rather than
+    inventing a User from request data."""
+    return request.user if request.user.is_authenticated else None
+
+
+def _rating_rows(item_ids):
+    rows = ExpertRating.objects.filter(item_key__in=item_ids).values_list(
+        'item_key', 'expert_user_id', 'alignment_score')
+    per_item = defaultdict(lambda: [0, 0])  # item_key -> [raters, raters scoring >= 3]
+    experts = set()
+    for item_key, expert_id, alignment in rows:
+        per_item[item_key][0] += 1
+        if (alignment or 0) >= ALIGNMENT_RELEVANT:
+            per_item[item_key][1] += 1
+        experts.add(expert_id)
+    return per_item, experts
+
+
+def _i_cvi(counts):
+    raters, relevant = counts
+    return (relevant / raters) if raters else None
 
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_items(request):
-    exam_type = (request.GET.get('type') or 'pre').lower()
-    bank = load_item_bank()
-    return Response(bank.get(exam_type, bank['pre']))
+    try:
+        items = scoring.items_for(request.GET.get('type'))
+    except scoring.ItemBankError as exc:
+        return Response({'error': str(exc)}, status=500)
+    return Response([scoring.public_item(i) for i in items])
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def submit_exam(request):
     from logging_app.views import resolve_user
-    exam_type = request.data.get('exam_type', 'pre')
-    score = request.data.get('score', 80)
-    answers = request.data.get('answers', {})
-    student = resolve_user(request.data.get('user_id'), request.data.get('username'), create=True)
 
-    ExamSubmission.objects.create(
+    exam_type = str(request.data.get('exam_type') or 'pre').lower()
+    chapter = request.data.get('chapter')
+    answers = request.data.get('answers') or {}
+    code_answers = request.data.get('code_answers') or {}
+    student = request.user if request.user.is_authenticated else resolve_user(
+        request.data.get('user_id'), request.data.get('username'))
+
+    try:
+        # The client never decides the score - any 'score' in the body is ignored.
+        score_pct, correct, total, results = scoring.grade_submission(exam_type, answers, code_answers)
+    except scoring.ItemBankError as exc:
+        return Response({'error': str(exc)}, status=500)
+
+    submission = ExamSubmission.objects.create(
         student=student,
         exam_type=exam_type,
-        score_pct=int(score or 0),
-        answers={'answers': answers, 'code_answers': request.data.get('code_answers', {}), 'chapter': request.data.get('chapter'),
-                 'device_id': getattr(request, 'device_id', None)}
+        score_pct=score_pct,
+        answers={'answers': answers, 'code_answers': code_answers, 'chapter': chapter,
+                 'device_id': getattr(request, 'device_id', None), 'results': results},
     )
 
-    return Response({'status': 'success', 'recorded': True})
+    return Response({
+        'status': 'success',
+        'submission_id': submission.id,
+        'exam_type': exam_type,
+        'chapter': chapter,
+        'score_pct': score_pct,
+        'correct': correct,
+        'total': total,
+        'results': results,
+    })
 
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_expert_reviews(request):
-    return Response({
-        'items_to_review': [
-            {
-                'id': 'item_301',
-                'question_text': 'Explain the difference between a for loop and a while loop in C programming.',
-                'generated_code': 'for(int i=0; i<N; i++) { ... } vs while(condition) { ... }',
-                'source_passage': 'NCTB ICT Class 11-12 Chapter 5: In C programming, for loops are typically used when the exact number of iterations is known in advance, whereas while loops test a condition before each iteration.',
-                'bloom_level': 'Apply',
-                'language': 'Bangla / English'
-            }
-        ],
-        'cvi_stats': {
-            'i_cvi_pass_rate': 0.84,
-            's_cvi_ave': 0.92,
-            'fleiss_kappa': 0.78,
-            'total_certified': 42
+    try:
+        bank_items = scoring.all_items()
+    except scoring.ItemBankError as exc:
+        return Response({'error': str(exc)}, status=500)
+
+    item_ids = [item['id'] for _, item in bank_items]
+    per_item, experts = _rating_rows(item_ids)
+    expert = _current_expert(request)
+    mine = {r.item_key: r for r in ExpertRating.objects.filter(
+        item_key__in=item_ids, expert_user=expert)}
+
+    items_to_review = []
+    for exam_type, item in bank_items:
+        row = mine.get(item['id'])
+        public = scoring.public_item(item)
+        review = {
+            'id': item['id'],
+            'exam_type': exam_type,
+            'type': item.get('type'),
+            'chapter': item.get('chapter'),
+            'title': item.get('title'),
+            'question_text': item.get('question'),
+            'curriculum_ref': item.get('curriculum_ref'),
+            'ratings_count': per_item.get(item['id'], (0, 0))[0],
+            'my_rating': None if row is None else {
+                'alignment': row.alignment_score, 'accuracy': row.accuracy_score,
+                'clarity': row.clarity_score, 'difficulty': row.difficulty_score,
+                'answerability': row.answerability_score, 'feedback': row.feedback or '',
+            },
         }
+        if 'options' in public:
+            review['options'] = public['options']
+        if 'code_snippet' in public:
+            review['code_snippet'] = public['code_snippet']
+        items_to_review.append(review)
+
+    i_cvis = [_i_cvi(c) for c in per_item.values() if c[0]]
+    return Response({
+        'items_to_review': items_to_review,
+        'cvi_stats': {
+            'total_items': len(bank_items),
+            'rated_items': len(i_cvis),
+            'expert_count': len(experts),
+            'ratings_count': sum(c[0] for c in per_item.values()),
+            'i_cvi_pass_rate': (sum(1 for v in i_cvis if v >= I_CVI_PASS) / len(i_cvis)) if i_cvis else None,
+            's_cvi_ave': (sum(i_cvis) / len(i_cvis)) if i_cvis else None,
+        },
     })
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def submit_expert_rating(request):
-    item_id = request.data.get('item_id')
-    ratings = request.data.get('ratings', {})
-    feedback = request.data.get('feedback', '')
+    item_id = str(request.data.get('item_id') or '').strip()
+    _, item = scoring.find_item(item_id) if item_id else (None, None)
+    if item is None:
+        return Response({'error': f'Unknown item_id: {item_id or "(missing)"}'}, status=400)
 
-    return Response({'status': 'success', 'rated': True})
+    payload = request.data.get('ratings') or {}
+    defaults = {'feedback': str(request.data.get('feedback') or '')}
+    for key, field in RATING_FIELDS.items():
+        try:
+            score = int(payload.get(key))
+        except (TypeError, ValueError):
+            score = ExpertRating._meta.get_field(field).default
+        defaults[field] = max(1, min(4, score))
+
+    ExpertRating.objects.update_or_create(
+        expert_user=_current_expert(request), item_key=item_id, defaults=defaults)
+
+    per_item, _ = _rating_rows([item_id])
+    return Response({'status': 'success', 'rated': True, 'item_id': item_id,
+                     'i_cvi': _i_cvi(per_item[item_id]) if item_id in per_item else None})
 
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_student_submissions(request):
-    """
-    Returns student coding test submissions for expert grading.
-    """
-    mock_submissions = [
-        {
-            'id': 'sub_801',
-            'student_name': 'Rahim Ahmed (HSC Grade 11)',
-            'exam_type': 'Post-Test (C Loops & Logic)',
-            'submitted_at': '2026-09-12 21:40',
-            'student_code': '#include <stdio.h>\n\nint main() {\n    int n = 5, sum = 0;\n    for(int i = 1; i <= n; i++) {\n        sum += i;\n    }\n    printf("Sum = %d\\n", sum);\n    return 0;\n}',
-            'auto_test_results': 'Passed 3/3 Test Cases (Pass Rate 100%)',
-            'assigned_marks': 90,
-            'max_marks': 100,
-            'status': 'PENDING_REVIEW',
-            'feedback': 'Good use of accumulator pattern and loop condition.'
-        },
-        {
-            'id': 'sub_802',
-            'student_name': 'Fatima Nusrat (HSC Grade 12)',
-            'exam_type': 'Withdrawal Task (Unassisted Transfer)',
-            'submitted_at': '2026-09-12 22:15',
-            'student_code': '#include <stdio.h>\n\nint main() {\n    int n = 10, i = 1, sum = 0;\n    while(i <= n) {\n        sum += i;\n        i++;\n    }\n    printf("%d", sum);\n    return 0;\n}',
-            'auto_test_results': 'Passed 3/3 Test Cases (Pass Rate 100%)',
-            'assigned_marks': 95,
-            'max_marks': 100,
-            'status': 'PENDING_REVIEW',
-            'feedback': 'Correct while loop implementation during unassisted withdrawal.'
-        }
-    ]
-    return Response({'count': len(mock_submissions), 'submissions': mock_submissions})
+    """Real ExamSubmission rows for expert grading - students are named by participant_code."""
+    submissions = (ExamSubmission.objects
+                   .select_related('student', 'student__profile')
+                   .prefetch_related('grades', 'grades__expert_user')
+                   .order_by('-submitted_at')[:100])
+
+    payload, banks = [], {}
+    for sub in submissions:
+        stored = sub.answers if isinstance(sub.answers, dict) else {}
+        results = stored.get('results') or []
+        code_answers = stored.get('code_answers') or {}
+        profile = getattr(sub.student, 'profile', None)
+        participant_code = getattr(profile, 'participant_code', None)
+
+        if sub.exam_type not in banks:
+            try:
+                banks[sub.exam_type] = {i['id']: i for i in scoring.items_for(sub.exam_type)}
+            except scoring.ItemBankError:
+                banks[sub.exam_type] = {}
+        titles = banks[sub.exam_type]
+
+        code_blocks = []
+        for res in results:
+            if res.get('type') not in ('c_programming', 'html_coding'):
+                continue
+            item = titles.get(res.get('item_id'), {})
+            code_blocks.append({
+                'item_id': res.get('item_id'),
+                'title': res.get('title') or item.get('title'),
+                'question': item.get('question', ''),
+                'code': code_answers.get(res.get('item_id'), ''),
+                'auto': {
+                    'status': res.get('status') or ('SUCCESS' if res.get('correct') else 'NOT_PASSED'),
+                    'passed_count': res.get('passed_count'),
+                    'total_tests': res.get('total_tests'),
+                    'detail': res.get('detail', ''),
+                },
+            })
+
+        grades = sorted(sub.grades.all(), key=lambda g: g.graded_at, reverse=True)
+        grade = grades[0] if grades else None
+        payload.append({
+            'id': sub.id,
+            'student_label': participant_code or getattr(sub.student, 'username', None) or 'Anonymous',
+            'participant_code': participant_code,
+            'exam_type': sub.exam_type,
+            'chapter': stored.get('chapter'),
+            'submitted_at': sub.submitted_at.isoformat(),
+            'score_pct': sub.score_pct,
+            'correct': sum(1 for r in results if r.get('correct')) if results else None,
+            'total': len(results) or None,
+            'code_answers': code_blocks,
+            'assigned_marks': grade.assigned_marks if grade else None,
+            'max_marks': grade.max_marks if grade else 100,
+            'feedback': (grade.feedback_comments or '') if grade else '',
+            'status': 'GRADED' if grade else 'PENDING_REVIEW',
+            'graded_by': getattr(grade.expert_user, 'username', None) if grade else None,
+        })
+
+    return Response({'count': len(payload), 'submissions': payload})
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def grade_student_submission(request):
-    """
-    Records expert teacher assigned marks and feedback comments.
-    """
-    sub_id = request.data.get('submission_id')
-    marks = request.data.get('assigned_marks', 85)
-    feedback = request.data.get('feedback', '')
+    submission_id = request.data.get('submission_id')
+    try:
+        submission = ExamSubmission.objects.filter(id=int(submission_id)).first()
+    except (TypeError, ValueError):
+        submission = None
+    if submission is None:
+        return Response({'error': f'Submission {submission_id} does not exist.'}, status=404)
 
-    ExpertGrade.objects.create(
-        assigned_marks=marks,
-        max_marks=100,
-        feedback_comments=feedback,
-        is_graded=True
+    try:
+        marks = int(request.data.get('assigned_marks'))
+    except (TypeError, ValueError):
+        marks = 0
+    marks = max(0, min(100, marks))
+
+    grade, _ = ExpertGrade.objects.update_or_create(
+        submission=submission,
+        expert_user=_current_expert(request),
+        defaults={'assigned_marks': marks, 'max_marks': 100, 'is_graded': True,
+                  'feedback_comments': str(request.data.get('feedback') or '')},
     )
 
-    return Response({
-        'status': 'success',
-        'submission_id': sub_id,
-        'assigned_marks': marks,
-        'message': 'Marks and feedback saved into database successfully.'
-    })
+    return Response({'status': 'success', 'submission_id': submission.id,
+                     'assigned_marks': grade.assigned_marks, 'max_marks': 100,
+                     'graded_at': grade.graded_at.isoformat()})
 
 
 @api_view(['GET'])
