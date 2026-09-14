@@ -1015,7 +1015,7 @@ export const apiService = {
   submitExam: (examData) => fetchApi('/assessment/submit/', { method: 'POST', body: JSON.stringify(withUser(examData)) }, { strict: true }),
   getExpertQueue: () => fetchApi('/expert/reviews/', {}, { strict: true }),
   submitExpertRating: (itemId, ratings, feedback) => fetchApi('/expert/rating/', { method: 'POST', body: JSON.stringify({ item_id: itemId, ratings, feedback }) }, { strict: true }),
-  getAdminStats: () => fetchApi('/admin/stats/'),
+  getAdminStats: () => fetchApi('/admin/stats/', {}, { strict: true }),
   
   // Student Code Submission Evaluation & Marking by Expert
   getStudentSubmissions: () => fetchApi('/expert/submissions/', {}, { strict: true }),

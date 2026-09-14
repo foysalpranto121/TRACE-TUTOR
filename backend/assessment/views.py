@@ -1,8 +1,10 @@
 from collections import defaultdict
 
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from accounts.permissions import IsResearcher, IsStaffRole
 
 from . import scoring
 from .models import ExpertRating, ExamSubmission, ExpertGrade
@@ -43,7 +45,7 @@ def _i_cvi(counts):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def get_items(request):
     try:
         items = scoring.items_for(request.GET.get('type'))
@@ -53,7 +55,7 @@ def get_items(request):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def submit_exam(request):
     from logging_app.views import resolve_user
 
@@ -91,7 +93,7 @@ def submit_exam(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsStaffRole])
 def get_expert_reviews(request):
     try:
         bank_items = scoring.all_items()
@@ -144,7 +146,7 @@ def get_expert_reviews(request):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsStaffRole])
 def submit_expert_rating(request):
     item_id = str(request.data.get('item_id') or '').strip()
     _, item = scoring.find_item(item_id) if item_id else (None, None)
@@ -169,7 +171,7 @@ def submit_expert_rating(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsStaffRole])
 def get_student_submissions(request):
     """Real ExamSubmission rows for expert grading - students are named by participant_code."""
     submissions = (ExamSubmission.objects
@@ -234,7 +236,7 @@ def get_student_submissions(request):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsStaffRole])
 def grade_student_submission(request):
     submission_id = request.data.get('submission_id')
     try:
@@ -263,7 +265,7 @@ def grade_student_submission(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsResearcher])
 def get_admin_stats(request):
     return Response({
         'total_participants': 64,
