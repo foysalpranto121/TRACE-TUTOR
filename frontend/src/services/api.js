@@ -1010,15 +1010,16 @@ export const apiService = {
   getCodeStatus: () => fetchApi('/code/status/', {}, { strict: true }),
   getRagStatus: () => fetchApi('/curriculum/status/', {}, { strict: true }),
   logTelemetry: (eventType, eventData) => fetchApi('/telemetry/log/', { method: 'POST', body: JSON.stringify({ event_type: eventType, event_data: withUser(eventData) }) }),
-  getAssessmentItems: (type) => fetchApi(`/assessment/items/?type=${type}`),
-  submitExam: (examData) => fetchApi('/assessment/submit/', { method: 'POST', body: JSON.stringify(withUser(examData)) }),
-  getExpertQueue: () => fetchApi('/expert/reviews/'),
-  submitExpertRating: (itemId, ratings, feedback) => fetchApi('/expert/rating/', { method: 'POST', body: JSON.stringify({ item_id: itemId, ratings, feedback }) }),
+  getAssessmentItems: (type) => fetchApi(`/assessment/items/?type=${type}`, {}, { strict: true }),
+  // The server grades the submission and returns { score_pct, correct, total, results }.
+  submitExam: (examData) => fetchApi('/assessment/submit/', { method: 'POST', body: JSON.stringify(withUser(examData)) }, { strict: true }),
+  getExpertQueue: () => fetchApi('/expert/reviews/', {}, { strict: true }),
+  submitExpertRating: (itemId, ratings, feedback) => fetchApi('/expert/rating/', { method: 'POST', body: JSON.stringify({ item_id: itemId, ratings, feedback }) }, { strict: true }),
   getAdminStats: () => fetchApi('/admin/stats/'),
   
   // Student Code Submission Evaluation & Marking by Expert
-  getStudentSubmissions: () => fetchApi('/expert/submissions/'),
-  gradeSubmission: (submissionId, assignedMarks, feedback) => fetchApi('/expert/grade/', { method: 'POST', body: JSON.stringify({ submission_id: submissionId, assigned_marks: assignedMarks, feedback }) }),
+  getStudentSubmissions: () => fetchApi('/expert/submissions/', {}, { strict: true }),
+  gradeSubmission: (submissionId, assignedMarks, feedback) => fetchApi('/expert/grade/', { method: 'POST', body: JSON.stringify({ submission_id: submissionId, assigned_marks: assignedMarks, feedback }) }, { strict: true }),
 
   // Curriculum RAG Engine
   searchCurriculum: (query, language) => fetchApi('/curriculum/search/', { method: 'POST', body: JSON.stringify({ query, language }) }),
