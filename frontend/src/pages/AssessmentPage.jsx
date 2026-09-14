@@ -47,6 +47,7 @@ export const AssessmentPage = () => {
   const [scoreResult, setScoreResult] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [confirmUnanswered, setConfirmUnanswered] = useState(false);
   const [runResults, setRunResults] = useState({}); // item_id -> compiler output of the student's own trial run
   const [runningItemId, setRunningItemId] = useState(null);
 
@@ -133,6 +134,7 @@ export const AssessmentPage = () => {
 
   const loadItems = async (type) => {
     setIsSubmitted(false);
+    setConfirmUnanswered(false);
     setScoreResult(null);
     setSubmitError(null);
     setSelectedAnswers({});
@@ -213,7 +215,24 @@ export const AssessmentPage = () => {
   };
 
   // The server compiles and grades every item; the client only reports what comes back.
+  // The server grades all items of the form, so progress is counted over allItems, never the
+  // filtered view - otherwise a student who filters to one chapter is told they have finished
+  // while the items they never saw are about to be marked wrong.
+  const isAnswered = (item) => {
+    if (item.type === 'concept_mcq') return Boolean(selectedAnswers[item.id]);
+    const src = (userCodeAnswers[item.id] || '').trim();
+    return Boolean(src) && src !== (item.code_snippet || '').trim();
+  };
+  const answeredCount = allItems.filter(isAnswered).length;
+  const unansweredCount = allItems.length - answeredCount;
+
   const handleSubmitExam = async () => {
+    // One deliberate confirmation when items are still blank: the chapter filter makes it easy
+    // to reach the end of a chapter and assume the whole form is done.
+    if (unansweredCount > 0 && !confirmUnanswered) {
+      setConfirmUnanswered(true);
+      return;
+    }
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -503,7 +522,21 @@ export const AssessmentPage = () => {
             <Database className="w-3.5 h-3.5 text-purple-400" />
             Chapter 6: DBMS (2)
           </button>
+
+          <span className="ml-auto font-bold text-on-surface-variant">
+            উত্তর দেওয়া হয়েছে (Answered): <span className="text-primary">{answeredCount}</span> / {allItems.length}
+          </span>
         </div>
+
+        {selectedChapter !== 'ALL' && !isSubmitted && (
+          <div className="mt-3 flex items-start gap-2 rounded-xl border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
+            <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>
+              ফিল্টার শুধু দেখার জন্য — জমা দিলে পুরো {allItems.length}টি প্রশ্নই মূল্যায়ন হবে, না দেখা প্রশ্নগুলো ভুল ধরা হবে।
+              <span className="opacity-80"> (The filter only changes the view. All {allItems.length} items are graded; anything left unanswered counts as wrong.)</span>
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Phase Banner Notification */}
@@ -746,6 +779,17 @@ export const AssessmentPage = () => {
               </div>
             )}
 
+            {confirmUnanswered && !isSubmitting && (
+              <div className="mb-3 flex items-start gap-2 rounded-xl border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
+                <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>
+                  <strong>{unansweredCount}টি প্রশ্নের উত্তর দেওয়া হয়নি</strong> — এগুলো ভুল হিসেবে গণ্য হবে।
+                  আবার Submit চাপলে এভাবেই জমা হয়ে যাবে।
+                  <span className="opacity-80"> ({unansweredCount} unanswered; they will be marked wrong. Press Submit again to send it as is.)</span>
+                </span>
+              </div>
+            )}
+
             {submitError && (
               <div className="bg-rose-500/10 border border-rose-500/30 text-rose-400 rounded-xl p-3 text-xs font-medium flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -765,14 +809,15 @@ export const AssessmentPage = () => {
                 Previous Question
               </button>
 
-              {currentIndex < filteredItems.length - 1 ? (
-                <button
-                  onClick={() => setCurrentIndex((prev) => Math.min(filteredItems.length - 1, prev + 1))}
-                  className="px-6 py-2.5 rounded-xl bg-primary text-on-primary font-bold text-xs shadow-md shadow-primary/20 flex items-center gap-1.5 hover:bg-primary-container transition-all"
-                >
-                  Next Question <ArrowRight className="w-4 h-4" />
-                </button>
-              ) : (
+              <div className="flex items-center gap-2">
+                {currentIndex < filteredItems.length - 1 && (
+                  <button
+                    onClick={() => setCurrentIndex((prev) => Math.min(filteredItems.length - 1, prev + 1))}
+                    className="px-6 py-2.5 rounded-xl bg-primary text-on-primary font-bold text-xs shadow-md shadow-primary/20 flex items-center gap-1.5 hover:bg-primary-container transition-all"
+                  >
+                    Next Question <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
                 <button
                   onClick={handleSubmitExam}
                   disabled={isSubmitting}
@@ -780,9 +825,11 @@ export const AssessmentPage = () => {
                 >
                   {isSubmitting
                     ? <>গ্রেড হচ্ছে... (Grading) <Loader2 className="w-4 h-4 animate-spin" /></>
-                    : <>Submit Assessment <CheckCircle2 className="w-4 h-4" /></>}
+                    : confirmUnanswered
+                      ? <>{unansweredCount}টি বাদ রেখে জমা দিন (Submit anyway) <CheckCircle2 className="w-4 h-4" /></>
+                      : <>Submit Assessment <CheckCircle2 className="w-4 h-4" /></>}
                 </button>
-              )}
+              </div>
             </div>
           </div>
 

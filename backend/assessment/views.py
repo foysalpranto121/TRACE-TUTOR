@@ -21,8 +21,8 @@ ALIGNMENT_RELEVANT = 3     # 3 or 4 on the 1-4 scale counts the item as relevant
 
 
 def _current_expert(request):
-    """AllowAny endpoints: anonymous raters/graders share the null-expert row rather than
-    inventing a User from request data."""
+    """IsStaffRole guarantees an authenticated teacher or researcher here, so the null
+    branch is unreachable; it stays only so the helper is safe if a gate is ever relaxed."""
     return request.user if request.user.is_authenticated else None
 
 
