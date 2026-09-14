@@ -5,72 +5,305 @@
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Pre-Test C Task 1: Sum of First N Natural Numbers",
-      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ১ থেকে N পর্যন্ত সমস্ত ধনাত্মক পূর্ণসংখ্যার যোগফল লুপের মাধ্যমে নির্ণয় করে প্রিন্ট করবে। (Write a C program to calculate the sum of numbers from 1 to N using a loop).",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ১ থেকে N পর্যন্ত সমস্ত ধনাত্মক পূর্ণসংখ্যার যোগফল লুপের মাধ্যমে নির্ণয় করে প্রিন্ট করবে। (Write a C program to calculate the sum of numbers from 1 to N using a loop). ইনপুট: একটি লাইনে একটি পূর্ণসংখ্যা N (1 ≤ N ≤ 1000)। আউটপুট: ঠিক একটি লাইন — Sum = 15 (যখন N = 5)। \"Enter N: \" জাতীয় কোনো প্রম্পট প্রিন্ট করা যাবে না, শুধু ফলাফলের লাইনটি। (Input: one integer N. Output exactly one line: Sum = 15. Print no prompt text, only the result line.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int n, sum = 0;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 142)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 142)",
+      "input_format": "একটি লাইনে একটি পূর্ণসংখ্যা N (1 ≤ N ≤ 1000)। (One line: a single integer N, 1 to 1000.)",
+      "output_format": "Sum = 15",
+      "sample_cases": [
+        {
+          "input": "5\n",
+          "output": "Sum = 15"
+        },
+        {
+          "input": "10\n",
+          "output": "Sum = 55"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "5\n",
+          "output": "Sum = 15"
+        },
+        {
+          "input": "10\n",
+          "output": "Sum = 55"
+        },
+        {
+          "input": "1\n",
+          "output": "Sum = 1"
+        },
+        {
+          "input": "100\n",
+          "output": "Sum = 5050"
+        }
+      ]
     },
     {
       "id": "pre_c_code_02",
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Pre-Test C Task 2: Even or Odd Number Verification",
-      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা প্রদত্ত সংখ্যাটি জোড় (Even) নাকি বিজোড় (Odd) তা মডুলাস (%) অপারেটর দিয়ে পরীক্ষা করবে। (Check if a given number is even or odd).",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা প্রদত্ত সংখ্যাটি জোড় (Even) নাকি বিজোড় (Odd) তা মডুলাস (%) অপারেটর দিয়ে পরীক্ষা করবে। (Check if a given number is even or odd). ইনপুট: একটি লাইনে একটি অঋণাত্মক পূর্ণসংখ্যা N। আউটপুট: ঠিক একটি লাইন — জোড় হলে Even, বিজোড় হলে Odd। কোনো প্রম্পট বা বাড়তি লেখা প্রিন্ট করা যাবে না, শুধু ফলাফলের লাইনটি। (Input: one non-negative integer N. Output exactly one line: Even or Odd. Print no prompt text, only the result line.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int num;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 138)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 138)",
+      "input_format": "একটি লাইনে একটি অঋণাত্মক পূর্ণসংখ্যা N। (One line: a single non-negative integer N.)",
+      "output_format": "Even / Odd",
+      "sample_cases": [
+        {
+          "input": "8\n",
+          "output": "Even"
+        },
+        {
+          "input": "7\n",
+          "output": "Odd"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "8\n",
+          "output": "Even"
+        },
+        {
+          "input": "7\n",
+          "output": "Odd"
+        },
+        {
+          "input": "0\n",
+          "output": "Even"
+        },
+        {
+          "input": "1\n",
+          "output": "Odd"
+        }
+      ]
     },
     {
       "id": "pre_c_code_03",
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Pre-Test C Task 3: Factorial of a Positive Integer",
-      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ব্যবহারকারীর প্রদত্ত ধনাত্মক সংখ্যা N-এর ফ্যাক্টোরিয়াল (N!) নির্ণয় করবে। (Calculate factorial N!).",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ব্যবহারকারীর প্রদত্ত ধনাত্মক সংখ্যা N-এর ফ্যাক্টোরিয়াল (N!) নির্ণয় করবে। (Calculate factorial N!). ইনপুট: একটি লাইনে একটি পূর্ণসংখ্যা N (0 ≤ N ≤ 12)। আউটপুট: ঠিক একটি লাইন — Factorial = 120 (যখন N = 5); মনে রাখবেন 0! = 1। কোনো প্রম্পট প্রিন্ট করা যাবে না, শুধু ফলাফলের লাইনটি। (Input: one integer N, 0 ≤ N ≤ 12. Output exactly one line: Factorial = 120. Note 0! = 1. Print no prompt text.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int n;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 145)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 145)",
+      "input_format": "একটি লাইনে একটি পূর্ণসংখ্যা N (0 ≤ N ≤ 12)। (One line: a single integer N, 0 to 12.)",
+      "output_format": "Factorial = 120",
+      "sample_cases": [
+        {
+          "input": "5\n",
+          "output": "Factorial = 120"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "5\n",
+          "output": "Factorial = 120"
+        },
+        {
+          "input": "1\n",
+          "output": "Factorial = 1"
+        },
+        {
+          "input": "0\n",
+          "output": "Factorial = 1"
+        },
+        {
+          "input": "10\n",
+          "output": "Factorial = 3628800"
+        }
+      ]
     },
     {
       "id": "pre_c_code_04",
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Pre-Test C Task 4: Maximum of Three Numbers",
-      "question": "তিনটি সংখ্যার মধ্যে বৃহত্তম সংখ্যাটি নির্ণয় করার জন্য একটি সি (C) প্রোগ্রাম লিখুন। (Find maximum of three numbers).",
+      "question": "তিনটি সংখ্যার মধ্যে বৃহত্তম সংখ্যাটি নির্ণয় করার জন্য একটি সি (C) প্রোগ্রাম লিখুন। (Find maximum of three numbers). ইনপুট: একটি লাইনে স্পেস দিয়ে আলাদা করা তিনটি পূর্ণসংখ্যা a b c। আউটপুট: ঠিক একটি লাইন — Max = 9 (যখন ইনপুট 3 9 5)। কোনো প্রম্পট প্রিন্ট করা যাবে না, শুধু ফলাফলের লাইনটি। (Input: three space-separated integers a b c on one line. Output exactly one line: Max = 9. Print no prompt text.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int a, b, c;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 140)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 140)",
+      "input_format": "একটি লাইনে স্পেস দিয়ে আলাদা করা তিনটি পূর্ণসংখ্যা a b c। (One line: three space-separated integers a b c.)",
+      "output_format": "Max = 9",
+      "sample_cases": [
+        {
+          "input": "3 9 5\n",
+          "output": "Max = 9"
+        },
+        {
+          "input": "12 4 7\n",
+          "output": "Max = 12"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "3 9 5\n",
+          "output": "Max = 9"
+        },
+        {
+          "input": "12 4 7\n",
+          "output": "Max = 12"
+        },
+        {
+          "input": "2 6 20\n",
+          "output": "Max = 20"
+        },
+        {
+          "input": "-5 -2 -9\n",
+          "output": "Max = -2"
+        }
+      ]
     },
     {
       "id": "pre_c_code_05",
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Pre-Test C Task 5: Prime Number Verification",
-      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা কোনো প্রদত্ত পূর্ণসংখ্যা মৌলিক সংখ্যা (Prime Number) কিনা তা পরীক্ষা করে দেখাবে। (Verify prime number).",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা কোনো প্রদত্ত পূর্ণসংখ্যা মৌলিক সংখ্যা (Prime Number) কিনা তা পরীক্ষা করে দেখাবে। (Verify prime number). ইনপুট: একটি লাইনে একটি পূর্ণসংখ্যা N (N ≥ 1)। আউটপুট: ঠিক একটি লাইন — প্রথমে N, তারপর মৌলিক হলে is Prime, না হলে is Not Prime; যেমন 7 is Prime বা 9 is Not Prime। মনে রাখবেন 1 মৌলিক সংখ্যা নয়। কোনো প্রম্পট প্রিন্ট করা যাবে না। (Input: one integer N ≥ 1. Output exactly one line: \"7 is Prime\" or \"9 is Not Prime\". 1 is not prime. Print no prompt text.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int n;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 152)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 152)",
+      "input_format": "একটি লাইনে একটি পূর্ণসংখ্যা N (N ≥ 1)। (One line: a single integer N, N ≥ 1.)",
+      "output_format": "7 is Prime / 9 is Not Prime",
+      "sample_cases": [
+        {
+          "input": "7\n",
+          "output": "7 is Prime"
+        },
+        {
+          "input": "9\n",
+          "output": "9 is Not Prime"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "7\n",
+          "output": "7 is Prime"
+        },
+        {
+          "input": "9\n",
+          "output": "9 is Not Prime"
+        },
+        {
+          "input": "2\n",
+          "output": "2 is Prime"
+        },
+        {
+          "input": "1\n",
+          "output": "1 is Not Prime"
+        }
+      ]
     },
     {
       "id": "pre_html_code_01",
       "type": "html_coding",
       "chapter": "Chapter 4 — Web Design and HTML",
       "title": "Pre-Test HTML Task 1: Student Marks Table Structure",
-      "question": "একটি এইচটিএমএল (HTML) কোড লিখুন যা ২ সারি ও ২ কলামের একটি টেবিল তৈরি করবে (Roll ও Marks হেডারসহ)। (Create a 2x2 table for Roll and Marks).",
+      "question": "একটি এইচটিএমএল (HTML) কোড লিখুন যা ২ সারি ও ২ কলামের একটি টেবিল তৈরি করবে (Roll ও Marks হেডারসহ)। (Create a 2x2 table for Roll and Marks). প্রথম সারিতে <th> দিয়ে Roll ও Marks হেডার দুটি এবং দ্বিতীয় সারিতে <td> দিয়ে একজন শিক্ষার্থীর রোল ও নম্বর লিখুন — মোট ২টি সারি, প্রতি সারিতে ২টি সেল। (First row: two <th> cells reading Roll and Marks; second row: two <td> cells holding one student's roll and marks — 2 rows, 2 cells each.)",
       "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write 2x2 table for Roll and Marks here -->\n\n</body>\n</html>",
-      "curriculum_ref": "NCTB ICT Chapter 4 (Page 98)"
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 98)",
+      "html_checks": [
+        {
+          "name": "একটি টেবিল আছে (One <table> element)",
+          "selector": "table",
+          "min": 1,
+          "max": 1
+        },
+        {
+          "name": "টেবিলে ২টি সারি (Exactly 2 rows)",
+          "selector": "table tr",
+          "min": 2,
+          "max": 2
+        },
+        {
+          "name": "হেডার সারিতে Roll ও Marks (<th> headers)",
+          "selector": "table th",
+          "min": 2,
+          "max": 2,
+          "text_includes": [
+            "Roll",
+            "Marks"
+          ]
+        },
+        {
+          "name": "ডেটা সারিতে ২টি <td> সেল (2 data cells)",
+          "selector": "table td",
+          "min": 2,
+          "max": 2
+        }
+      ]
     },
     {
       "id": "pre_html_code_02",
       "type": "html_coding",
       "chapter": "Chapter 4 — Web Design and HTML",
       "title": "Pre-Test HTML Task 2: Clickable Image Hyperlink",
-      "question": "এমন একটি HTML কোড লিখুন যেখানে \"college.jpg\" ছবিটিতে ক্লিক করলে \"https://nctb.gov.bd\" ওয়েবসাইটটি ওপেন হবে। (Clickable image hyperlink).",
+      "question": "এমন একটি HTML কোড লিখুন যেখানে \"college.jpg\" ছবিটিতে ক্লিক করলে \"https://nctb.gov.bd\" ওয়েবসাইটটি ওপেন হবে। (Clickable image hyperlink). ঠিক একটি <a> ট্যাগ ব্যবহার করুন যার href=\"https://nctb.gov.bd\", এবং <img src=\"college.jpg\"> ট্যাগটি সেই <a> ট্যাগের ভিতরে রাখুন। (Use exactly one <a> tag with href=\"https://nctb.gov.bd\" and place <img src=\"college.jpg\"> inside that anchor.)",
       "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write clickable image hyperlink code here -->\n\n</body>\n</html>",
-      "curriculum_ref": "NCTB ICT Chapter 4 (Page 105)"
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 105)",
+      "html_checks": [
+        {
+          "name": "একটি <a> লিংক আছে (One anchor)",
+          "selector": "a",
+          "min": 1,
+          "max": 1
+        },
+        {
+          "name": "লিংকের ঠিকানা nctb.gov.bd (href target)",
+          "selector": "a[href*=\"nctb.gov.bd\"]",
+          "min": 1
+        },
+        {
+          "name": "college.jpg ছবি যুক্ত (<img src>)",
+          "selector": "img[src*=\"college.jpg\"]",
+          "min": 1
+        },
+        {
+          "name": "ছবিটি লিংকের ভিতরে (image inside the anchor)",
+          "selector": "a[href*=\"nctb.gov.bd\"] img[src*=\"college.jpg\"]",
+          "min": 1
+        }
+      ]
     },
     {
       "id": "pre_html_code_03",
       "type": "html_coding",
       "chapter": "Chapter 4 — Web Design and HTML",
       "title": "Pre-Test HTML Task 3: Formatted Ordered List",
-      "question": "এইচটিএমএল (HTML) ব্যবহার করে ১, ২, ৩ ক্রমিক নম্বরযুক্ত একটি Ordered List (<ol>) তৈরি করুন যেখানে বিষয়গুলোর নাম বোল্ড (<b>) হবে। (Formatted ordered list).",
+      "question": "এইচটিএমএল (HTML) ব্যবহার করে ১, ২, ৩ ক্রমিক নম্বরযুক্ত একটি Ordered List (<ol>) তৈরি করুন যেখানে বিষয়গুলোর নাম বোল্ড (<b>) হবে। (Formatted ordered list). তালিকায় ঠিক তিনটি <li> আইটেম থাকবে — ক্রমানুসারে Bangla, English, ICT (নামগুলো ইংরেজিতেই লিখুন) — এবং প্রতিটি নাম <b> ট্যাগ দিয়ে বোল্ড করতে হবে। (Exactly three <li> items in this order — Bangla, English, ICT — each name wrapped in a <b> tag.)",
       "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write formatted ordered list here -->\n\n</body>\n</html>",
-      "curriculum_ref": "NCTB ICT Chapter 4 (Page 92)"
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 92)",
+      "html_checks": [
+        {
+          "name": "একটি <ol> তালিকা আছে (One ordered list)",
+          "selector": "ol",
+          "min": 1,
+          "max": 1
+        },
+        {
+          "name": "তালিকায় ৩টি <li> আইটেম (Exactly 3 items)",
+          "selector": "ol li",
+          "min": 3,
+          "max": 3
+        },
+        {
+          "name": "প্রতিটি বিষয়ের নাম <b> ট্যাগে বোল্ড (3 bold subject names)",
+          "selector": "ol li b",
+          "min": 3,
+          "max": 3,
+          "text_includes": [
+            "Bangla",
+            "English",
+            "ICT"
+          ]
+        },
+        {
+          "name": "প্রথম আইটেমটি Bangla (First item is Bangla)",
+          "selector": "ol li:nth-of-type(1) b",
+          "min": 1,
+          "max": 1,
+          "text_includes": [
+            "Bangla"
+          ]
+        }
+      ]
     },
     {
       "id": "pre_mcq_chap4_01",
@@ -268,72 +501,308 @@
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Post-Test C Task 1: Product of First N Integers",
-      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ১ থেকে N পর্যন্ত সমস্ত সংখ্যার গুণফল লুপ ব্যবহার করে নির্ণয় করবে। (Write a C program to calculate the product of numbers 1 to N).",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ১ থেকে N পর্যন্ত সমস্ত সংখ্যার গুণফল লুপ ব্যবহার করে নির্ণয় করবে। (Write a C program to calculate the product of numbers 1 to N). ইনপুট: একটি পূর্ণসংখ্যা N (1 ≤ N ≤ 12)। আউটপুট: ঠিক একটি লাইন — 'Product = 120' (N = 5 হলে); কোনো প্রম্পট বা বাড়তি লেখা ছাপানো যাবে না। (Input: one integer N, 1 ≤ N ≤ 12. Output exactly one line: Product = 120 for N = 5. Print no prompt text.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int n;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 143)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 143)",
+      "input_format": "স্ট্যান্ডার্ড ইনপুট থেকে একটি লাইনে একটি পূর্ণসংখ্যা N পড়তে হবে, যেখানে 1 ≤ N ≤ 12। (Read one integer N from stdin, where 1 ≤ N ≤ 12.)",
+      "output_format": "Product = 120",
+      "sample_cases": [
+        {
+          "input": "5\n",
+          "output": "Product = 120"
+        },
+        {
+          "input": "1\n",
+          "output": "Product = 1"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "5\n",
+          "output": "Product = 120"
+        },
+        {
+          "input": "1\n",
+          "output": "Product = 1"
+        },
+        {
+          "input": "3\n",
+          "output": "Product = 6"
+        },
+        {
+          "input": "12\n",
+          "output": "Product = 479001600"
+        }
+      ]
     },
     {
       "id": "post_c_code_02",
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Post-Test C Task 2: Positive or Negative Checker",
-      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা প্রদত্ত সংখ্যাটি ধনাত্মক (Positive) নাকি ঋণাত্মক (Negative) তা if-else দিয়ে পরীক্ষা করবে। (Check positive or negative number).",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা প্রদত্ত সংখ্যাটি ধনাত্মক (Positive) নাকি ঋণাত্মক (Negative) তা if-else দিয়ে পরীক্ষা করবে। (Check positive or negative number). ইনপুট: একটি শূন্য-নয় (non-zero) পূর্ণসংখ্যা num। আউটপুট: ঠিক একটি লাইন — num > 0 হলে 'Positive', নতুবা 'Negative'; কোনো প্রম্পট বা বাড়তি লেখা ছাপানো যাবে না। (Input: one non-zero integer num. Output exactly one line: Positive if num > 0, otherwise Negative. Print no prompt text.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int num;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 139)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 139)",
+      "input_format": "স্ট্যান্ডার্ড ইনপুট থেকে একটি লাইনে একটি শূন্য-নয় (non-zero) পূর্ণসংখ্যা num পড়তে হবে। (Read one non-zero integer num from stdin.)",
+      "output_format": "Positive",
+      "sample_cases": [
+        {
+          "input": "7\n",
+          "output": "Positive"
+        },
+        {
+          "input": "-25\n",
+          "output": "Negative"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "7\n",
+          "output": "Positive"
+        },
+        {
+          "input": "-25\n",
+          "output": "Negative"
+        },
+        {
+          "input": "1\n",
+          "output": "Positive"
+        },
+        {
+          "input": "-1\n",
+          "output": "Negative"
+        }
+      ]
     },
     {
       "id": "post_c_code_03",
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Post-Test C Task 3: Fibonacci Series Term Calculation",
-      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ফিবোনাক্কি সিরিজের N-তম পদ নির্ণয় করে প্রদর্শন করবে (F0=0, F1=1)। (Calculate Nth Fibonacci number).",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ফিবোনাক্কি সিরিজের N-তম পদ নির্ণয় করে প্রদর্শন করবে (F0=0, F1=1)। (Calculate Nth Fibonacci number). ইনপুট: একটি পূর্ণসংখ্যা N (0 ≤ N ≤ 40)। আউটপুট: ঠিক একটি লাইন — 'Fibonacci = 13' (N = 7 হলে); কোনো প্রম্পট বা বাড়তি লেখা ছাপানো যাবে না। (Input: one integer N, 0 ≤ N ≤ 40. Output exactly one line: Fibonacci = 13 for N = 7. Print no prompt text.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int n;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 148)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 148)",
+      "input_format": "স্ট্যান্ডার্ড ইনপুট থেকে একটি লাইনে একটি পূর্ণসংখ্যা N পড়তে হবে, যেখানে 0 ≤ N ≤ 40। (Read one integer N from stdin, where 0 ≤ N ≤ 40.)",
+      "output_format": "Fibonacci = 13",
+      "sample_cases": [
+        {
+          "input": "7\n",
+          "output": "Fibonacci = 13"
+        },
+        {
+          "input": "0\n",
+          "output": "Fibonacci = 0"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "7\n",
+          "output": "Fibonacci = 13"
+        },
+        {
+          "input": "0\n",
+          "output": "Fibonacci = 0"
+        },
+        {
+          "input": "1\n",
+          "output": "Fibonacci = 1"
+        },
+        {
+          "input": "12\n",
+          "output": "Fibonacci = 144"
+        }
+      ]
     },
     {
       "id": "post_c_code_04",
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Post-Test C Task 4: Minimum of Three Numbers",
-      "question": "তিনটি পূর্ণসংখ্যার মধ্যে ক্ষুদ্রতম সংখ্যাটি (Minimum) নির্ণয় করার জন্য একটি সি (C) প্রোগ্রাম লিখুন। (Find minimum of three numbers).",
+      "question": "তিনটি পূর্ণসংখ্যার মধ্যে ক্ষুদ্রতম সংখ্যাটি (Minimum) নির্ণয় করার জন্য একটি সি (C) প্রোগ্রাম লিখুন। (Find minimum of three numbers). ইনপুট: এক লাইনে স্পেস দিয়ে আলাদা করা তিনটি পূর্ণসংখ্যা a b c। আউটপুট: ঠিক একটি লাইন — 'Minimum = 7' (ইনপুট 12 7 25 হলে); কোনো প্রম্পট বা বাড়তি লেখা ছাপানো যাবে না। (Input: three space-separated integers a b c on one line. Output exactly one line: Minimum = 7 for the input 12 7 25. Print no prompt text.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int a, b, c;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 141)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 141)",
+      "input_format": "স্ট্যান্ডার্ড ইনপুট থেকে একটি লাইনে স্পেস দিয়ে আলাদা করা তিনটি পূর্ণসংখ্যা a b c পড়তে হবে। (Read three space-separated integers a b c from stdin on one line.)",
+      "output_format": "Minimum = 7",
+      "sample_cases": [
+        {
+          "input": "12 7 25\n",
+          "output": "Minimum = 7"
+        },
+        {
+          "input": "-5 -2 -9\n",
+          "output": "Minimum = -9"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "12 7 25\n",
+          "output": "Minimum = 7"
+        },
+        {
+          "input": "-5 -2 -9\n",
+          "output": "Minimum = -9"
+        },
+        {
+          "input": "8 8 8\n",
+          "output": "Minimum = 8"
+        },
+        {
+          "input": "3 10 14\n",
+          "output": "Minimum = 3"
+        }
+      ]
     },
     {
       "id": "post_c_code_05",
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Post-Test C Task 5: Count Divisors of an Integer",
-      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা কোনো প্রদত্ত পূর্ণসংখ্যার মোট ভাজক সংখ্যা (Count of Divisors) নির্ণয় করবে। (Count number of divisors of an integer).",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা কোনো প্রদত্ত পূর্ণসংখ্যার মোট ভাজক সংখ্যা (Count of Divisors) নির্ণয় করবে। (Count number of divisors of an integer). ইনপুট: একটি ধনাত্মক পূর্ণসংখ্যা N (1 ≤ N ≤ 100000)। আউটপুট: ঠিক একটি লাইন — 'Divisors = 6' (N = 12 হলে); কোনো প্রম্পট বা বাড়তি লেখা ছাপানো যাবে না। (Input: one positive integer N, 1 ≤ N ≤ 100000. Output exactly one line: Divisors = 6 for N = 12. Print no prompt text.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int n;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 150)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 150)",
+      "input_format": "স্ট্যান্ডার্ড ইনপুট থেকে একটি লাইনে একটি ধনাত্মক পূর্ণসংখ্যা N পড়তে হবে, যেখানে 1 ≤ N ≤ 100000। (Read one positive integer N from stdin, where 1 ≤ N ≤ 100000.)",
+      "output_format": "Divisors = 6",
+      "sample_cases": [
+        {
+          "input": "12\n",
+          "output": "Divisors = 6"
+        },
+        {
+          "input": "1\n",
+          "output": "Divisors = 1"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "12\n",
+          "output": "Divisors = 6"
+        },
+        {
+          "input": "1\n",
+          "output": "Divisors = 1"
+        },
+        {
+          "input": "13\n",
+          "output": "Divisors = 2"
+        },
+        {
+          "input": "36\n",
+          "output": "Divisors = 9"
+        }
+      ]
     },
     {
       "id": "post_html_code_01",
       "type": "html_coding",
       "chapter": "Chapter 4 — Web Design and HTML",
       "title": "Post-Test HTML Task 1: Employee Table with Rowspan",
-      "question": "একটি HTML টেবিল তৈরি করুন যেখানে \"Department\" সেলটি ২ টি সারি জুড়ে সম্প্রসারিত (rowspan=\"2\") থাকবে। (Create HTML table with rowspan=\"2\").",
+      "question": "একটি HTML টেবিল তৈরি করুন যেখানে \"Department\" সেলটি ২ টি সারি জুড়ে সম্প্রসারিত (rowspan=\"2\") থাকবে। (Create HTML table with rowspan=\"2\"). টেবিলে অন্তত দুইটি সারি (<tr>) থাকবে; rowspan=\"2\" দেওয়া সেলটিতে \"Department\" লেখা থাকবে এবং বাকি দুইটি সেলে দুইজন কর্মীর নাম Rahim ও Karim থাকবে। (The table has at least two rows: the cell carrying rowspan=\"2\" holds the text Department, and the two remaining cells hold the employee names Rahim and Karim.)",
       "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write table with rowspan=\"2\" here -->\n\n</body>\n</html>",
-      "curriculum_ref": "NCTB ICT Chapter 4 (Page 101)"
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 101)",
+      "html_checks": [
+        {
+          "name": "পেজে একটি <table> আছে (Exactly one table element)",
+          "selector": "table",
+          "min": 1,
+          "max": 1
+        },
+        {
+          "name": "টেবিলে অন্তত দুইটি সারি <tr> আছে (At least two table rows)",
+          "selector": "table tr",
+          "min": 2
+        },
+        {
+          "name": "rowspan=\"2\" সহ সেলটিতে \"Department\" লেখা আছে (A cell with rowspan=\"2\" reading Department)",
+          "selector": "table [rowspan=\"2\"]",
+          "min": 1,
+          "text_includes": [
+            "Department"
+          ]
+        },
+        {
+          "name": "বাকি সেলে Rahim ও Karim নাম আছে (Data cells contain Rahim and Karim)",
+          "selector": "table td",
+          "min": 2,
+          "text_includes": [
+            "Rahim",
+            "Karim"
+          ]
+        }
+      ]
     },
     {
       "id": "post_html_code_02",
       "type": "html_coding",
       "chapter": "Chapter 4 — Web Design and HTML",
       "title": "Post-Test HTML Task 2: Internal Section Bookmark Link",
-      "question": "একই ওয়েব পেজের `#contact` আইডি বিশিষ্ট সেকশনে নেভিগেট করার জন্য একটি এইচটিএমএল হাইপারলিংক লিখুন। (Internal section bookmark hyperlink).",
+      "question": "একই ওয়েব পেজের `#contact` আইডি বিশিষ্ট সেকশনে নেভিগেট করার জন্য একটি এইচটিএমএল হাইপারলিংক লিখুন। (Internal section bookmark hyperlink). হাইপারলিংকের লেখা হবে \"Contact\", এবং একই পেজে id=\"contact\" সহ একটি সেকশন থাকবে যার শিরোনামেও \"Contact\" লেখা থাকবে। (The link text is Contact, and the same page contains a section with id=\"contact\" whose heading also reads Contact.)",
       "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write internal section bookmark hyperlink code here -->\n\n</body>\n</html>",
-      "curriculum_ref": "NCTB ICT Chapter 4 (Page 88)"
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 88)",
+      "html_checks": [
+        {
+          "name": "পেজে একটি <a> হাইপারলিংক আছে (An anchor element exists)",
+          "selector": "a",
+          "min": 1
+        },
+        {
+          "name": "লিংকটি একই পেজের বুকমার্ক, href শুরু হয় '#' দিয়ে (The href is an in-page bookmark)",
+          "selector": "a[href^=\"#\"]",
+          "min": 1
+        },
+        {
+          "name": "href=\"#contact\" এবং লিংকের লেখা \"Contact\" (Link points to #contact and reads Contact)",
+          "selector": "a[href=\"#contact\"]",
+          "min": 1,
+          "text_includes": [
+            "Contact"
+          ]
+        },
+        {
+          "name": "একই পেজে id=\"contact\" সহ সেকশন আছে (A section with id=\"contact\" exists)",
+          "selector": "#contact",
+          "min": 1,
+          "text_includes": [
+            "Contact"
+          ]
+        }
+      ]
     },
     {
       "id": "post_html_code_03",
       "type": "html_coding",
       "chapter": "Chapter 4 — Web Design and HTML",
       "title": "Post-Test HTML Task 3: Unordered Bullet List",
-      "question": "এইচটিএমএল (HTML) ব্যবহার করে ডিস্ক (disc) স্টাইলের বুলেটযুক্ত একটি Unordered List (<ul>) তৈরি করুন। (Create unordered bullet list).",
+      "question": "এইচটিএমএল (HTML) ব্যবহার করে ডিস্ক (disc) স্টাইলের বুলেটযুক্ত একটি Unordered List (<ul>) তৈরি করুন। (Create unordered bullet list). তালিকাটি <ul type=\"disc\"> দিয়ে লিখুন এবং তাতে ঠিক তিনটি <li> আইটেম থাকবে — HTML, CSS ও JavaScript। (Write the list as <ul type=\"disc\"> containing exactly three <li> items: HTML, CSS and JavaScript.)",
       "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write unordered list with disc bullets here -->\n\n</body>\n</html>",
-      "curriculum_ref": "NCTB ICT Chapter 4 (Page 94)"
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 94)",
+      "html_checks": [
+        {
+          "name": "পেজে একটি <ul> তালিকা আছে (An unordered list exists)",
+          "selector": "ul",
+          "min": 1
+        },
+        {
+          "name": "তালিকাটিতে type=\"disc\" দেওয়া আছে (The list uses type=\"disc\")",
+          "selector": "ul[type=\"disc\"]",
+          "min": 1
+        },
+        {
+          "name": "তালিকায় ঠিক তিনটি <li> আইটেম আছে (Exactly three list items)",
+          "selector": "ul li",
+          "min": 3,
+          "max": 3
+        },
+        {
+          "name": "আইটেমগুলো HTML, CSS ও JavaScript (Items read HTML, CSS and JavaScript)",
+          "selector": "ul li",
+          "min": 3,
+          "text_includes": [
+            "HTML",
+            "CSS",
+            "JavaScript"
+          ]
+        }
+      ]
     },
     {
       "id": "post_mcq_chap4_01",
@@ -531,72 +1000,311 @@
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Transfer Task 1: Sum of Squares of First N Numbers",
-      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ১^২ + ২^২ + ... + N^২ গাণিতিক ধারার যোগফল নির্ণয় করে প্রিন্ট করবে। (Calculate sum of series 1^2 + 2^2 + ... + N^2).",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ১^২ + ২^২ + ... + N^২ গাণিতিক ধারার যোগফল নির্ণয় করে প্রিন্ট করবে। (Calculate sum of series 1^2 + 2^2 + ... + N^2). ইনপুট: একটি পূর্ণসংখ্যা N। আউটপুট: ঠিক এই ফরম্যাটে একটিমাত্র লাইন — N = 5 হলে Sum = 55। কোনো প্রম্পট বা বাড়তি লেখা প্রিন্ট করা যাবে না। (Input: one integer N. Output exactly one line: Sum = 55 when N = 5. Print no prompt text.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int n;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 146)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 146)",
+      "input_format": "একটি লাইনে একটি পূর্ণসংখ্যা N (One line containing a single integer N)",
+      "output_format": "Sum = 55",
+      "sample_cases": [
+        {
+          "input": "5\n",
+          "output": "Sum = 55"
+        },
+        {
+          "input": "3\n",
+          "output": "Sum = 14"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "5\n",
+          "output": "Sum = 55"
+        },
+        {
+          "input": "3\n",
+          "output": "Sum = 14"
+        },
+        {
+          "input": "1\n",
+          "output": "Sum = 1"
+        },
+        {
+          "input": "10\n",
+          "output": "Sum = 385"
+        }
+      ]
     },
     {
       "id": "trans_c_code_02",
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Transfer Task 2: Leap Year Verification Algorithm",
-      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা কোনো নির্দিষ্ট বছর লিপ ইয়ার (Leap Year) কিনা তা শর্ত সাপেক্ষে যাচাই করে দেখাবে। (Leap year verification algorithm).",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা কোনো নির্দিষ্ট বছর লিপ ইয়ার (Leap Year) কিনা তা শর্ত সাপেক্ষে যাচাই করে দেখাবে। (Leap year verification algorithm). ইনপুট: একটি পূর্ণসংখ্যা বছর Y। আউটপুট: লিপ ইয়ার হলে ঠিক Leap Year, না হলে ঠিক Common Year — একটিমাত্র লাইন, কোনো প্রম্পট নয়। (Input: one integer year Y. Output exactly Leap Year or Common Year on a single line, no prompt.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int year;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 137)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 137)",
+      "input_format": "একটি লাইনে একটি পূর্ণসংখ্যা বছর Y (One line containing a single integer year Y)",
+      "output_format": "Leap Year",
+      "sample_cases": [
+        {
+          "input": "2024\n",
+          "output": "Leap Year"
+        },
+        {
+          "input": "2023\n",
+          "output": "Common Year"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "2024\n",
+          "output": "Leap Year"
+        },
+        {
+          "input": "2023\n",
+          "output": "Common Year"
+        },
+        {
+          "input": "1900\n",
+          "output": "Common Year"
+        },
+        {
+          "input": "2000\n",
+          "output": "Leap Year"
+        }
+      ]
     },
     {
       "id": "trans_c_code_03",
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Transfer Task 3: Reverse of an Integer Digits",
-      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা কোনো প্রদত্ত পূর্ণসংখ্যার অংকগুলো বিপরীতক্রমে (Reversed Order) সাজিয়ে প্রদর্শন করবে। (Reverse digits of an integer).",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা কোনো প্রদত্ত পূর্ণসংখ্যার অংকগুলো বিপরীতক্রমে (Reversed Order) সাজিয়ে প্রদর্শন করবে। (Reverse digits of an integer). ইনপুট: একটি ধনাত্মক পূর্ণসংখ্যা N। আউটপুট: ঠিক এই ফরম্যাটে একটিমাত্র লাইন — N = 1234 হলে Reverse = 4321। কোনো প্রম্পট প্রিন্ট করা যাবে না। (Input: one positive integer N. Output exactly one line: Reverse = 4321 when N = 1234. Print no prompt text.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int num;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 154)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 154)",
+      "input_format": "একটি লাইনে একটি ধনাত্মক পূর্ণসংখ্যা N (One line containing a single positive integer N)",
+      "output_format": "Reverse = 4321",
+      "sample_cases": [
+        {
+          "input": "1234\n",
+          "output": "Reverse = 4321"
+        },
+        {
+          "input": "907\n",
+          "output": "Reverse = 709"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "1234\n",
+          "output": "Reverse = 4321"
+        },
+        {
+          "input": "907\n",
+          "output": "Reverse = 709"
+        },
+        {
+          "input": "7\n",
+          "output": "Reverse = 7"
+        },
+        {
+          "input": "1000\n",
+          "output": "Reverse = 1"
+        }
+      ]
     },
     {
       "id": "trans_c_code_04",
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Transfer Task 4: Average of Three Float Numbers",
-      "question": "তিনটি দশমিক সংখ্যার (Float Numbers) গড় (Average) নির্ণয় করার জন্য একটি সি (C) প্রোগ্রাম লিখুন। (Calculate average of 3 float numbers).",
+      "question": "তিনটি দশমিক সংখ্যার (Float Numbers) গড় (Average) নির্ণয় করার জন্য একটি সি (C) প্রোগ্রাম লিখুন। (Calculate average of 3 float numbers). ইনপুট: এক লাইনে স্পেস দিয়ে আলাদা করা তিনটি দশমিক সংখ্যা। আউটপুট: দুই দশমিক ঘর পর্যন্ত ঠিক এই ফরম্যাটে একটিমাত্র লাইন — 10 20 30 হলে Average = 20.00। কোনো প্রম্পট নয়। (Input: three float numbers separated by spaces on one line. Output exactly one line rounded to 2 decimal places: Average = 20.00 for 10 20 30. No prompt.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    float a, b, c;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 134)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 134)",
+      "input_format": "এক লাইনে স্পেস দিয়ে আলাদা করা তিনটি দশমিক সংখ্যা a b c (One line with three space-separated float numbers a b c)",
+      "output_format": "Average = 20.00",
+      "sample_cases": [
+        {
+          "input": "10 20 30\n",
+          "output": "Average = 20.00"
+        },
+        {
+          "input": "1.5 2.5 3.5\n",
+          "output": "Average = 2.50"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "10 20 30\n",
+          "output": "Average = 20.00"
+        },
+        {
+          "input": "1.5 2.5 3.5\n",
+          "output": "Average = 2.50"
+        },
+        {
+          "input": "1 2 2\n",
+          "output": "Average = 1.67"
+        },
+        {
+          "input": "0 0 0\n",
+          "output": "Average = 0.00"
+        }
+      ]
     },
     {
       "id": "trans_c_code_05",
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Transfer Task 5: Armstrong Number Verification",
-      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ৩ অংকের সংখ্যা আর্মস্ট্রং সংখ্যা (Armstrong Number: 153 = 1^3+5^3+3^3) কিনা তা পরীক্ষা করবে। (Check Armstrong number).",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ৩ অংকের সংখ্যা আর্মস্ট্রং সংখ্যা (Armstrong Number: 153 = 1^3+5^3+3^3) কিনা তা পরীক্ষা করবে। (Check Armstrong number). ইনপুট: একটি ৩ অংকের পূর্ণসংখ্যা N। আউটপুট: আর্মস্ট্রং হলে ঠিক Armstrong Number, না হলে ঠিক Ordinary Number — একটিমাত্র লাইন, কোনো প্রম্পট নয়। (Input: one 3-digit integer N. Output exactly Armstrong Number or Ordinary Number on a single line, no prompt.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int num;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 156)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 156)",
+      "input_format": "একটি লাইনে একটি ৩ অংকের পূর্ণসংখ্যা N (One line containing a single 3-digit integer N)",
+      "output_format": "Armstrong Number",
+      "sample_cases": [
+        {
+          "input": "153\n",
+          "output": "Armstrong Number"
+        },
+        {
+          "input": "123\n",
+          "output": "Ordinary Number"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "153\n",
+          "output": "Armstrong Number"
+        },
+        {
+          "input": "123\n",
+          "output": "Ordinary Number"
+        },
+        {
+          "input": "370\n",
+          "output": "Armstrong Number"
+        },
+        {
+          "input": "100\n",
+          "output": "Ordinary Number"
+        }
+      ]
     },
     {
       "id": "trans_html_code_01",
       "type": "html_coding",
       "chapter": "Chapter 4 — Web Design and HTML",
       "title": "Transfer HTML Task 1: Student Registration Form",
-      "question": "নাম ইনপুট টেক্সট বক্স এবং সাবমিট বাটনসহ একটি এইচটিএমএল ফর্ম (<form>) তৈরি করার কোড লিখুন। (Student registration HTML form).",
+      "question": "নাম ইনপুট টেক্সট বক্স এবং সাবমিট বাটনসহ একটি এইচটিএমএল ফর্ম (<form>) তৈরি করার কোড লিখুন। (Student registration HTML form). ফর্মের ভেতরে থাকতে হবে: Name লেখা একটি <label>, name=\"name\" সহ একটি <input type=\"text\">, এবং একটি <input type=\"submit\">। (Inside the form: a <label> reading Name, an <input type=\"text\"> with name=\"name\", and an <input type=\"submit\">.)",
       "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write registration form code here -->\n\n</body>\n</html>",
-      "curriculum_ref": "NCTB ICT Chapter 4 (Page 108)"
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 108)",
+      "html_checks": [
+        {
+          "name": "একটি <form> ট্যাগ আছে (A <form> element exists)",
+          "selector": "form",
+          "min": 1
+        },
+        {
+          "name": "ফর্মে Name লেখা <label> আছে (Form has a <label> reading Name)",
+          "selector": "form label",
+          "min": 1,
+          "text_includes": [
+            "name"
+          ]
+        },
+        {
+          "name": "ফর্মে টেক্সট ইনপুট বক্স আছে (Form has a text input box)",
+          "selector": "form input[type=\"text\"]",
+          "min": 1
+        },
+        {
+          "name": "টেক্সট বক্সে name=\"name\" দেওয়া আছে (Text box carries name=\"name\")",
+          "selector": "form input[name=\"name\"]",
+          "min": 1
+        },
+        {
+          "name": "ফর্মে সাবমিট বাটন আছে (Form has a submit button)",
+          "selector": "form [type=\"submit\"]",
+          "min": 1
+        }
+      ]
     },
     {
       "id": "trans_html_code_02",
       "type": "html_coding",
       "chapter": "Chapter 4 — Web Design and HTML",
       "title": "Transfer HTML Task 2: Embedded Video Player",
-      "question": "একটি ভিডিও ফাইল প্লে করার জন্য এইচটিএমএল৫ (<video>) কন্ট্রোলসহ কোড স্ট্রাকচার লিখুন। (Embedded HTML5 video player).",
+      "question": "একটি ভিডিও ফাইল প্লে করার জন্য এইচটিএমএল৫ (<video>) কন্ট্রোলসহ কোড স্ট্রাকচার লিখুন। (Embedded HTML5 video player). একটিমাত্র <video> ট্যাগে controls, width ও height অ্যাট্রিবিউট দিন এবং তার ভেতরে type=\"video/mp4\" সহ একটি <source src=\"...\"> রাখুন। (Use exactly one <video> with controls, width and height, containing one <source src=\"...\" type=\"video/mp4\">.)",
       "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write video element code here -->\n\n</body>\n</html>",
-      "curriculum_ref": "NCTB ICT Chapter 4 (Page 110)"
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 110)",
+      "html_checks": [
+        {
+          "name": "ঠিক একটি <video> ট্যাগ আছে (Exactly one <video> element)",
+          "selector": "video",
+          "min": 1,
+          "max": 1
+        },
+        {
+          "name": "<video>-এ controls অ্যাট্রিবিউট আছে (<video> carries the controls attribute)",
+          "selector": "video[controls]",
+          "min": 1
+        },
+        {
+          "name": "<video>-এ width ও height আছে (<video> carries width and height)",
+          "selector": "video[width][height]",
+          "min": 1
+        },
+        {
+          "name": "ভেতরে src সহ <source> আছে (A <source> with src is nested inside)",
+          "selector": "video source[src]",
+          "min": 1
+        },
+        {
+          "name": "<source>-এ type=\"video/mp4\" আছে (<source> declares type=\"video/mp4\")",
+          "selector": "video source[type=\"video/mp4\"]",
+          "min": 1
+        }
+      ]
     },
     {
       "id": "trans_html_code_03",
       "type": "html_coding",
       "chapter": "Chapter 4 — Web Design and HTML",
       "title": "Transfer HTML Task 3: Nested Navigation List",
-      "question": "প্রধান বিষয় এবং তার অধীনে সাব-টপিক প্রদর্শন করার জন্য একটি নেস্টেড তালিকা (Nested List) তৈরি করুন। (Multi-level nested list).",
+      "question": "প্রধান বিষয় এবং তার অধীনে সাব-টপিক প্রদর্শন করার জন্য একটি নেস্টেড তালিকা (Nested List) তৈরি করুন। (Multi-level nested list). <body>-এর সরাসরি ভেতরে একটিমাত্র <ul> নিন, তাতে Computer ও Internet — এই দুটি <li> রাখুন, এবং Computer আইটেমটির <li>-এর ভেতরে Hardware ও Software নামে দুটি <li> সহ আরেকটি <ul> নেস্ট করুন। (Put exactly one <ul> directly inside <body> with two <li> items, Computer and Internet; nest another <ul> inside the Computer <li> holding two <li> items, Hardware and Software.)",
       "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write nested list code here -->\n\n</body>\n</html>",
-      "curriculum_ref": "NCTB ICT Chapter 4 (Page 95)"
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 95)",
+      "html_checks": [
+        {
+          "name": "<body>-এর সরাসরি ভেতরে একটি প্রধান <ul> (One outer <ul> directly inside <body>)",
+          "selector": "body > ul",
+          "min": 1,
+          "max": 1
+        },
+        {
+          "name": "প্রধান তালিকায় Computer ও Internet আইটেম (Outer list holds Computer and Internet)",
+          "selector": "body > ul > li",
+          "min": 2,
+          "text_includes": [
+            "computer",
+            "internet"
+          ]
+        },
+        {
+          "name": "<li>-এর ভেতরে নেস্টেড <ul> আছে (A nested <ul> sits inside an <li>)",
+          "selector": "body > ul > li > ul",
+          "min": 1
+        },
+        {
+          "name": "নেস্টেড তালিকায় Hardware ও Software (Nested list holds Hardware and Software)",
+          "selector": "ul ul li",
+          "min": 2,
+          "text_includes": [
+            "hardware",
+            "software"
+          ]
+        }
+      ]
     },
     {
       "id": "trans_mcq_chap4_01",
@@ -794,72 +1502,286 @@
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Withdrawal C Task 1: Sum of Odd Numbers 1 to N",
-      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ১ থেকে N পর্যন্ত সমস্ত বিজোড় পূর্ণসংখ্যার যোগফল লুপের মাধ্যমে নির্ণয় করবে। (Sum of odd numbers from 1 to N).",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ১ থেকে N পর্যন্ত সমস্ত বিজোড় পূর্ণসংখ্যার যোগফল লুপের মাধ্যমে নির্ণয় করবে। (Sum of odd numbers from 1 to N). ইনপুট: একটি পূর্ণসংখ্যা N। আউটপুট: কোনো প্রম্পট বা বাড়তি লেখা ছাড়া শুধু একটি লাইন — ঠিক এই ফরম্যাটে 'Sum = 25' (N = 9 হলে)। (Input: one integer N. Output: exactly one line and nothing else, no prompt — Sum = 25 for N = 9.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int n;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 144)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 144)",
+      "input_format": "একটি লাইনে একটি পূর্ণসংখ্যা N, যেখানে 0 ≤ N ≤ 1000। (One line containing a single integer N, 0 ≤ N ≤ 1000.)",
+      "output_format": "Sum = 25",
+      "sample_cases": [
+        {
+          "input": "9\n",
+          "output": "Sum = 25"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "9\n",
+          "output": "Sum = 25"
+        },
+        {
+          "input": "1\n",
+          "output": "Sum = 1"
+        },
+        {
+          "input": "100\n",
+          "output": "Sum = 2500"
+        },
+        {
+          "input": "0\n",
+          "output": "Sum = 0"
+        }
+      ]
     },
     {
       "id": "with_c_code_02",
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Withdrawal C Task 2: Grade Point Average (GPA) Evaluator",
-      "question": "পরীক্ষার নম্বর ইনপুট নিয়ে GPA গ্রেড (৮০ বা তার বেশি হলে A+, ৭০-৭৯ হলে A) প্রদর্শনের একটি C প্রোগ্রাম লিখুন। (GPA grade evaluator).",
+      "question": "পরীক্ষার নম্বর ইনপুট নিয়ে GPA গ্রেড (৮০ বা তার বেশি হলে A+, ৭০-৭৯ হলে A) প্রদর্শনের একটি C প্রোগ্রাম লিখুন। (GPA grade evaluator). ইনপুট: একটি পূর্ণসংখ্যা marks (0–100)। আউটপুট: কোনো প্রম্পট ছাড়া ঠিক একটি লাইন — marks ≥ 80 হলে 'Grade = A+', 70–79 হলে 'Grade = A', এর কম হলে 'Grade = F'। (Input: one integer marks. Output: exactly one line, no prompt — Grade = A+, Grade = A or Grade = F.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int marks;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 136)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 136)",
+      "input_format": "একটি লাইনে একটি পূর্ণসংখ্যা marks, যেখানে 0 ≤ marks ≤ 100। (One line containing a single integer marks, 0 ≤ marks ≤ 100.)",
+      "output_format": "Grade = A+ / Grade = A / Grade = F",
+      "sample_cases": [
+        {
+          "input": "85\n",
+          "output": "Grade = A+"
+        },
+        {
+          "input": "74\n",
+          "output": "Grade = A"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "85\n",
+          "output": "Grade = A+"
+        },
+        {
+          "input": "74\n",
+          "output": "Grade = A"
+        },
+        {
+          "input": "80\n",
+          "output": "Grade = A+"
+        },
+        {
+          "input": "69\n",
+          "output": "Grade = F"
+        }
+      ]
     },
     {
       "id": "with_c_code_03",
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Withdrawal C Task 3: Power Calculation (X^Y)",
-      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা কোনো ভিত্তি সংখ্যা X এবং পাওয়ার Y গ্রহণ করে X^Y মান নির্ণয় করবে। (Calculate power X^Y).",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা কোনো ভিত্তি সংখ্যা X এবং পাওয়ার Y গ্রহণ করে X^Y মান নির্ণয় করবে। (Calculate power X^Y). ইনপুট: এক লাইনে ফাঁকা স্থান দিয়ে আলাদা করা দুটি পূর্ণসংখ্যা X ও Y। আউটপুট: কোনো প্রম্পট ছাড়া ঠিক একটি লাইন — ঠিক এই ফরম্যাটে 'Result = 8' (X = 2, Y = 3 হলে)। (Input: two space-separated integers X and Y on one line. Output: exactly one line, no prompt — Result = 8 for X = 2, Y = 3.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int base, exp;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 147)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 147)",
+      "input_format": "একটি লাইনে ফাঁকা স্থান দিয়ে আলাদা করা দুটি পূর্ণসংখ্যা X ও Y, যেখানে 1 ≤ X ≤ 10 এবং 0 ≤ Y ≤ 10। (One line with two space-separated integers X and Y, 1 ≤ X ≤ 10, 0 ≤ Y ≤ 10.)",
+      "output_format": "Result = 8",
+      "sample_cases": [
+        {
+          "input": "2 3\n",
+          "output": "Result = 8"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "2 3\n",
+          "output": "Result = 8"
+        },
+        {
+          "input": "5 0\n",
+          "output": "Result = 1"
+        },
+        {
+          "input": "3 4\n",
+          "output": "Result = 81"
+        },
+        {
+          "input": "2 10\n",
+          "output": "Result = 1024"
+        }
+      ]
     },
     {
       "id": "with_c_code_04",
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Withdrawal C Task 4: Swap Two Numbers Using Variable",
-      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা একটি অস্থায়ী চলক (Temporary Variable) ব্যবহার করে ২টির ইন্টারচেঞ্জ বা সোয়াপ (Swap) করবে। (Swap two variables).",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা একটি অস্থায়ী চলক (Temporary Variable) ব্যবহার করে ২টির ইন্টারচেঞ্জ বা সোয়াপ (Swap) করবে। (Swap two variables). ইনপুট: এক লাইনে ফাঁকা স্থান দিয়ে আলাদা করা দুটি পূর্ণসংখ্যা a ও b। আউটপুট: সোয়াপের পর কোনো প্রম্পট ছাড়া ঠিক একটি লাইন — ঠিক এই ফরম্যাটে 'After swap: 7 3' (a = 3, b = 7 হলে)। (Input: two space-separated integers a and b. Output: exactly one line after swapping — After swap: 7 3 for a = 3, b = 7.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int a, b;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 133)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 133)",
+      "input_format": "একটি লাইনে ফাঁকা স্থান দিয়ে আলাদা করা দুটি পূর্ণসংখ্যা a ও b। (One line with two space-separated integers a and b.)",
+      "output_format": "After swap: 7 3",
+      "sample_cases": [
+        {
+          "input": "3 7\n",
+          "output": "After swap: 7 3"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "3 7\n",
+          "output": "After swap: 7 3"
+        },
+        {
+          "input": "10 -5\n",
+          "output": "After swap: -5 10"
+        },
+        {
+          "input": "0 0\n",
+          "output": "After swap: 0 0"
+        },
+        {
+          "input": "100 1\n",
+          "output": "After swap: 1 100"
+        }
+      ]
     },
     {
       "id": "with_c_code_05",
       "type": "c_programming",
       "chapter": "Chapter 5 — Programming Language (C)",
       "title": "Withdrawal C Task 5: Palindrome Number Verification",
-      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা কোনো প্রদত্ত পূর্ণসংখ্যা প্যালিনড্রোম (Palindrome: যেমন 121) কিনা তা পরীক্ষা করে দেখাবে। (Verify palindrome number).",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা কোনো প্রদত্ত পূর্ণসংখ্যা প্যালিনড্রোম (Palindrome: যেমন 121) কিনা তা পরীক্ষা করে দেখাবে। (Verify palindrome number). ইনপুট: একটি ধনাত্মক পূর্ণসংখ্যা N। আউটপুট: কোনো প্রম্পট ছাড়া ঠিক একটি লাইন — প্যালিনড্রোম হলে 'Palindrome = YES', না হলে 'Palindrome = NO'। (Input: one positive integer N. Output: exactly one line, no prompt — Palindrome = YES or Palindrome = NO.)",
       "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int n;\n    \n    return 0;\n}",
-      "curriculum_ref": "NCTB ICT Chapter 5 (Page 155)"
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 155)",
+      "input_format": "একটি লাইনে একটি ধনাত্মক পূর্ণসংখ্যা N, যেখানে 1 ≤ N ≤ 999999। (One line containing a single positive integer N, 1 ≤ N ≤ 999999.)",
+      "output_format": "Palindrome = YES / Palindrome = NO",
+      "sample_cases": [
+        {
+          "input": "121\n",
+          "output": "Palindrome = YES"
+        },
+        {
+          "input": "123\n",
+          "output": "Palindrome = NO"
+        }
+      ],
+      "test_cases": [
+        {
+          "input": "121\n",
+          "output": "Palindrome = YES"
+        },
+        {
+          "input": "123\n",
+          "output": "Palindrome = NO"
+        },
+        {
+          "input": "7\n",
+          "output": "Palindrome = YES"
+        },
+        {
+          "input": "10\n",
+          "output": "Palindrome = NO"
+        }
+      ]
     },
     {
       "id": "with_html_code_01",
       "type": "html_coding",
       "chapter": "Chapter 4 — Web Design and HTML",
       "title": "Withdrawal HTML Task 1: Class Routine Timetable",
-      "question": "হেডার কলামে colspan=\"2\" ব্যবহার করে ক্লাসের রুটিনের একটি সমন্বিত এইচটিএমএল টেবিল তৈরি করুন। (Class routine table with colspan).",
+      "question": "হেডার কলামে colspan=\"2\" ব্যবহার করে ক্লাসের রুটিনের একটি সমন্বিত এইচটিএমএল টেবিল তৈরি করুন। (Class routine table with colspan). টেবিলে অন্তত ২টি সারি (<tr>) রাখুন — প্রথম সারিতে <th> হেডার সেল যার একটিতে colspan=\"2\", এবং পরের সারিতে অন্তত ২টি <td> ঘরে বিষয়ের নাম। (At least 2 rows: a header row of <th> cells with one carrying colspan=\"2\", and a data row with at least 2 <td> cells.)",
       "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write class routine timetable here -->\n\n</body>\n</html>",
-      "curriculum_ref": "NCTB ICT Chapter 4 (Page 102)"
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 102)",
+      "html_checks": [
+        {
+          "name": "রুটিনের টেবিল আছে (A <table> exists)",
+          "selector": "table",
+          "min": 1
+        },
+        {
+          "name": "হেডার সেল <th> ব্যবহার হয়েছে (Header cells use <th>)",
+          "selector": "table th",
+          "min": 1
+        },
+        {
+          "name": "একটি হেডার সেলে colspan=\"2\" আছে (One header cell spans two columns)",
+          "selector": "th[colspan=\"2\"], td[colspan=\"2\"]",
+          "min": 1
+        },
+        {
+          "name": "অন্তত দুটি সারি (<tr>) আছে (At least two rows)",
+          "selector": "table tr",
+          "min": 2
+        },
+        {
+          "name": "ক্লাসের তথ্য ডেটা সেলে (<td>) আছে (Routine data in <td> cells)",
+          "selector": "table td",
+          "min": 2
+        }
+      ]
     },
     {
       "id": "with_html_code_02",
       "type": "html_coding",
       "chapter": "Chapter 4 — Web Design and HTML",
       "title": "Withdrawal HTML Task 2: Image Gallery Grid with Alt Text",
-      "question": "এইচটিএমএল (HTML) ব্যবহার করে বিকল্প টেক্সটসহ (alt=\"Book Cover\") ২ টি বইয়ের ছবির গ্রিড তৈরি করুন। (Image grid with alt text).",
+      "question": "এইচটিএমএল (HTML) ব্যবহার করে বিকল্প টেক্সটসহ (alt=\"Book Cover\") ২ টি বইয়ের ছবির গ্রিড তৈরি করুন। (Image grid with alt text). ২টি <img> ট্যাগ লিখুন, প্রতিটিতে src ও alt থাকবে এবং অন্তত একটির alt=\"Book Cover\"। (Write 2 <img> tags, each with a src and an alt; at least one alt=\"Book Cover\".)",
       "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write image grid with alt text here -->\n\n</body>\n</html>",
-      "curriculum_ref": "NCTB ICT Chapter 4 (Page 106)"
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 106)",
+      "html_checks": [
+        {
+          "name": "দুটি ছবি যোগ করা হয়েছে (Two <img> elements)",
+          "selector": "img",
+          "min": 2
+        },
+        {
+          "name": "প্রতিটি ছবির src আছে (Every image has a src)",
+          "selector": "img[src]",
+          "min": 2
+        },
+        {
+          "name": "প্রতিটি ছবির alt আছে (Every image has alt text)",
+          "selector": "img[alt]",
+          "min": 2
+        },
+        {
+          "name": "alt টেক্সটে Book Cover লেখা আছে (alt text says Book Cover)",
+          "selector": "img[alt*=\"Book Cover\"]",
+          "min": 1
+        }
+      ]
     },
     {
       "id": "with_html_code_03",
       "type": "html_coding",
       "chapter": "Chapter 4 — Web Design and HTML",
       "title": "Withdrawal HTML Task 3: Multi-level Navigation Bar",
-      "question": "এইচটিএমএল নেভিগেশন বারের (<nav>) আওতায় ৩টি লিংকের আন-অর্ডারড তালিকা (Home, Courses, Contact) তৈরি করুন। (Navigation bar with list).",
+      "question": "এইচটিএমএল নেভিগেশন বারের (<nav>) আওতায় ৩টি লিংকের আন-অর্ডারড তালিকা (Home, Courses, Contact) তৈরি করুন। (Navigation bar with list). <nav> এর ভিতরে একটি <ul> এবং ৩টি <li>, প্রতিটি <li> এর ভিতরে একটি <a> লিংক — লেখা হবে Home, Courses, Contact। (Inside <nav>: a <ul> with 3 <li>, each holding an <a> link labelled Home, Courses and Contact.)",
       "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write navigation bar code here -->\n\n</body>\n</html>",
-      "curriculum_ref": "NCTB ICT Chapter 4 (Page 97)"
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 97)",
+      "html_checks": [
+        {
+          "name": "<nav> এলিমেন্ট আছে (A <nav> element exists)",
+          "selector": "nav",
+          "min": 1
+        },
+        {
+          "name": "nav-এর ভিতরে আন-অর্ডারড তালিকা আছে (A <ul> inside <nav>)",
+          "selector": "nav ul",
+          "min": 1
+        },
+        {
+          "name": "তালিকায় তিনটি আইটেম আছে (Three <li> items)",
+          "selector": "nav ul li",
+          "min": 3
+        },
+        {
+          "name": "তিনটি লিংক ও তাদের লেখা ঠিক আছে (Three links: Home, Courses, Contact)",
+          "selector": "nav ul li a",
+          "min": 3,
+          "text_includes": [
+            "Home",
+            "Courses",
+            "Contact"
+          ]
+        }
+      ]
     },
     {
       "id": "with_mcq_chap4_01",
