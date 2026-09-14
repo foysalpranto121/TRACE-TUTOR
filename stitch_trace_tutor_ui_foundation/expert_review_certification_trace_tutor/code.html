@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-variant": "#2d3449", "surface-container": "#171f33", "surface-container-high": "#222a3d", "primary-container": "#06b6d4", "tertiary-fixed": "#d8e3fb", "on-tertiary": "#263143", "outline": "#869397", "inverse-surface": "#dae2fd", "on-background": "#dae2fd", "surface-container-lowest": "#060e20", "on-secondary": "#1000a9", "on-tertiary-container": "#313c4f", "on-primary-container": "#00424f", "on-secondary-container": "#b0b2ff", "on-primary": "#003640", "on-primary-fixed-variant": "#004e5c", "tertiary": "#bcc7de", "surface": "#0b1326", "on-error-container": "#ffdad6", "inverse-on-surface": "#283044", "error": "#ffb4ab", "on-tertiary-fixed-variant": "#3c475a", "secondary": "#c0c1ff", "secondary-container": "#3131c0", "on-secondary-fixed": "#07006c", "secondary-fixed-dim": "#c0c1ff", "error-container": "#93000a", "on-primary-fixed": "#001f26", "on-secondary-fixed-variant": "#2f2ebe", "primary-fixed-dim": "#4cd7f6", "on-surface-variant": "#bcc9cd", "on-tertiary-fixed": "#111c2d", "primary-fixed": "#acedff", "surface-container-low": "#131b2e", "surface-tint": "#4cd7f6", "surface-bright": "#31394d", "inverse-primary": "#00687a", "outline-variant": "#3d494c", "surface-dim": "#0b1326", "secondary-fixed": "#e1e0ff", "tertiary-fixed-dim": "#bcc7de", "on-surface": "#dae2fd", "on-error": "#690005", "primary": "#4cd7f6", "tertiary-container": "#9ca7be", "surface-container-highest": "#2d3449", "background": "#0b1326" }, borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" }, spacing: { "space-sm": "0.5rem", "space-lg": "1.5rem", gutter: "1rem", "space-xl": "2rem", "space-xs": "0.25rem", margin: "1.5rem", "space-md": "1rem" }, fontFamily: { "body-lg": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "body-md": ["Inter"], "code-md": ["JetBrains Mono"], "code-sm": ["JetBrains Mono"], "body-sm": ["Inter"], "headline-md": ["Inter"], "headline-lg": ["Inter"] }, fontSize: { "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" }], "headline-xl": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "code-md": ["13px", { lineHeight: "20px", fontWeight: "400" }], "code-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "body-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }], "headline-md": ["18px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "500" }], "headline-lg": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }] } } } }</script></head><body class="bg-surface font-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-50 flex flex-col pt-6 pb-8"><div class="px-6 mb-8 flex items-center gap-3"><img alt="TRACE Tutor Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfM_7kNhwwQNVBovRwEsMxKDQadqvyAcEq5dXSTbuAtthafX8CleaZMMmVKWjaLuLYQXIDTuud81KQeL2akevwHcIqNoyIZ0fewFY18ZMtTreK4EkscGzlBUdGJBnSHcnUZEtOtyJQPo6Fub1Vb8vXPr94iG92fseArQ21q6Hbk03pPrFvm4twF7toUIM6nP4f3vonU4EyjQX4LtT8SXMIJ1rUsusVOi7nJSs8y51yxD2sheayfC0"/><span class="text-headline-md font-bold text-on-surface tracking-tight">TRACE Tutor</span></div><div class="px-4 mb-6"><div class="bg-surface-container p-2 rounded-xl flex items-center justify-between"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[20px]">school</span><span class="text-label-md text-on-surface font-medium">Student Mode</span></div><span class="material-symbols-outlined text-on-surface-variant text-[18px] cursor-pointer">unfold_more</span></div></div><nav class="flex-1 px-4 space-y-1 overflow-y-auto" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a aria-current="page" class="flex items-center px-4 py-2.5 rounded-xl transition-all bg-primary-container text-on-primary-container font-semibold" data-path="dashboard" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">dashboard</span>Dashboard</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="workspace" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">code</span>Workspace</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="assessments" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">assignment</span>Assessments</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="progress" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">trending_up</span>Progress</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="expert" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">psychology</span>Expert</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="research" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">science</span>Research</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">settings</span>Settings</a></nav></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 flex items-center justify-between px-8 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center flex-1 max-w-md bg-surface-container rounded-xl px-4 py-2"><span class="material-symbols-outlined text-on-surface-variant mr-3 text-[20px]">search</span><input class="bg-transparent border-none outline-none text-on-surface text-body-md w-full placeholder:text-outline" placeholder="Search code, diagnostics, or concepts..." type="text"/></div><div class="flex items-center gap-4"><div class="relative cursor-pointer"><span class="material-symbols-outlined text-on-surface-variant hover:text-on-surface transition-colors">notifications</span><span class="absolute top-0 right-0 w-2 h-2 rounded-full bg-primary"></span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full pb-16 px-8 gap-8">
+<!-- Top Header & Metrics Bar -->
+<section class="flex flex-col gap-6 pt-4">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-label-md text-primary font-mono uppercase tracking-wider">Expert Teacher Portal</span>
+<span class="text-outline">•</span>
+<span class="text-label-md text-on-surface-variant font-mono">Module v4.2</span>
+</div>
+<h1 class="text-headline-xl text-on-surface tracking-tight">Expert Review</h1>
+<p class="text-body-md text-on-surface-variant mt-1">Review and validate AI-generated learning content and curriculum grounding.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 bg-surface-container hover:bg-surface-container-high text-on-surface text-body-md rounded-xl transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+          Filter Queue
+        </button>
+<button class="px-4 py-2 bg-primary text-on-primary font-medium text-body-md rounded-xl hover:bg-primary-fixed-dim transition-all flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+          Auto-Assign Next
+        </button>
+</div>
+</div>
+<!-- Compact Metrics Bar -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+<div class="bg-surface-container p-4 rounded-xl flex flex-col justify-between">
+<span class="text-label-md text-on-surface-variant uppercase tracking-wider">Pending Reviews</span>
+<div class="flex items-baseline justify-between mt-2">
+<span class="text-headline-lg font-bold text-primary">14</span>
+<span class="text-code-sm text-outline font-mono">+3 today</span>
+</div>
+</div>
+<div class="bg-surface-container p-4 rounded-xl flex flex-col justify-between">
+<span class="text-label-md text-on-surface-variant uppercase tracking-wider">Approved</span>
+<div class="flex items-baseline justify-between mt-2">
+<span class="text-headline-lg font-bold text-on-surface">128</span>
+<span class="text-code-sm text-emerald-400 font-mono">91.4% rate</span>
+</div>
+</div>
+<div class="bg-surface-container p-4 rounded-xl flex flex-col justify-between">
+<span class="text-label-md text-on-surface-variant uppercase tracking-wider">Needs Revision</span>
+<div class="flex items-baseline justify-between mt-2">
+<span class="text-headline-lg font-bold text-amber-400">6</span>
+<span class="text-code-sm text-outline font-mono">Queued</span>
+</div>
+</div>
+<div class="bg-surface-container p-4 rounded-xl flex flex-col justify-between">
+<span class="text-label-md text-on-surface-variant uppercase tracking-wider">Rejected</span>
+<div class="flex items-baseline justify-between mt-2">
+<span class="text-headline-lg font-bold text-rose-400">3</span>
+<span class="text-code-sm text-outline font-mono">Discarded</span>
+</div>
+</div>
+<div class="bg-surface-container p-4 rounded-xl flex flex-col justify-between col-span-2 sm:col-span-1 lg:col-span-1">
+<span class="text-label-md text-on-surface-variant uppercase tracking-wider">Certification Status</span>
+<div class="flex items-center justify-between mt-2">
+<span class="text-headline-md font-semibold text-on-surface">In Progress</span>
+<span class="text-code-sm font-mono text-primary bg-surface-container-high px-2 py-0.5 rounded">42/50</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Three-Section Main Review Workspace -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+<!-- Left Column: Generated Question -->
+<div class="bg-surface-container p-6 rounded-xl flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<span class="text-code-sm font-mono bg-surface-container-high px-3 py-1 rounded text-primary">Q-408-B</span>
+<div class="flex items-center gap-2">
+<span class="text-label-md px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant">Intermediate</span>
+<span class="text-label-md px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant">Python 3.10</span>
+</div>
+</div>
+<div>
+<div class="text-label-md text-on-surface-variant uppercase tracking-wider mb-2">Question Text</div>
+<p class="text-body-lg text-on-surface font-medium leading-relaxed">
+          "Write a program that finds the maximum value in an array of integers using pointer arithmetic or array indexing."
+        </p>
+</div>
+<div>
+<div class="text-label-md text-on-surface-variant uppercase tracking-wider mb-2">Topic &amp; Taxonomy</div>
+<div class="flex flex-wrap gap-2">
+<span class="text-code-sm bg-surface-container-low px-2.5 py-1 rounded text-on-surface-variant font-mono">Arrays &amp; Pointers</span>
+<span class="text-code-sm bg-surface-container-low px-2.5 py-1 rounded text-on-surface-variant font-mono">Sequential Search</span>
+<span class="text-code-sm bg-surface-container-low px-2.5 py-1 rounded text-on-surface-variant font-mono">Memory Management</span>
+</div>
+</div>
+<div>
+<div class="text-label-md text-on-surface-variant uppercase tracking-wider mb-2">Expected Reference Implementation</div>
+<div class="bg-surface-container-lowest p-4 rounded-lg font-code-md text-on-surface overflow-x-auto text-[13px] leading-relaxed">
+<span class="text-primary">def</span> <span class="text-secondary">find_max</span>(arr: list[int]) -&gt; int:<br/>
+              <span class="text-outline">if not</span> arr: <span class="text-primary">raise</span> ValueError(<span class="text-emerald-300">"Empty array"</span>)<br/>
+              max_val = arr[0]<br/>
+              <span class="text-primary">for</span> i <span class="text-primary">in</span> range(<span class="text-cyan-200">1</span>, len(arr)):<br/>
+                  <span class="text-primary">if</span> arr[i] &gt; max_val:<br/>
+                      max_val = arr[i]<br/>
+              <span class="text-primary">return</span> max_val
+        </div>
+</div>
+<div class="flex items-center gap-3 pt-2">
+<button class="flex-1 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-medium rounded-lg text-body-md transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+          Approve
+        </button>
+<button class="flex-1 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-medium rounded-lg text-body-md transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">edit_note</span>
+          Revise
+        </button>
+<button class="py-2.5 px-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-medium rounded-lg text-body-md transition-all flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<!-- Center Column: Curriculum Evidence -->
+<div class="bg-surface-container p-6 rounded-xl flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<h2 class="text-headline-md text-on-surface font-semibold">Retrieved Curriculum Evidence</h2>
+<span class="text-label-md bg-primary/10 text-primary px-2.5 py-1 rounded font-mono">Confidence: High</span>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg flex flex-col gap-3">
+<div class="flex items-center justify-between text-body-sm text-on-surface-variant">
+<span class="font-medium text-on-surface">NCTB ICT Textbook</span>
+<span class="font-mono">Chapter 5, p. 142</span>
+</div>
+<p class="text-body-sm text-on-surface italic leading-relaxed border-l-2 border-primary pl-3 py-1">
+          "Array traversal requires evaluating sequential memory offsets or direct indexing mechanisms. Sequential search inspects elements one by one until the sentinel or boundary condition is met, maintaining O(n) time complexity."
+        </p>
+<div class="flex items-center justify-between pt-2 border-t border-surface-container-high/50 text-code-sm text-outline">
+<span>Retrieval Relevance Score</span>
+<span class="text-primary font-mono">0.96</span>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<div class="text-label-md text-on-surface-variant uppercase tracking-wider">Semantic Match Details</div>
+<div class="space-y-2">
+<div class="flex items-center justify-between text-body-sm bg-surface-container-low px-3 py-2 rounded">
+<span class="text-on-surface-variant">Concept Overlap</span>
+<span class="font-mono text-on-surface">Array Traversal / Indexing</span>
+</div>
+<div class="flex items-center justify-between text-body-sm bg-surface-container-low px-3 py-2 rounded">
+<span class="text-on-surface-variant">Syllabus Mapping</span>
+<span class="font-mono text-emerald-400">Exact Match (SEC-5.2)</span>
+</div>
+<div class="flex items-center justify-between text-body-sm bg-surface-container-low px-3 py-2 rounded">
+<span class="text-on-surface-variant">Prerequisite Check</span>
+<span class="font-mono text-on-surface">Variables &amp; Loops verified</span>
+</div>
+</div>
+</div>
+<button class="w-full py-2.5 bg-surface-container-low hover:bg-surface-container-high text-on-surface text-body-md font-medium rounded-lg transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+        View Source Textbook Excerpt
+      </button>
+</div>
+<!-- Right Column: Validation Rubric & Decision -->
+<div class="bg-surface-container p-6 rounded-xl flex flex-col gap-6">
+<h2 class="text-headline-md text-on-surface font-semibold">Expert Validation Rubric</h2>
+<div class="space-y-4">
+<!-- Rubric Item 1 -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-body-sm">
+<span class="text-on-surface font-medium">1. Curriculum Alignment</span>
+<span class="font-mono text-primary">5 / 5</span>
+</div>
+<div class="w-full bg-surface-container-low h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-full"></div>
+</div>
+</div>
+<!-- Rubric Item 2 -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-body-sm">
+<span class="text-on-surface font-medium">2. Technical Accuracy</span>
+<span class="font-mono text-primary">4 / 5</span>
+</div>
+<div class="w-full bg-surface-container-low h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-4/5"></div>
+</div>
+</div>
+<!-- Rubric Item 3 -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-body-sm">
+<span class="text-on-surface font-medium">3. Language Clarity</span>
+<span class="font-mono text-primary">5 / 5</span>
+</div>
+<div class="w-full bg-surface-container-low h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-full"></div>
+</div>
+</div>
+<!-- Rubric Item 4 -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-body-sm">
+<span class="text-on-surface font-medium">4. Difficulty Appropriateness</span>
+<span class="font-mono text-primary">4 / 5</span>
+</div>
+<div class="w-full bg-surface-container-low h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-4/5"></div>
+</div>
+</div>
+<!-- Rubric Item 5 -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-body-sm">
+<span class="text-on-surface font-medium">5. Answerability</span>
+<span class="font-mono text-primary">5 / 5</span>
+</div>
+<div class="w-full bg-surface-container-low h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-full"></div>
+</div>
+</div>
+</div>
+<!-- Quick Tags -->
+<div class="flex flex-col gap-2">
+<span class="text-label-md text-on-surface-variant uppercase tracking-wider">Quick Feedback Tags</span>
+<div class="flex flex-wrap gap-1.5">
+<button class="px-2.5 py-1 bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant rounded text-code-sm transition-all">[Accurate]</button>
+<button class="px-2.5 py-1 bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant rounded text-code-sm transition-all">[Too difficult]</button>
+<button class="px-2.5 py-1 bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant rounded text-code-sm transition-all">[Too easy]</button>
+<button class="px-2.5 py-1 bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant rounded text-code-sm transition-all">[Ambiguous]</button>
+<button class="px-2.5 py-1 bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant rounded text-code-sm transition-all">[Curriculum mismatch]</button>
+</div>
+</div>
+<!-- Comments Textarea -->
+<div class="flex flex-col gap-2">
+<span class="text-label-md text-on-surface-variant uppercase tracking-wider">Reviewer Comments</span>
+<textarea class="w-full h-24 bg-surface-container-low text-on-surface p-3 rounded-lg text-body-md outline-none focus:ring-1 focus:ring-primary resize-none placeholder:text-outline" placeholder="Provide feedback about this question..."></textarea>
+</div>
+</div>
+</div>
+<!-- Secondary Sections: Review History, Certification Progress, Validation Metrics -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Review History Table -->
+<div class="bg-surface-container p-6 rounded-xl flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h3 class="text-headline-md text-on-surface font-semibold">Review History</h3>
+<span class="text-code-sm text-outline font-mono">Past Decisions</span>
+</div>
+<div class="space-y-3">
+<div class="bg-surface-container-low p-3 rounded-lg flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-body-md font-medium text-on-surface">Expert A (Dr. Rahman)</span>
+<span class="text-code-sm text-outline font-mono">Q-407-A • 2 hrs ago</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-label-md text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">Approved</span>
+<span class="text-code-sm text-on-surface-variant font-mono mt-1">Score: 4.6/5</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-body-md font-medium text-on-surface">Expert B (Prof. Ahmed)</span>
+<span class="text-code-sm text-outline font-mono">Q-406-C • Yesterday</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-label-md text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">Revision</span>
+<span class="text-code-sm text-on-surface-variant font-mono mt-1">Score: 3.8/5</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Expert Certification Progress -->
+<div class="bg-surface-container p-6 rounded-xl flex flex-col justify-between gap-4">
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<h3 class="text-headline-md text-on-surface font-semibold">Certification Progress</h3>
+<span class="text-code-sm font-mono text-primary">84%</span>
+</div>
+<p class="text-body-sm text-on-surface-variant">Complete 50 rigorous question evaluations to unlock Senior Reviewer status.</p>
+<div class="w-full bg-surface-container-low h-3 rounded-full overflow-hidden mt-1">
+<div class="bg-primary h-full w-[84%]"></div>
+</div>
+</div>
+<div class="space-y-2 pt-2 border-t border-surface-container-high/40">
+<div class="flex justify-between text-body-sm">
+<span class="text-on-surface-variant">Review Consistency</span>
+<span class="font-mono text-emerald-400">98.2%</span>
+</div>
+<div class="flex justify-between text-body-sm">
+<span class="text-on-surface-variant">Curriculum Expertise</span>
+<span class="font-mono text-primary">Verified</span>
+</div>
+<div class="flex justify-between text-body-sm">
+<span class="text-on-surface-variant">Rating Reliability</span>
+<span class="font-mono text-emerald-400">High (κ = 0.82)</span>
+</div>
+</div>
+</div>
+<!-- Validation Metrics Preview -->
+<div class="bg-surface-container p-6 rounded-xl flex flex-col justify-between gap-4">
+<div class="flex items-center justify-between">
+<h3 class="text-headline-md text-on-surface font-semibold">Validation Metrics</h3>
+<span class="text-code-sm text-primary font-mono">Real-time</span>
+</div>
+<div class="grid grid-cols-3 gap-3">
+<div class="bg-surface-container-low p-3 rounded-lg text-center flex flex-col justify-center">
+<span class="text-label-md text-on-surface-variant uppercase">I-CVI</span>
+<span class="text-headline-lg font-bold text-primary mt-1">0.91</span>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg text-center flex flex-col justify-center">
+<span class="text-label-md text-on-surface-variant uppercase">S-CVI/Ave</span>
+<span class="text-headline-lg font-bold text-emerald-400 mt-1">0.94</span>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg text-center flex flex-col justify-center">
+<span class="text-label-md text-on-surface-variant uppercase">Fleiss' κ</span>
+<span class="text-headline-lg font-bold text-secondary mt-1">0.82</span>
+</div>
+</div>
+<p class="text-body-sm text-outline text-center">Metrics indicate excellent inter-rater agreement and content validity across current question cohorts.</p>
+</div>
+</div>
+</div></main></div></body></html>

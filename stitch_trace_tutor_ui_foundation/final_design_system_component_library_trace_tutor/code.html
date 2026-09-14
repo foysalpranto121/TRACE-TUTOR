@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-variant": "#2d3449", "surface-container": "#171f33", "surface-container-high": "#222a3d", "primary-container": "#06b6d4", "tertiary-fixed": "#d8e3fb", "on-tertiary": "#263143", "outline": "#869397", "inverse-surface": "#dae2fd", "on-background": "#dae2fd", "surface-container-lowest": "#060e20", "on-secondary": "#1000a9", "on-tertiary-container": "#313c4f", "on-primary-container": "#00424f", "on-secondary-container": "#b0b2ff", "on-primary": "#003640", "on-primary-fixed-variant": "#004e5c", "tertiary": "#bcc7de", "surface": "#0b1326", "on-error-container": "#ffdad6", "inverse-on-surface": "#283044", "error": "#ffb4ab", "on-tertiary-fixed-variant": "#3c475a", "secondary": "#c0c1ff", "secondary-container": "#3131c0", "on-secondary-fixed": "#07006c", "secondary-fixed-dim": "#c0c1ff", "error-container": "#93000a", "on-primary-fixed": "#001f26", "on-secondary-fixed-variant": "#2f2ebe", "primary-fixed-dim": "#4cd7f6", "on-surface-variant": "#bcc9cd", "on-tertiary-fixed": "#111c2d", "primary-fixed": "#acedff", "surface-container-low": "#131b2e", "surface-tint": "#4cd7f6", "surface-bright": "#31394d", "inverse-primary": "#00687a", "outline-variant": "#3d494c", "surface-dim": "#0b1326", "secondary-fixed": "#e1e0ff", "tertiary-fixed-dim": "#bcc7de", "on-surface": "#dae2fd", "on-error": "#690005", "primary": "#4cd7f6", "tertiary-container": "#9ca7be", "surface-container-highest": "#2d3449", "background": "#0b1326" }, borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" }, spacing: { "space-sm": "0.5rem", "space-lg": "1.5rem", gutter: "1rem", "space-xl": "2rem", "space-xs": "0.25rem", margin: "1.5rem", "space-md": "1rem" }, fontFamily: { "body-lg": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "body-md": ["Inter"], "code-md": ["JetBrains Mono"], "code-sm": ["JetBrains Mono"], "body-sm": ["Inter"], "headline-md": ["Inter"], "headline-lg": ["Inter"] }, fontSize: { "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" }], "headline-xl": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "code-md": ["13px", { lineHeight: "20px", fontWeight: "400" }], "code-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "body-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }], "headline-md": ["18px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "500" }], "headline-lg": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }] } } } }</script></head><body class="bg-surface font-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-50 flex flex-col pt-6 pb-8"><div class="px-6 mb-8 flex items-center gap-3"><img alt="TRACE Tutor Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfM_7kNhwwQNVBovRwEsMxKDQadqvyAcEq5dXSTbuAtthafX8CleaZMMmVKWjaLuLYQXIDTuud81KQeL2akevwHcIqNoyIZ0fewFY18ZMtTreK4EkscGzlBUdGJBnSHcnUZEtOtyJQPo6Fub1Vb8vXPr94iG92fseArQ21q6Hbk03pPrFvm4twF7toUIM6nP4f3vonU4EyjQX4LtT8SXMIJ1rUsusVOi7nJSs8y51yxD2sheayfC0"/><span class="text-headline-md font-bold text-on-surface tracking-tight">TRACE Tutor</span></div><div class="px-4 mb-6"><div class="bg-surface-container p-2 rounded-xl flex items-center justify-between"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[20px]">school</span><span class="text-label-md text-on-surface font-medium">Student Mode</span></div><span class="material-symbols-outlined text-on-surface-variant text-[18px] cursor-pointer">unfold_more</span></div></div><nav class="flex-1 px-4 space-y-1 overflow-y-auto" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="dashboard" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">dashboard</span>Dashboard</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="workspace" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">code</span>Workspace</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="tutor" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">smart_toy</span>AI Tutor</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="assessments" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">assignment</span>Assessments</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="progress" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">trending_up</span>Progress</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="expert" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">psychology</span>Expert</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="research" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">science</span>Research</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="data-export" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">download</span>Data Export &amp; Reporting</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">settings</span>Settings</a></nav></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 flex items-center justify-between px-8 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center flex-1 max-w-md bg-surface-container rounded-xl px-4 py-2"><span class="material-symbols-outlined text-on-surface-variant mr-3 text-[20px]">search</span><input class="bg-transparent border-none outline-none text-on-surface text-body-md w-full placeholder:text-outline" placeholder="Search code, diagnostics, or concepts..." type="text"/></div><div class="flex items-center gap-4"><div class="relative cursor-pointer"><span class="material-symbols-outlined text-on-surface-variant hover:text-on-surface transition-colors">notifications</span><span class="absolute top-0 right-0 w-2 h-2 rounded-full bg-primary"></span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full text-on-surface bg-surface min-h-screen px-8 py-10">
+<div class="max-w-7xl mx-auto w-full space-y-16 pb-24">
+<!-- Hero Header -->
+<div class="relative overflow-hidden bg-surface-container rounded-2xl p-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 shadow-xl">
+<div class="absolute -right-20 -top-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute right-40 bottom-0 w-64 h-64 bg-secondary/10 rounded-full blur-2xl pointer-events-none"></div>
+<div class="space-y-4 max-w-2xl relative z-10">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-label-md font-mono tracking-wider uppercase">
+<span class="material-symbols-outlined text-[16px]">design_services</span>
+          System Version 3.4.2 // Production Ready
+        </div>
+<h1 class="text-headline-xl font-bold tracking-tight text-on-surface">TRACE Design System &amp; Component Library</h1>
+<p class="text-body-lg text-on-surface-variant">
+          The comprehensive design language and component architecture for TRACE Tutor. Engineered for high-density academic programming environments, rigorous code reasoning visualizers, and scholarly telemetry.
+        </p>
+</div>
+<div class="flex flex-col sm:flex-row gap-3 relative z-10">
+<button class="px-5 py-3 rounded-xl bg-primary text-on-primary font-semibold text-body-md flex items-center gap-2 hover:bg-primary-fixed transition-all shadow-lg shadow-primary/20 cursor-pointer" onclick="switchTab('tokens')">
+<span class="material-symbols-outlined text-[20px]">palette</span>
+          View Tokens
+        </button>
+<button class="px-5 py-3 rounded-xl bg-surface-container-high text-on-surface font-semibold text-body-md flex items-center gap-2 hover:bg-surface-variant transition-all cursor-pointer" onclick="switchTab('components')">
+<span class="material-symbols-outlined text-[20px]">widgets</span>
+          Explore Components
+        </button>
+</div>
+</div>
+<!-- Navigation Tabs for Sections -->
+<div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-outline-variant/30">
+<button class="tab-btn px-4 py-2.5 rounded-xl font-medium text-body-md transition-all bg-primary-container text-on-primary-container cursor-pointer" id="btn-overview" onclick="switchTab('overview')">Overview &amp; Architecture</button>
+<button class="tab-btn px-4 py-2.5 rounded-xl font-medium text-body-md transition-all text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer" id="btn-tokens" onclick="switchTab('tokens')">Design Tokens</button>
+<button class="tab-btn px-4 py-2.5 rounded-xl font-medium text-body-md transition-all text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer" id="btn-components" onclick="switchTab('components')">Core Components</button>
+<button class="tab-btn px-4 py-2.5 rounded-xl font-medium text-body-md transition-all text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer" id="btn-trace" onclick="switchTab('trace')">TRACE-Specific UI</button>
+<button class="tab-btn px-4 py-2.5 rounded-xl font-medium text-body-md transition-all text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer" id="btn-accessibility" onclick="switchTab('accessibility')">WCAG 2.2 AA</button>
+</div>
+<!-- TAB CONTENT: OVERVIEW -->
+<div class="tab-content space-y-12" id="tab-overview">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container p-6 rounded-xl space-y-4 shadow-sm hover:shadow-md transition-all">
+<div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">terminal</span>
+</div>
+<h3 class="text-headline-md font-bold text-on-surface">Developer-First Ergonomics</h3>
+<p class="text-body-md text-on-surface-variant">Built for deep focus, long coding sessions, and high-contrast legibility using deep slate foundations and precise cyan/indigo syntax lighting.</p>
+</div>
+<div class="bg-surface-container p-6 rounded-xl space-y-4 shadow-sm hover:shadow-md transition-all">
+<div class="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">psychology</span>
+</div>
+<h3 class="text-headline-md font-bold text-on-surface">Pedagogical Clarity</h3>
+<p class="text-body-md text-on-surface-variant">Tailored UI components for AI reasoning timelines, RAG grounding indicators, stepped hint cards, and academic rubrics.</p>
+</div>
+<div class="bg-surface-container p-6 rounded-xl space-y-4 shadow-sm hover:shadow-md transition-all">
+<div class="w-12 h-12 rounded-xl bg-tertiary/10 text-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">verified</span>
+</div>
+<h3 class="text-headline-md font-bold text-on-surface">Rigorous Accessibility</h3>
+<p class="text-body-md text-on-surface-variant">Strict adherence to WCAG 2.2 AA contrast ratios, keyboard focus rings, screen reader labels, and touch target scaling.</p>
+</div>
+</div>
+<!-- Architecture Showcase -->
+<div class="bg-surface-container-low p-8 rounded-2xl space-y-6">
+<div class="flex items-center justify-between">
+<div>
+<h2 class="text-headline-lg font-bold text-on-surface">System Architecture &amp; Layout Systems</h2>
+<p class="text-body-md text-on-surface-variant">Fluid 12-column grid, modular sidebar navigation, and multi-panel workspace shells.</p>
+</div>
+<span class="px-3 py-1 rounded-full bg-surface-container text-primary font-mono text-code-sm">8px Grid Foundation</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="bg-surface-container p-5 rounded-xl space-y-2">
+<div class="text-label-md text-primary font-mono uppercase">Layout 01</div>
+<div class="text-headline-md font-bold">App Shell &amp; Sidebar</div>
+<p class="text-body-sm text-on-surface-variant">Fixed 256px sidebar with collapsible student mode, sticky top search header, and 16px padding gutters.</p>
+</div>
+<div class="bg-surface-container p-5 rounded-xl space-y-2">
+<div class="text-label-md text-primary font-mono uppercase">Layout 02</div>
+<div class="text-headline-md font-bold">3-Panel IDE Workspace</div>
+<p class="text-body-sm text-on-surface-variant">File explorer tree, central JetBrains Mono code editor, and right-hand real-time AI tutor companion panel.</p>
+</div>
+<div class="bg-surface-container p-5 rounded-xl space-y-2">
+<div class="text-label-md text-primary font-mono uppercase">Layout 03</div>
+<div class="text-headline-md font-bold">Dashboard Bento Grid</div>
+<p class="text-body-sm text-on-surface-variant">Asymmetric card mosaics highlighting recent mastery progress, telemetry streaks, and active assignments.</p>
+</div>
+<div class="bg-surface-container p-5 rounded-xl space-y-2">
+<div class="text-label-md text-primary font-mono uppercase">Layout 04</div>
+<div class="text-headline-md font-bold">Research Analytics</div>
+<p class="text-body-sm text-on-surface-variant">Data-dense tables, student cohort export wizards, telemetry logging streams, and expert grading rubrics.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- TAB CONTENT: TOKENS -->
+<div class="tab-content hidden space-y-12" id="tab-tokens">
+<div>
+<h2 class="text-headline-lg font-bold text-on-surface mb-2">Design Tokens &amp; Palette</h2>
+<p class="text-body-md text-on-surface-variant">Semantic color mapping, typography scales, and structural elevation guidelines.</p>
+</div>
+<!-- Color Palette Grid -->
+<div class="space-y-4">
+<h3 class="text-headline-md font-semibold text-on-surface">Core Color Palette</h3>
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+<div class="bg-surface p-4 rounded-xl space-y-2 shadow-sm border border-outline-variant/20">
+<div class="w-full h-12 rounded-lg bg-surface"></div>
+<div class="text-label-md font-semibold">surface</div>
+<div class="text-code-sm text-on-surface-variant">#0b1326</div>
+</div>
+<div class="bg-surface-container p-4 rounded-xl space-y-2 shadow-sm border border-outline-variant/20">
+<div class="w-full h-12 rounded-lg bg-surface-container"></div>
+<div class="text-label-md font-semibold">container</div>
+<div class="text-code-sm text-on-surface-variant">#171f33</div>
+</div>
+<div class="bg-surface-container-high p-4 rounded-xl space-y-2 shadow-sm border border-outline-variant/20">
+<div class="w-full h-12 rounded-lg bg-surface-container-high"></div>
+<div class="text-label-md font-semibold">container-high</div>
+<div class="text-code-sm text-on-surface-variant">#222a3d</div>
+</div>
+<div class="bg-primary p-4 rounded-xl space-y-2 shadow-sm">
+<div class="w-full h-12 rounded-lg bg-primary"></div>
+<div class="text-label-md font-semibold text-on-primary">primary</div>
+<div class="text-code-sm text-on-primary/80">#4cd7f6</div>
+</div>
+<div class="bg-primary-container p-4 rounded-xl space-y-2 shadow-sm">
+<div class="w-full h-12 rounded-lg bg-primary-container"></div>
+<div class="text-label-md font-semibold text-on-primary-container">primary-container</div>
+<div class="text-code-sm text-on-primary-container/80">#06b6d4</div>
+</div>
+<div class="bg-secondary p-4 rounded-xl space-y-2 shadow-sm">
+<div class="w-full h-12 rounded-lg bg-secondary"></div>
+<div class="text-label-md font-semibold text-on-secondary">secondary</div>
+<div class="text-code-sm text-on-secondary/80">#c0c1ff</div>
+</div>
+</div>
+</div>
+<!-- Typography Scale -->
+<div class="space-y-4">
+<h3 class="text-headline-md font-semibold text-on-surface">Typography Hierarchy</h3>
+<div class="bg-surface-container p-6 rounded-xl space-y-6">
+<div class="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-outline-variant/20 gap-2">
+<div>
+<div class="text-headline-xl font-bold">Headline XL (32px / 40px)</div>
+<div class="text-code-sm text-on-surface-variant font-mono">font-headline-xl // Inter Semibold</div>
+</div>
+<span class="text-label-md px-3 py-1 rounded bg-surface text-primary font-mono">Hero Titles</span>
+</div>
+<div class="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-outline-variant/20 gap-2">
+<div>
+<div class="text-headline-lg font-semibold">Headline LG (24px / 32px)</div>
+<div class="text-code-sm text-on-surface-variant font-mono">font-headline-lg // Inter Semibold</div>
+</div>
+<span class="text-label-md px-3 py-1 rounded bg-surface text-primary font-mono">Section Headers</span>
+</div>
+<div class="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-outline-variant/20 gap-2">
+<div>
+<div class="text-headline-md font-medium">Headline MD (18px / 28px)</div>
+<div class="text-code-sm text-on-surface-variant font-mono">font-headline-md // Inter Medium</div>
+</div>
+<span class="text-label-md px-3 py-1 rounded bg-surface text-primary font-mono">Card Titles</span>
+</div>
+<div class="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-outline-variant/20 gap-2">
+<div>
+<div class="text-body-lg">Body LG (16px / 24px) - Regular text for primary paragraphs.</div>
+<div class="text-code-sm text-on-surface-variant font-mono">font-body-lg // Inter Regular</div>
+</div>
+<span class="text-label-md px-3 py-1 rounded bg-surface text-primary font-mono">Lead Text</span>
+</div>
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+<div>
+<div class="text-code-md font-mono text-primary">console.log("Code MD (13px / 20px)");</div>
+<div class="text-code-sm text-on-surface-variant font-mono">font-code-md // JetBrains Mono</div>
+</div>
+<span class="text-label-md px-3 py-1 rounded bg-surface text-primary font-mono">Editors &amp; Terminals</span>
+</div>
+</div>
+</div>
+</div>
+<!-- TAB CONTENT: COMPONENTS -->
+<div class="tab-content hidden space-y-12" id="tab-components">
+<div>
+<h2 class="text-headline-lg font-bold text-on-surface mb-2">Core Component Library</h2>
+<p class="text-body-md text-on-surface-variant">Interactive previews, states, variants, and code snippets for fundamental UI building blocks.</p>
+</div>
+<!-- Component Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<!-- Buttons Card -->
+<div class="bg-surface-container p-6 rounded-xl space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="text-headline-md font-semibold">Buttons &amp; Variants</h3>
+<span class="text-code-sm text-primary font-mono">Interactive</span>
+</div>
+<div class="flex flex-wrap gap-4 items-center p-4 bg-surface rounded-lg">
+<button class="px-4 py-2.5 rounded-xl bg-primary-container text-on-primary-container font-semibold text-body-md hover:bg-primary transition-all shadow-md cursor-pointer">Primary Action</button>
+<button class="px-4 py-2.5 rounded-xl bg-surface-container-high text-on-surface font-medium text-body-md hover:bg-surface-variant transition-all cursor-pointer">Secondary</button>
+<button class="px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all cursor-pointer">Ghost</button>
+<button class="px-4 py-2.5 rounded-xl bg-surface-container-high text-outline opacity-50 cursor-not-allowed font-medium text-body-md" disabled="">Disabled</button>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg font-mono text-code-sm text-on-surface-variant overflow-x-auto">
+            &lt;button class="px-4 py-2.5 rounded-xl bg-primary-container text-on-primary-container font-semibold..."&gt;Primary Action&lt;/button&gt;
+          </div>
+</div>
+<!-- Badges & Chips -->
+<div class="bg-surface-container p-6 rounded-xl space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="text-headline-md font-semibold">Badges, Chips &amp; Status</h3>
+<span class="text-code-sm text-primary font-mono">Semantic</span>
+</div>
+<div class="flex flex-wrap gap-3 items-center p-4 bg-surface rounded-lg">
+<span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-label-md font-medium flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>Active Session</span>
+<span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-label-md font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">check_circle</span>Passed (12/12)</span>
+<span class="px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-label-md font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">warning</span>O(N²) Warning</span>
+<span class="px-3 py-1 rounded-full bg-rose-500/10 text-rose-400 text-label-md font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">error</span>Test Failed</span>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg font-mono text-code-sm text-on-surface-variant overflow-x-auto">
+            &lt;span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-label-md font-medium"&gt;Passed&lt;/span&gt;
+          </div>
+</div>
+<!-- Inputs & Search -->
+<div class="bg-surface-container p-6 rounded-xl space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="text-headline-md font-semibold">Inputs &amp; Search Fields</h3>
+<span class="text-code-sm text-primary font-mono">Forms</span>
+</div>
+<div class="space-y-4 p-4 bg-surface rounded-lg">
+<div class="space-y-1.5">
+<label class="text-label-md text-on-surface-variant">Student Identifier / Email</label>
+<input class="w-full bg-surface-container border border-outline-variant/40 rounded-xl px-4 py-2.5 text-on-surface text-body-md outline-none focus:border-primary transition-all" placeholder="student@university.edu" type="text"/>
+</div>
+<div class="flex items-center bg-surface-container border border-outline-variant/40 rounded-xl px-4 py-2.5 focus-within:border-primary transition-all">
+<span class="material-symbols-outlined text-on-surface-variant mr-3 text-[20px]">search</span>
+<input class="bg-transparent border-none outline-none text-on-surface text-body-md w-full placeholder:text-outline" placeholder="Search algorithms, test cases, or concepts..." type="text"/>
+</div>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg font-mono text-code-sm text-on-surface-variant overflow-x-auto">
+            &lt;input class="bg-surface-container border border-outline-variant/40 rounded-xl px-4 py-2.5 text-on-surface..."&gt;
+          </div>
+</div>
+<!-- Toggles, Checkboxes & Radios -->
+<div class="bg-surface-container p-6 rounded-xl space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="text-headline-md font-semibold">Toggles &amp; Controls</h3>
+<span class="text-code-sm text-primary font-mono">Interactive</span>
+</div>
+<div class="space-y-4 p-4 bg-surface rounded-lg">
+<div class="flex items-center justify-between">
+<span class="text-body-md text-on-surface font-medium">Real-time AST Linting</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center gap-3">
+<input checked="" class="w-4 h-4 rounded bg-surface-container border-outline text-primary focus:ring-primary accent-primary cursor-pointer" type="checkbox"/>
+<span class="text-body-md text-on-surface">Auto-run test suite on file save</span>
+</div>
+<div class="flex items-center gap-3">
+<input checked="" class="w-4 h-4 bg-surface-container border-outline text-primary accent-primary cursor-pointer" name="mode" type="radio"/>
+<span class="text-body-md text-on-surface">Socratic AI Guidance Mode (Recommended)</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg font-mono text-code-sm text-on-surface-variant overflow-x-auto">
+            &lt;input type="checkbox" class="accent-primary w-4 h-4 rounded cursor-pointer"&gt;
+          </div>
+</div>
+</div>
+</div>
+<!-- TAB CONTENT: TRACE-SPECIFIC -->
+<div class="tab-content hidden space-y-12" id="tab-trace">
+<div>
+<h2 class="text-headline-lg font-bold text-on-surface mb-2">TRACE-Specific Components</h2>
+<p class="text-body-md text-on-surface-variant">Specialized UI patterns built for AI code tutoring, telemetry reasoning, and academic assessments.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<!-- TRACE Tutor Companion Panel -->
+<div class="bg-surface-container p-6 rounded-xl space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="text-headline-md font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">smart_toy</span>
+              AI Tutor Companion Panel
+            </h3>
+<span class="px-2.5 py-1 rounded bg-primary/10 text-primary text-code-sm font-mono">Socratic Mode</span>
+</div>
+<div class="bg-surface p-4 rounded-xl space-y-4 border border-outline-variant/20">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-primary text-[18px]">psychology</span>
+</div>
+<div class="space-y-2 flex-1">
+<div class="flex items-center justify-between">
+<span class="text-label-md font-semibold text-on-surface">TRACE AI Assistant</span>
+<span class="text-code-sm text-on-surface-variant font-mono">Just now</span>
+</div>
+<p class="text-body-md text-on-surface-variant">
+                  I noticed a potential off-by-one error in your binary search loop condition (<code class="text-primary font-mono text-code-md">low &lt;= high</code>). What happens when <code class="text-primary font-mono text-code-md">low == high</code> and the target is absent?
+                </p>
+<div class="flex gap-2 pt-2">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface text-label-md hover:bg-surface-container-high transition-all">Explain Indexing</button>
+<button class="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-label-md hover:bg-primary/20 transition-all">Show Hint 2/3</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Reasoning Summary Timeline -->
+<div class="bg-surface-container p-6 rounded-xl space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="text-headline-md font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">timeline</span>
+              Reasoning Summary Timeline
+            </h3>
+<span class="px-2.5 py-1 rounded bg-secondary/10 text-secondary text-code-sm font-mono">AST Trace</span>
+</div>
+<div class="bg-surface p-4 rounded-xl space-y-4 border border-outline-variant/20">
+<div class="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-outline-variant/40">
+<div class="relative">
+<span class="absolute -left-6 top-1 w-3 h-3 rounded-full bg-primary ring-4 ring-surface"></span>
+<div class="text-label-md text-primary font-mono">STEP 01 // PARSE</div>
+<div class="text-body-md font-semibold text-on-surface">Abstract Syntax Tree successfully built (42 nodes)</div>
+</div>
+<div class="relative">
+<span class="absolute -left-6 top-1 w-3 h-3 rounded-full bg-secondary ring-4 ring-surface"></span>
+<div class="text-label-md text-secondary font-mono">STEP 02 // TRACE</div>
+<div class="text-body-md font-semibold text-on-surface">Loop invariant verified for <code class="font-mono text-code-md">while(l &lt;= r)</code></div>
+</div>
+<div class="relative">
+<span class="absolute -left-6 top-1 w-3 h-3 rounded-full bg-emerald-400 ring-4 ring-surface"></span>
+<div class="text-label-md text-emerald-400 font-mono">STEP 03 // PASS</div>
+<div class="text-body-md font-semibold text-on-surface">All 14 test assertions passed in 184ms</div>
+</div>
+</div>
+</div>
+</div>
+<!-- RAG Grounding Badge & Curriculum Evidence -->
+<div class="bg-surface-container p-6 rounded-xl space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="text-headline-md font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+              RAG Grounding &amp; Curriculum Evidence
+            </h3>
+<span class="px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 text-code-sm font-mono">99.4% Match</span>
+</div>
+<div class="bg-surface p-4 rounded-xl space-y-3 border border-outline-variant/20">
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/20">
+<span class="text-body-sm text-on-surface font-medium flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">menu_book</span>
+                CS102 Lecture 4: Algorithmic Complexity
+              </span>
+<span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-label-md">Verified Source</span>
+</div>
+<p class="text-body-sm text-on-surface-variant italic">
+              "Binary search halves the search space logarithmic to N. Ensure pointers do not overflow when calculating mid = l + (r - l) / 2."
+            </p>
+</div>
+</div>
+<!-- Code Editor Toolbar & Test Case Result -->
+<div class="bg-surface-container p-6 rounded-xl space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="text-headline-md font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">code</span>
+              Code Editor Toolbar &amp; Test Suite
+            </h3>
+<span class="px-2.5 py-1 rounded bg-surface-container-high text-on-surface text-code-sm font-mono">Python 3.10</span>
+</div>
+<div class="bg-surface rounded-xl overflow-hidden border border-outline-variant/20">
+<div class="bg-surface-container-low px-4 py-2.5 flex items-center justify-between border-b border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-rose-500/80"></span>
+<span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
+<span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
+<span class="ml-2 text-code-sm text-on-surface-variant font-mono">binary_search.py</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1 rounded bg-primary text-on-primary text-label-md font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">play_arrow</span> Run Tests
+                </button>
+</div>
+</div>
+<div class="p-4 space-y-2 font-mono text-code-md">
+<div class="text-on-surface-variant"><span class="text-primary">def</span> <span class="text-secondary">binary_search</span>(arr, target):</div>
+<div class="pl-4 text-on-surface-variant">l, r = 0, len(arr) - 1</div>
+<div class="pl-4 text-on-surface-variant"><span class="text-primary">while</span> l &lt;= r:</div>
+<div class="pl-8 text-on-surface-variant">mid = (l + r) // 2</div>
+<div class="pl-12 text-on-surface">...</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- TAB CONTENT: ACCESSIBILITY -->
+<div class="tab-content hidden space-y-12" id="tab-accessibility">
+<div>
+<h2 class="text-headline-lg font-bold text-on-surface mb-2">WCAG 2.2 AA Accessibility Guidelines</h2>
+<p class="text-body-md text-on-surface-variant">Standardized practices guaranteeing contrast compliance, screen-reader semantics, and robust keyboard navigation.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container p-6 rounded-xl space-y-4">
+<div class="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold font-mono">7:1</div>
+<h3 class="text-headline-md font-bold text-on-surface">Color Contrast Ratios</h3>
+<p class="text-body-md text-on-surface-variant">All text elements across dark slate surfaces (#0b1326) meet or exceed the WCAG AA 4.5:1 standard for normal text and 3:1 for large text.</p>
+</div>
+<div class="bg-surface-container p-6 rounded-xl space-y-4">
+<div class="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">keyboard</span>
+</div>
+<h3 class="text-headline-md font-bold text-on-surface">Keyboard Navigation</h3>
+<p class="text-body-md text-on-surface-variant">All interactive widgets, IDE panels, and modal dialogs feature visible focus rings (<code class="text-primary font-mono text-code-sm">focus:ring-2 focus:ring-primary</code>) and logical tab orders.</p>
+</div>
+<div class="bg-surface-container p-6 rounded-xl space-y-4">
+<div class="w-10 h-10 rounded-lg bg-tertiary/10 text-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">record_voice_over</span>
+</div>
+<h3 class="text-headline-md font-bold text-on-surface">Screen Reader Semantics</h3>
+<p class="text-body-md text-on-surface-variant">ARIA roles, live regions for code execution status, and descriptive aria-labels applied comprehensively across all components.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Interactive Script for Tab Switching -->
+<script>
+    function switchTab(tabId) {
+      // Hide all content tabs
+      const tabs = document.querySelectorAll('.tab-content');
+      tabs.forEach(tab => tab.classList.add('hidden'));
+
+      // Remove active classes from all tab buttons
+      const buttons = document.querySelectorAll('.tab-btn');
+      buttons.forEach(btn => {
+        btn.classList.remove('bg-primary-container', 'text-on-primary-container');
+        btn.classList.add('text-on-surface-variant', 'hover:bg-surface-container', 'hover:text-on-surface');
+      });
+
+      // Show selected tab content
+      const activeTab = document.getElementById('tab-' + tabId);
+      if (activeTab) {
+        activeTab.classList.remove('hidden');
+      }
+
+      // Highlight active button
+      const activeBtn = document.getElementById('btn-' + tabId);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-on-surface-variant', 'hover:bg-surface-container', 'hover:text-on-surface');
+        activeBtn.classList.add('bg-primary-container', 'text-on-primary-container');
+      }
+    }
+  </script>
+</div></main></div></body></html>

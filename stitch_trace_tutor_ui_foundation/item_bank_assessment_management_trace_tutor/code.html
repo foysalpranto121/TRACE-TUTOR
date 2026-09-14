@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-variant": "#2d3449", "surface-container": "#171f33", "surface-container-high": "#222a3d", "primary-container": "#06b6d4", "tertiary-fixed": "#d8e3fb", "on-tertiary": "#263143", "outline": "#869397", "inverse-surface": "#dae2fd", "on-background": "#dae2fd", "surface-container-lowest": "#060e20", "on-secondary": "#1000a9", "on-tertiary-container": "#313c4f", "on-primary-container": "#00424f", "on-secondary-container": "#b0b2ff", "on-primary": "#003640", "on-primary-fixed-variant": "#004e5c", "tertiary": "#bcc7de", "surface": "#0b1326", "on-error-container": "#ffdad6", "inverse-on-surface": "#283044", "error": "#ffb4ab", "on-tertiary-fixed-variant": "#3c475a", "secondary": "#c0c1ff", "secondary-container": "#3131c0", "on-secondary-fixed": "#07006c", "secondary-fixed-dim": "#c0c1ff", "error-container": "#93000a", "on-primary-fixed": "#001f26", "on-secondary-fixed-variant": "#2f2ebe", "primary-fixed-dim": "#4cd7f6", "on-surface-variant": "#bcc9cd", "on-tertiary-fixed": "#111c2d", "primary-fixed": "#acedff", "surface-container-low": "#131b2e", "surface-tint": "#4cd7f6", "surface-bright": "#31394d", "inverse-primary": "#00687a", "outline-variant": "#3d494c", "surface-dim": "#0b1326", "secondary-fixed": "#e1e0ff", "tertiary-fixed-dim": "#bcc7de", "on-surface": "#dae2fd", "on-error": "#690005", "primary": "#4cd7f6", "tertiary-container": "#9ca7be", "surface-container-highest": "#2d3449", "background": "#0b1326" }, borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" }, spacing: { "space-sm": "0.5rem", "space-lg": "1.5rem", gutter: "1rem", "space-xl": "2rem", "space-xs": "0.25rem", margin: "1.5rem", "space-md": "1rem" }, fontFamily: { "body-lg": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "body-md": ["Inter"], "code-md": ["JetBrains Mono"], "code-sm": ["JetBrains Mono"], "body-sm": ["Inter"], "headline-md": ["Inter"], "headline-lg": ["Inter"] }, fontSize: { "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" }], "headline-xl": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "code-md": ["13px", { lineHeight: "20px", fontWeight: "400" }], "code-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "body-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }], "headline-md": ["18px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "500" }], "headline-lg": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }] } } } }</script></head><body class="bg-surface font-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-50 flex flex-col pt-6 pb-8"><div class="px-6 mb-8 flex items-center gap-3"><img alt="TRACE Tutor Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfM_7kNhwwQNVBovRwEsMxKDQadqvyAcEq5dXSTbuAtthafX8CleaZMMmVKWjaLuLYQXIDTuud81KQeL2akevwHcIqNoyIZ0fewFY18ZMtTreK4EkscGzlBUdGJBnSHcnUZEtOtyJQPo6Fub1Vb8vXPr94iG92fseArQ21q6Hbk03pPrFvm4twF7toUIM6nP4f3vonU4EyjQX4LtT8SXMIJ1rUsusVOi7nJSs8y51yxD2sheayfC0"/><span class="text-headline-md font-bold text-on-surface tracking-tight">TRACE Tutor</span></div><div class="px-4 mb-6"><div class="bg-surface-container p-2 rounded-xl flex items-center justify-between"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[20px]">school</span><span class="text-label-md text-on-surface font-medium">Student Mode</span></div><span class="material-symbols-outlined text-on-surface-variant text-[18px] cursor-pointer">unfold_more</span></div></div><nav class="flex-1 px-4 space-y-1 overflow-y-auto" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a aria-current="page" class="flex items-center px-4 py-2.5 rounded-xl transition-all bg-primary-container text-on-primary-container font-semibold" data-path="dashboard" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">dashboard</span>Dashboard</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="workspace" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">code</span>Workspace</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="assessments" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">assignment</span>Assessments</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="progress" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">trending_up</span>Progress</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="expert" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">psychology</span>Expert</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="research" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">science</span>Research</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">settings</span>Settings</a></nav></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 flex items-center justify-between px-8 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center flex-1 max-w-md bg-surface-container rounded-xl px-4 py-2"><span class="material-symbols-outlined text-on-surface-variant mr-3 text-[20px]">search</span><input class="bg-transparent border-none outline-none text-on-surface text-body-md w-full placeholder:text-outline" placeholder="Search code, diagnostics, or concepts..." type="text"/></div><div class="flex items-center gap-4"><div class="relative cursor-pointer"><span class="material-symbols-outlined text-on-surface-variant hover:text-on-surface transition-colors">notifications</span><span class="absolute top-0 right-0 w-2 h-2 rounded-full bg-primary"></span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full min-h-screen pb-16">
+<!-- Header Area -->
+<div class="px-8 pt-8 pb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-surface-container-lowest/40 backdrop-blur-md">
+<div>
+<div class="flex items-center gap-3">
+<h1 class="text-headline-xl text-on-surface font-headline-xl">Item Bank</h1>
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-primary text-label-md font-code-md">148 Active Items</span>
+</div>
+<p class="text-body-md text-on-surface-variant mt-1">Create, organize, review, and manage assessment items for university-level programming modules.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-on-primary font-label-md hover:bg-primary-fixed-dim transition-all shadow-sm" onclick="openModal('createQuestionModal')">
+<span class="material-symbols-outlined text-[18px]">add</span>Create Question
+      </button>
+<button class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-high text-on-surface hover:bg-surface-variant transition-all font-label-md" onclick="togglePreviewMode()">
+<span class="material-symbols-outlined text-[18px]">visibility</span>Student Preview
+      </button>
+</div>
+</div>
+<!-- Search & Filters Toolbar -->
+<div class="px-8 py-4 bg-surface-container-lowest/60">
+<div class="bg-surface-container p-4 rounded-xl flex flex-col gap-4">
+<div class="flex flex-col lg:flex-row gap-3">
+<div class="flex-1 flex items-center bg-surface-container-low rounded-xl px-3.5 py-2">
+<span class="material-symbols-outlined text-on-surface-variant mr-2.5 text-[20px]">search</span>
+<input class="bg-transparent border-none outline-none text-on-surface text-body-md w-full placeholder:text-outline font-body-md" placeholder="Search questions, topics, or IDs..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-variant text-label-md transition-all">
+<span class="material-symbols-outlined text-[16px]">filter_list</span>Filters
+            <span class="w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-[10px] font-bold ml-1">3</span>
+</button>
+<button class="px-4 py-2 rounded-xl bg-surface-container-low text-on-surface-variant hover:text-on-surface text-label-md transition-all">Reset</button>
+</div>
+</div>
+<!-- Filter Dropdowns Row -->
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+<select class="bg-surface-container-low text-on-surface text-body-sm rounded-xl px-3 py-2 outline-none cursor-pointer">
+<option>Type: All</option>
+<option>MCQ</option>
+<option>Code Tracing</option>
+<option>Code Writing</option>
+</select>
+<select class="bg-surface-container-low text-on-surface text-body-sm rounded-xl px-3 py-2 outline-none cursor-pointer">
+<option>Topic: All</option>
+<option>Arrays &amp; Pointers</option>
+<option>Loops &amp; Iteration</option>
+<option>Functions &amp; Scope</option>
+<option>Variables &amp; State</option>
+<option>Algorithms &amp; Complexity</option>
+</select>
+<select class="bg-surface-container-low text-on-surface text-body-sm rounded-xl px-3 py-2 outline-none cursor-pointer">
+<option>Difficulty: All</option>
+<option>Easy</option>
+<option>Medium</option>
+<option>Hard</option>
+</select>
+<select class="bg-surface-container-low text-on-surface text-body-sm rounded-xl px-3 py-2 outline-none cursor-pointer">
+<option>Language: All</option>
+<option>Python 3.10</option>
+<option>JavaScript</option>
+<option>C++</option>
+<option>Java</option>
+</select>
+<select class="bg-surface-container-low text-on-surface text-body-sm rounded-xl px-3 py-2 outline-none cursor-pointer">
+<option>Status: All</option>
+<option>Draft</option>
+<option>Pending Review</option>
+<option>Approved</option>
+<option>Revision Required</option>
+<option>Rejected</option>
+</select>
+<select class="bg-surface-container-low text-on-surface text-body-sm rounded-xl px-3 py-2 outline-none cursor-pointer">
+<option>CVI: All</option>
+<option>&gt; 0.90 CVI</option>
+<option>&gt; 0.80 CVI</option>
+</select>
+<select class="bg-surface-container-low text-on-surface text-body-sm rounded-xl px-3 py-2 outline-none cursor-pointer">
+<option>Assessment: All</option>
+<option>Pre-Test</option>
+<option>Post-Test</option>
+<option>Transfer</option>
+<option>Withdrawal</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Bulk Management Bar -->
+<div class="px-8 py-2">
+<div class="bg-surface-container-high px-4 py-2.5 rounded-xl flex items-center justify-between">
+<div class="flex items-center gap-3">
+<input class="w-4 h-4 rounded accent-primary cursor-pointer" id="selectAll" onchange="toggleSelectAll(this)" type="checkbox"/>
+<label class="text-label-md text-on-surface font-medium cursor-pointer" for="selectAll">Select All (6 items selected)</label>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-variant text-label-md transition-all flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">check_circle</span>Approve Selected</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-variant text-label-md transition-all flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">assignment_ind</span>Assign Review</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-variant text-label-md transition-all flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">export_notes</span>Export</button>
+<button class="px-3 py-1.5 rounded-lg bg-error-container/40 text-error hover:bg-error-container/60 text-label-md transition-all flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">archive</span>Archive</button>
+</div>
+</div>
+</div>
+<!-- Professional Data Table -->
+<div class="px-8 py-4">
+<div class="bg-surface-container rounded-xl overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant text-label-md">
+<th class="py-3 px-4 w-10"></th>
+<th class="py-3 px-4 font-semibold">ID</th>
+<th class="py-3 px-4 font-semibold">Question Type</th>
+<th class="py-3 px-4 font-semibold">Topic</th>
+<th class="py-3 px-4 font-semibold">Difficulty</th>
+<th class="py-3 px-4 font-semibold">Language</th>
+<th class="py-3 px-4 font-semibold">Status</th>
+<th class="py-3 px-4 font-semibold">CVI</th>
+<th class="py-3 px-4 font-semibold">Updated</th>
+<th class="py-3 px-4 font-semibold text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high text-body-md text-on-surface">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="py-3 px-4"><input checked="" class="w-4 h-4 rounded accent-primary cursor-pointer" type="checkbox"/></td>
+<td class="py-3 px-4 font-code-sm text-primary">TT-001</td>
+<td class="py-3 px-4">Code Writing</td>
+<td class="py-3 px-4">Arrays &amp; Pointers</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full bg-secondary-container/30 text-secondary text-label-md">Medium</span></td>
+<td class="py-3 px-4 font-code-sm">Python 3.10</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-label-md font-medium">Approved</span></td>
+<td class="py-3 px-4 font-code-sm font-semibold text-primary">0.94</td>
+<td class="py-3 px-4 text-on-surface-variant text-body-sm">2 hrs ago</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" onclick="openDrawer('TT-001')" title="View"><span class="material-symbols-outlined text-[18px]">visibility</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" title="Edit"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" title="Review"><span class="material-symbols-outlined text-[18px]">rate_review</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" title="Duplicate"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-error transition-colors" title="Archive"><span class="material-symbols-outlined text-[18px]">archive</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="py-3 px-4"><input checked="" class="w-4 h-4 rounded accent-primary cursor-pointer" type="checkbox"/></td>
+<td class="py-3 px-4 font-code-sm text-primary">TT-002</td>
+<td class="py-3 px-4">MCQ</td>
+<td class="py-3 px-4">Loops &amp; Iteration</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full bg-primary-container/20 text-primary-fixed text-label-md">Easy</span></td>
+<td class="py-3 px-4 font-code-sm">JavaScript</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full bg-tertiary-container/30 text-tertiary text-label-md font-medium">Pending Review</span></td>
+<td class="py-3 px-4 font-code-sm font-semibold">0.88</td>
+<td class="py-3 px-4 text-on-surface-variant text-body-sm">Yesterday</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" onclick="openDrawer('TT-002')" title="View"><span class="material-symbols-outlined text-[18px]">visibility</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" title="Edit"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" title="Review"><span class="material-symbols-outlined text-[18px]">rate_review</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" title="Duplicate"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-error transition-colors" title="Archive"><span class="material-symbols-outlined text-[18px]">archive</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="py-3 px-4"><input checked="" class="w-4 h-4 rounded accent-primary cursor-pointer" type="checkbox"/></td>
+<td class="py-3 px-4 font-code-sm text-primary">TT-003</td>
+<td class="py-3 px-4">Code Tracing</td>
+<td class="py-3 px-4">Functions &amp; Scope</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full bg-error-container/20 text-error text-label-md">Hard</span></td>
+<td class="py-3 px-4 font-code-sm">C++</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full bg-error-container/30 text-error text-label-md font-medium">Revision Req.</span></td>
+<td class="py-3 px-4 font-code-sm font-semibold text-error">0.79</td>
+<td class="py-3 px-4 text-on-surface-variant text-body-sm">3 days ago</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" onclick="openDrawer('TT-003')" title="View"><span class="material-symbols-outlined text-[18px]">visibility</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" title="Edit"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" title="Review"><span class="material-symbols-outlined text-[18px]">rate_review</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" title="Duplicate"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-error transition-colors" title="Archive"><span class="material-symbols-outlined text-[18px]">archive</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="py-3 px-4"><input checked="" class="w-4 h-4 rounded accent-primary cursor-pointer" type="checkbox"/></td>
+<td class="py-3 px-4 font-code-sm text-primary">TT-004</td>
+<td class="py-3 px-4">Code Writing</td>
+<td class="py-3 px-4">Algorithms &amp; Complexity</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full bg-error-container/20 text-error text-label-md">Hard</span></td>
+<td class="py-3 px-4 font-code-sm">Python 3.10</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-label-md font-medium">Approved</span></td>
+<td class="py-3 px-4 font-code-sm font-semibold text-primary">0.96</td>
+<td class="py-3 px-4 text-on-surface-variant text-body-sm">4 days ago</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" onclick="openDrawer('TT-004')" title="View"><span class="material-symbols-outlined text-[18px]">visibility</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" title="Edit"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" title="Review"><span class="material-symbols-outlined text-[18px]">rate_review</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" title="Duplicate"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-error transition-colors" title="Archive"><span class="material-symbols-outlined text-[18px]">archive</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="py-3 px-4"><input checked="" class="w-4 h-4 rounded accent-primary cursor-pointer" type="checkbox"/></td>
+<td class="py-3 px-4 font-code-sm text-primary">TT-005</td>
+<td class="py-3 px-4">MCQ</td>
+<td class="py-3 px-4">Variables &amp; State</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full bg-primary-container/20 text-primary-fixed text-label-md">Easy</span></td>
+<td class="py-3 px-4 font-code-sm">Python 3.10</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant text-label-md font-medium">Draft</span></td>
+<td class="py-3 px-4 font-code-sm text-on-surface-variant">—</td>
+<td class="py-3 px-4 text-on-surface-variant text-body-sm">Today</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" onclick="openDrawer('TT-005')" title="View"><span class="material-symbols-outlined text-[18px]">visibility</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" title="Edit"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" title="Review"><span class="material-symbols-outlined text-[18px]">rate_review</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" title="Duplicate"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-error transition-colors" title="Archive"><span class="material-symbols-outlined text-[18px]">archive</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="py-3 px-4"><input checked="" class="w-4 h-4 rounded accent-primary cursor-pointer" type="checkbox"/></td>
+<td class="py-3 px-4 font-code-sm text-primary">TT-006</td>
+<td class="py-3 px-4">Code Tracing</td>
+<td class="py-3 px-4">Arrays &amp; Pointers</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full bg-secondary-container/30 text-secondary text-label-md">Medium</span></td>
+<td class="py-3 px-4 font-code-sm">JavaScript</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-label-md font-medium">Approved</span></td>
+<td class="py-3 px-4 font-code-sm font-semibold text-primary">0.91</td>
+<td class="py-3 px-4 text-on-surface-variant text-body-sm">5 days ago</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" onclick="openDrawer('TT-006')" title="View"><span class="material-symbols-outlined text-[18px]">visibility</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" title="Edit"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" title="Review"><span class="material-symbols-outlined text-[18px]">rate_review</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors" title="Duplicate"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-error transition-colors" title="Archive"><span class="material-symbols-outlined text-[18px]">archive</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-4 py-3 bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-3 text-body-sm text-on-surface-variant">
+<div>Showing 1-6 of 148 questions</div>
+<div class="flex items-center gap-1">
+<button class="px-3 py-1 rounded-lg bg-surface-container text-on-surface-variant hover:bg-surface-variant disabled:opacity-50">Prev</button>
+<button class="px-3 py-1 rounded-lg bg-primary text-on-primary font-medium">1</button>
+<button class="px-3 py-1 rounded-lg bg-surface-container text-on-surface hover:bg-surface-variant">2</button>
+<button class="px-3 py-1 rounded-lg bg-surface-container text-on-surface hover:bg-surface-variant">3</button>
+<span class="px-1 text-on-surface-variant">...</span>
+<button class="px-3 py-1 rounded-lg bg-surface-container text-on-surface hover:bg-surface-variant">12</button>
+<button class="px-3 py-1 rounded-lg bg-surface-container text-on-surface hover:bg-surface-variant">Next</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Question Detail Drawer (Hidden by default) -->
+<div class="fixed inset-0 z-50 bg-surface/80 backdrop-blur-sm hidden flex justify-end" id="questionDrawer">
+<div class="w-full max-w-2xl bg-surface-container h-full overflow-y-auto p-6 flex flex-col gap-6 shadow-2xl">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 rounded-full bg-primary/20 text-primary text-label-md font-code-md">TT-001</span>
+<span class="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-label-md font-medium">Approved</span>
+</div>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface" onclick="closeDrawer()"><span class="material-symbols-outlined text-[20px]">close</span></button>
+</div>
+<div class="space-y-1">
+<h2 class="text-headline-lg text-on-surface font-headline-lg">In-place Array Reversal with Pointers</h2>
+<div class="flex items-center gap-4 text-body-sm text-on-surface-variant">
+<span>Type: <strong class="text-on-surface">Code Writing</strong></span>
+<span>Topic: <strong class="text-on-surface">Arrays &amp; Pointers</strong></span>
+<span>Language: <strong class="text-on-surface font-code-sm">Python 3.10</strong></span>
+</div>
+</div>
+<!-- Problem Content -->
+<div class="bg-surface-container-low p-4 rounded-xl space-y-3">
+<h3 class="text-label-md text-primary font-bold uppercase tracking-wider">Problem Description</h3>
+<p class="text-body-md text-on-surface">Implement a function <code class="font-code-md px-1.5 py-0.5 bg-surface-container rounded text-primary">reverse_array(arr)</code> that reverses a given list of integers in place using a two-pointer approach without utilizing built-in slicing or reverse methods.</p>
+<div class="grid grid-cols-2 gap-4 pt-2">
+<div>
+<span class="text-label-md text-on-surface-variant block mb-1">Input Format</span>
+<div class="bg-surface-container p-2.5 rounded-lg font-code-sm text-on-surface">arr: List[int]</div>
+</div>
+<div>
+<span class="text-label-md text-on-surface-variant block mb-1">Output Format</span>
+<div class="bg-surface-container p-2.5 rounded-lg font-code-sm text-on-surface">None (Modify in place)</div>
+</div>
+</div>
+<div class="pt-2">
+<span class="text-label-md text-on-surface-variant block mb-1">Constraints</span>
+<ul class="list-disc list-inside text-body-sm text-on-surface space-y-1 font-code-sm">
+<li>1 &lt;= len(arr) &lt;= 10^5</li>
+<li>-10^9 &lt;= arr[i] &lt;= 10^9</li>
+<li>Time Complexity: O(n), Space Complexity: O(1)</li>
+</ul>
+</div>
+</div>
+<!-- Expected Solution -->
+<div class="space-y-2">
+<h3 class="text-label-md text-primary font-bold uppercase tracking-wider">Expected Solution (Reference)</h3>
+<div class="bg-surface-container-low p-4 rounded-xl font-code-md text-on-surface overflow-x-auto border-l-2 border-primary">
+<pre><code>def reverse_array(arr: List[int]) -&gt; None:
+    left, right = 0, len(arr) - 1
+    while left &lt; right:
+        arr[left], arr[right] = arr[right], arr[left]
+        left += 1
+        right -= 1</code></pre>
+</div>
+</div>
+<!-- Curriculum Mapping -->
+<div class="bg-surface-container-low p-4 rounded-xl space-y-3">
+<div class="flex items-center justify-between">
+<h3 class="text-label-md text-primary font-bold uppercase tracking-wider">Curriculum Mapping</h3>
+<button class="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface hover:bg-surface-variant text-label-md">Edit Mapping</button>
+</div>
+<div class="grid grid-cols-2 gap-2 text-body-sm">
+<div><span class="text-on-surface-variant">Source:</span> NCTB ICT</div>
+<div><span class="text-on-surface-variant">Chapter:</span> Programming Fundamentals</div>
+<div><span class="text-on-surface-variant">Topic:</span> Arrays &amp; Memory</div>
+<div><span class="text-on-surface-variant">Language:</span> English</div>
+</div>
+</div>
+<!-- Expert Validation -->
+<div class="bg-surface-container-low p-4 rounded-xl space-y-3">
+<div class="flex items-center justify-between">
+<h3 class="text-label-md text-primary font-bold uppercase tracking-wider">Expert Validation Metrics</h3>
+<button class="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface hover:bg-surface-variant text-label-md">View Expert Reviews</button>
+</div>
+<div class="grid grid-cols-3 gap-3 text-center">
+<div class="bg-surface-container p-3 rounded-lg">
+<span class="text-on-surface-variant text-label-md block">I-CVI Score</span>
+<span class="text-headline-md text-primary font-code-md font-bold">0.94</span>
+</div>
+<div class="bg-surface-container p-3 rounded-lg">
+<span class="text-on-surface-variant text-label-md block">S-CVI Contribution</span>
+<span class="text-headline-md text-on-surface font-code-md font-bold">0.92</span>
+</div>
+<div class="bg-surface-container p-3 rounded-lg">
+<span class="text-on-surface-variant text-label-md block">Agreement</span>
+<span class="text-headline-md text-primary font-semibold">High</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Create Question Modal -->
+<div class="fixed inset-0 z-50 bg-surface/80 backdrop-blur-sm hidden flex items-center justify-center p-4" id="createQuestionModal">
+<div class="w-full max-w-3xl bg-surface-container rounded-xl max-h-[90vh] overflow-y-auto p-6 flex flex-col gap-6 shadow-2xl">
+<div class="flex items-center justify-between">
+<h2 class="text-headline-md text-on-surface font-headline-md">Create Assessment Item</h2>
+<button class="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface" onclick="closeModal('createQuestionModal')"><span class="material-symbols-outlined text-[20px]">close</span></button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="text-label-md text-on-surface font-medium">Question Type</label>
+<select class="w-full bg-surface-container-low text-on-surface text-body-md rounded-xl p-3 outline-none">
+<option>Code Writing</option>
+<option>Code Tracing</option>
+<option>Multiple Choice Question (MCQ)</option>
+</select>
+</div>
+<div class="space-y-1.5">
+<label class="text-label-md text-on-surface font-medium">Topic</label>
+<select class="w-full bg-surface-container-low text-on-surface text-body-md rounded-xl p-3 outline-none">
+<option>Arrays &amp; Pointers</option>
+<option>Loops &amp; Iteration</option>
+<option>Functions &amp; Scope</option>
+<option>Variables &amp; State</option>
+<option>Algorithms &amp; Complexity</option>
+</select>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="space-y-1.5">
+<label class="text-label-md text-on-surface font-medium">Difficulty</label>
+<select class="w-full bg-surface-container-low text-on-surface text-body-md rounded-xl p-3 outline-none">
+<option>Medium</option>
+<option>Easy</option>
+<option>Hard</option>
+</select>
+</div>
+<div class="space-y-1.5">
+<label class="text-label-md text-on-surface font-medium">Programming Language</label>
+<select class="w-full bg-surface-container-low text-on-surface text-body-md rounded-xl p-3 outline-none">
+<option>Python 3.10</option>
+<option>JavaScript</option>
+<option>C++</option>
+<option>Java</option>
+</select>
+</div>
+<div class="space-y-1.5">
+<label class="text-label-md text-on-surface font-medium">Assessment Type</label>
+<select class="w-full bg-surface-container-low text-on-surface text-body-md rounded-xl p-3 outline-none">
+<option>Pre-Test</option>
+<option>Post-Test</option>
+<option>Transfer</option>
+<option>Withdrawal</option>
+</select>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-label-md text-on-surface font-medium">Question Text / Description</label>
+<textarea class="w-full bg-surface-container-low text-on-surface text-body-md rounded-xl p-3 outline-none placeholder:text-outline" placeholder="Enter problem statement with Markdown support..." rows="4"></textarea>
+</div>
+<div class="space-y-1.5">
+<label class="text-label-md text-on-surface font-medium">Starter Code (Template)</label>
+<textarea class="w-full bg-surface-container-low text-on-surface font-code-md text-body-md rounded-xl p-3 outline-none" rows="3">def solution():
+    # Write code here
+    pass</textarea>
+</div>
+<div class="flex items-center justify-end gap-3 pt-4 border-t border-surface-container-high">
+<button class="px-4 py-2 rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-variant text-label-md" onclick="closeModal('createQuestionModal')">Cancel</button>
+<button class="px-4 py-2 rounded-xl bg-surface-container-high text-on-surface hover:bg-surface-variant text-label-md" onclick="closeModal('createQuestionModal')">Save Draft</button>
+<button class="px-4 py-2 rounded-xl bg-primary text-on-primary hover:bg-primary-fixed-dim text-label-md font-medium" onclick="closeModal('createQuestionModal')">Submit for Review</button>
+</div>
+</div>
+</div>
+<!-- Student-Style Preview Overlay / Mode -->
+<div class="fixed inset-0 z-50 bg-surface hidden flex flex-col" id="studentPreviewMode">
+<div class="h-16 bg-surface-container px-8 flex items-center justify-between border-b border-surface-container-high">
+<div class="flex items-center gap-3">
+<span class="px-2.5 py-1 rounded-full bg-primary/20 text-primary font-code-sm">Assessment Mode: Pre-Test</span>
+<h2 class="text-headline-md text-on-surface">Question 3 of 10</h2>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 font-code-sm text-primary"><span class="material-symbols-outlined text-[18px]">timer</span> 24:12 remaining</div>
+<button class="px-4 py-2 rounded-xl bg-surface-container-high text-on-surface hover:bg-surface-variant text-label-md flex items-center gap-1.5" onclick="togglePreviewMode()"><span class="material-symbols-outlined text-[16px]">close</span>Exit Preview</button>
+</div>
+</div>
+<div class="flex-1 grid grid-cols-1 lg:grid-cols-2 p-8 gap-6 overflow-y-auto">
+<div class="bg-surface-container p-6 rounded-xl flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<span class="text-label-md text-primary font-bold uppercase">Arrays &amp; Pointers (Medium)</span>
+<span class="text-body-sm text-on-surface-variant">ID: TT-001</span>
+</div>
+<h3 class="text-headline-lg text-on-surface">In-place Array Reversal with Pointers</h3>
+<p class="text-body-md text-on-surface leading-relaxed">Implement a function <code class="font-code-md px-1.5 py-0.5 bg-surface-container-low rounded text-primary">reverse_array(arr)</code> that reverses a given list of integers in place using a two-pointer approach without utilizing built-in slicing or reverse methods.</p>
+<div class="bg-surface-container-low p-4 rounded-xl space-y-2">
+<h4 class="text-label-md text-on-surface-variant font-medium">Example 1:</h4>
+<p class="text-body-sm font-code-md text-on-surface">Input: arr = [1, 2, 3, 4, 5]<br/>Output: [5, 4, 3, 2, 1]</p>
+</div>
+</div>
+<div class="bg-surface-container p-6 rounded-xl flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<span class="text-label-md text-on-surface font-medium">Python 3.10 Editor</span>
+<span class="text-body-sm text-primary font-code-sm">Auto-saved</span>
+</div>
+<div class="flex-1 bg-surface-container-lowest p-4 rounded-xl font-code-md text-on-surface min-h-[300px] border border-surface-container-high">
+<span class="text-on-surface-variant"># Write your solution here</span><br/>
+<span class="text-primary">def</span> <span class="text-secondary">reverse_array</span>(arr: List[int]) -&gt; None:<br/>
+              <span class="text-on-surface-variant"># TODO: implement two-pointer logic</span><br/>
+              <span class="text-primary">pass</span>
+</div>
+<div class="flex items-center justify-between">
+<button class="px-4 py-2 rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-variant text-label-md">Run Tests</button>
+<button class="px-4 py-2 rounded-xl bg-primary text-on-primary font-medium text-label-md">Submit Answer</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+    function openDrawer(id) {
+      document.getElementById('questionDrawer').classList.remove('hidden');
+    }
+    function closeDrawer() {
+      document.getElementById('questionDrawer').classList.add('hidden');
+    }
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+    function togglePreviewMode() {
+      const mode = document.getElementById('studentPreviewMode');
+      mode.classList.toggle('hidden');
+    }
+    function toggleSelectAll(master) {
+      const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+      checkboxes.forEach(cb => cb.checked = master.checked);
+    }
+  </script>
+</div></main></div></body></html>

@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-variant": "#2d3449", "surface-container": "#171f33", "surface-container-high": "#222a3d", "primary-container": "#06b6d4", "tertiary-fixed": "#d8e3fb", "on-tertiary": "#263143", "outline": "#869397", "inverse-surface": "#dae2fd", "on-background": "#dae2fd", "surface-container-lowest": "#060e20", "on-secondary": "#1000a9", "on-tertiary-container": "#313c4f", "on-primary-container": "#00424f", "on-secondary-container": "#b0b2ff", "on-primary": "#003640", "on-primary-fixed-variant": "#004e5c", "tertiary": "#bcc7de", "surface": "#0b1326", "on-error-container": "#ffdad6", "inverse-on-surface": "#283044", "error": "#ffb4ab", "on-tertiary-fixed-variant": "#3c475a", "secondary": "#c0c1ff", "secondary-container": "#3131c0", "on-secondary-fixed": "#07006c", "secondary-fixed-dim": "#c0c1ff", "error-container": "#93000a", "on-primary-fixed": "#001f26", "on-secondary-fixed-variant": "#2f2ebe", "primary-fixed-dim": "#4cd7f6", "on-surface-variant": "#bcc9cd", "on-tertiary-fixed": "#111c2d", "primary-fixed": "#acedff", "surface-container-low": "#131b2e", "surface-tint": "#4cd7f6", "surface-bright": "#31394d", "inverse-primary": "#00687a", "outline-variant": "#3d494c", "surface-dim": "#0b1326", "secondary-fixed": "#e1e0ff", "tertiary-fixed-dim": "#bcc7de", "on-surface": "#dae2fd", "on-error": "#690005", "primary": "#4cd7f6", "tertiary-container": "#9ca7be", "surface-container-highest": "#2d3449", "background": "#0b1326" }, borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" }, spacing: { "space-sm": "0.5rem", "space-lg": "1.5rem", gutter: "1rem", "space-xl": "2rem", "space-xs": "0.25rem", margin: "1.5rem", "space-md": "1rem" }, fontFamily: { "body-lg": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "body-md": ["Inter"], "code-md": ["JetBrains Mono"], "code-sm": ["JetBrains Mono"], "body-sm": ["Inter"], "headline-md": ["Inter"], "headline-lg": ["Inter"] }, fontSize: { "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" }], "headline-xl": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "code-md": ["13px", { lineHeight: "20px", fontWeight: "400" }], "code-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "body-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }], "headline-md": ["18px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "500" }], "headline-lg": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }] } } } }</script></head><body class="bg-surface font-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-50 flex flex-col pt-6 pb-8"><div class="px-6 mb-8 flex items-center gap-3"><img alt="TRACE Tutor Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfM_7kNhwwQNVBovRwEsMxKDQadqvyAcEq5dXSTbuAtthafX8CleaZMMmVKWjaLuLYQXIDTuud81KQeL2akevwHcIqNoyIZ0fewFY18ZMtTreK4EkscGzlBUdGJBnSHcnUZEtOtyJQPo6Fub1Vb8vXPr94iG92fseArQ21q6Hbk03pPrFvm4twF7toUIM6nP4f3vonU4EyjQX4LtT8SXMIJ1rUsusVOi7nJSs8y51yxD2sheayfC0"/><span class="text-headline-md font-bold text-on-surface tracking-tight">TRACE Tutor</span></div><div class="px-4 mb-6"><div class="bg-surface-container p-2 rounded-xl flex items-center justify-between"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[20px]">school</span><span class="text-label-md text-on-surface font-medium">Student Mode</span></div><span class="material-symbols-outlined text-on-surface-variant text-[18px] cursor-pointer">unfold_more</span></div></div><nav class="flex-1 px-4 space-y-1 overflow-y-auto" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="dashboard" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">dashboard</span>Dashboard</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="workspace" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">code</span>Workspace</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="tutor" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">smart_toy</span>AI Tutor</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="assessments" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">assignment</span>Assessments</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="progress" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">trending_up</span>Progress</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="expert" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">psychology</span>Expert</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="research" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">science</span>Research</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="data-export" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">download</span>Data Export &amp; Reporting</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">settings</span>Settings</a></nav></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 flex items-center justify-between px-8 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center flex-1 max-w-md bg-surface-container rounded-xl px-4 py-2"><span class="material-symbols-outlined text-on-surface-variant mr-3 text-[20px]">search</span><input class="bg-transparent border-none outline-none text-on-surface text-body-md w-full placeholder:text-outline" placeholder="Search code, diagnostics, or concepts..." type="text"/></div><div class="flex items-center gap-4"><div class="relative cursor-pointer"><span class="material-symbols-outlined text-on-surface-variant hover:text-on-surface transition-colors">notifications</span><span class="absolute top-0 right-0 w-2 h-2 rounded-full bg-primary"></span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full p-8 space-y-8 bg-surface text-on-surface">
+<!-- Top Header Area -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h1 class="text-headline-xl font-bold tracking-tight text-on-surface">Data Export &amp; Reporting</h1>
+<p class="text-body-md text-on-surface-variant mt-1">Export research telemetry and generate study summaries for institutional evaluation.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 rounded-xl bg-surface-container-highest hover:bg-surface-container-high text-on-surface text-label-md font-medium transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">history</span>
+        Export History
+      </button>
+<button class="px-4 py-2 rounded-xl bg-surface-container-highest hover:bg-surface-container-high text-on-surface text-label-md font-medium transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">description</span>
+        Generate Report
+      </button>
+<button class="px-4 py-2 rounded-xl bg-primary text-on-primary text-label-md font-semibold transition-all hover:bg-primary-fixed-dim flex items-center gap-2 shadow-[0_0_20px_rgba(76,215,246,0.2)]" onclick="triggerExport()">
+<span class="material-symbols-outlined text-[18px]">download</span>
+        Create Export
+      </button>
+</div>
+</div>
+<!-- Main Grid: Configuration & Preview Workspace -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Configuration Panel (7 Cols) -->
+<div class="lg:col-span-7 flex flex-col space-y-6">
+<!-- Categories Card -->
+<div class="bg-surface-container p-6 rounded-xl">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-headline-md font-semibold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">database</span>
+            Data Category Selection
+          </h2>
+<span class="text-label-md text-primary font-mono uppercase bg-primary/10 px-2.5 py-1 rounded">8 Categories</span>
+</div>
+<p class="text-body-sm text-on-surface-variant mb-4">Select the foundational data tables to include in your dataset bundle.</p>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+<!-- Category Item -->
+<label class="flex flex-col p-3 rounded-xl bg-surface-container-low hover:bg-surface-container-high cursor-pointer transition-all border border-transparent hover:border-primary/30 group relative">
+<input checked="" class="absolute top-3 right-3 accent-primary w-4 h-4" type="checkbox"/>
+<span class="material-symbols-outlined text-primary mb-2 text-[22px]">group</span>
+<span class="text-body-sm font-medium text-on-surface">Participants</span>
+<span class="text-[11px] text-on-surface-variant mt-1">Demographics &amp; IDs</span>
+</label>
+<label class="flex flex-col p-3 rounded-xl bg-surface-container-low hover:bg-surface-container-high cursor-pointer transition-all border border-transparent hover:border-primary/30 group relative">
+<input checked="" class="absolute top-3 right-3 accent-primary w-4 h-4" type="checkbox"/>
+<span class="material-symbols-outlined text-primary mb-2 text-[22px]">assignment</span>
+<span class="text-body-sm font-medium text-on-surface">Assessments</span>
+<span class="text-[11px] text-on-surface-variant mt-1">Scores &amp; Rubrics</span>
+</label>
+<label class="flex flex-col p-3 rounded-xl bg-surface-container-low hover:bg-surface-container-high cursor-pointer transition-all border border-transparent hover:border-primary/30 group relative">
+<input checked="" class="absolute top-3 right-3 accent-primary w-4 h-4" type="checkbox"/>
+<span class="material-symbols-outlined text-primary mb-2 text-[22px]">trending_up</span>
+<span class="text-body-sm font-medium text-on-surface">Learning Progress</span>
+<span class="text-[11px] text-on-surface-variant mt-1">Skill mastery curves</span>
+</label>
+<label class="flex flex-col p-3 rounded-xl bg-surface-container-low hover:bg-surface-container-high cursor-pointer transition-all border border-transparent hover:border-primary/30 group relative">
+<input checked="" class="absolute top-3 right-3 accent-primary w-4 h-4" type="checkbox"/>
+<span class="material-symbols-outlined text-primary mb-2 text-[22px]">monitoring</span>
+<span class="text-body-sm font-medium text-on-surface">Telemetry</span>
+<span class="text-[11px] text-on-surface-variant mt-1">Event logs &amp; timing</span>
+</label>
+<label class="flex flex-col p-3 rounded-xl bg-surface-container-low hover:bg-surface-container-high cursor-pointer transition-all border border-transparent hover:border-primary/30 group relative">
+<input checked="" class="absolute top-3 right-3 accent-primary w-4 h-4" type="checkbox"/>
+<span class="material-symbols-outlined text-primary mb-2 text-[22px]">smart_toy</span>
+<span class="text-body-sm font-medium text-on-surface">Tutor Interactions</span>
+<span class="text-[11px] text-on-surface-variant mt-1">Prompts &amp; dialogues</span>
+</label>
+<label class="flex flex-col p-3 rounded-xl bg-surface-container-low hover:bg-surface-container-high cursor-pointer transition-all border border-transparent hover:border-primary/30 group relative">
+<input checked="" class="absolute top-3 right-3 accent-primary w-4 h-4" type="checkbox"/>
+<span class="material-symbols-outlined text-primary mb-2 text-[22px]">code</span>
+<span class="text-body-sm font-medium text-on-surface">Code Execution</span>
+<span class="text-[11px] text-on-surface-variant mt-1">AST &amp; Test outcomes</span>
+</label>
+<label class="flex flex-col p-3 rounded-xl bg-surface-container-low hover:bg-surface-container-high cursor-pointer transition-all border border-transparent hover:border-primary/30 group relative">
+<input class="absolute top-3 right-3 accent-primary w-4 h-4" type="checkbox"/>
+<span class="material-symbols-outlined text-primary mb-2 text-[22px]">psychology</span>
+<span class="text-body-sm font-medium text-on-surface">Expert Validation</span>
+<span class="text-[11px] text-on-surface-variant mt-1">TA grading notes</span>
+</label>
+<label class="flex flex-col p-3 rounded-xl bg-surface-container-low hover:bg-surface-container-high cursor-pointer transition-all border border-transparent hover:border-primary/30 group relative">
+<input checked="" class="absolute top-3 right-3 accent-primary w-4 h-4" type="checkbox"/>
+<span class="material-symbols-outlined text-primary mb-2 text-[22px]">search</span>
+<span class="text-body-sm font-medium text-on-surface">RAG Retrieval</span>
+<span class="text-[11px] text-on-surface-variant mt-1">Context snippets</span>
+</label>
+</div>
+</div>
+<!-- Format & Advanced Filters -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Export Format -->
+<div class="bg-surface-container p-6 rounded-xl flex flex-col justify-between">
+<div>
+<h3 class="text-headline-md font-semibold text-on-surface mb-2">Export Format</h3>
+<p class="text-body-sm text-on-surface-variant mb-4">Choose serialization protocol.</p>
+</div>
+<div class="grid grid-cols-2 gap-3 bg-surface-container-low p-1.5 rounded-xl">
+<button class="py-2.5 rounded-lg bg-primary text-on-primary text-label-md font-semibold transition-all text-center" id="format-csv" onclick="setFormat('csv')">CSV Bundle (.zip)</button>
+<button class="py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface text-label-md font-semibold transition-all text-center" id="format-json" onclick="setFormat('json')">JSON Lines</button>
+</div>
+</div>
+<!-- Cohort & Experimental Arm -->
+<div class="bg-surface-container p-6 rounded-xl flex flex-col justify-between">
+<div>
+<h3 class="text-headline-md font-semibold text-on-surface mb-2">Experimental Arm</h3>
+<p class="text-body-sm text-on-surface-variant mb-4">Filter by pedagogical intervention group.</p>
+</div>
+<select class="w-full bg-surface-container-low text-on-surface px-4 py-2.5 rounded-xl border-none outline-none text-body-md focus:ring-1 focus:ring-primary">
+<option>All Arms (Comparative Study)</option>
+<option>Reasoning-Visible (Treatment Group A)</option>
+<option>Answer-Only (Control Group B)</option>
+</select>
+</div>
+</div>
+<!-- Advanced Filter Parameters -->
+<div class="bg-surface-container p-6 rounded-xl">
+<h3 class="text-headline-md font-semibold text-on-surface mb-4">Advanced Filters</h3>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+<div>
+<label class="text-label-md text-on-surface-variant mb-1 block">Date Range</label>
+<input class="w-full bg-surface-container-low text-on-surface px-3 py-2 rounded-xl text-code-sm font-mono border-none outline-none" type="text" value="2025-01-01 to 2025-03-31"/>
+</div>
+<div>
+<label class="text-label-md text-on-surface-variant mb-1 block">Cohort Selector</label>
+<select class="w-full bg-surface-container-low text-on-surface px-3 py-2 rounded-xl text-body-sm border-none outline-none">
+<option>Q1 &amp; Q2 2025 Batches</option>
+<option>Q1 Only</option>
+<option>Q2 Only</option>
+<option>Q3 (Pilot)</option>
+</select>
+</div>
+<div>
+<label class="text-label-md text-on-surface-variant mb-1 block">Language</label>
+<select class="w-full bg-surface-container-low text-on-surface px-3 py-2 rounded-xl text-body-sm border-none outline-none">
+<option>All Languages</option>
+<option>Python 3.11</option>
+<option>C++ 20</option>
+<option>Java 17</option>
+</select>
+</div>
+<div>
+<label class="text-label-md text-on-surface-variant mb-1 block">Topic Filter</label>
+<select class="w-full bg-surface-container-low text-on-surface px-3 py-2 rounded-xl text-body-sm border-none outline-none">
+<option>All Algorithms &amp; DS</option>
+<option>Dynamic Programming</option>
+<option>Graph Theory</option>
+<option>Recursion &amp; Trees</option>
+</select>
+</div>
+<div>
+<label class="text-label-md text-on-surface-variant mb-1 block">Assessment Type</label>
+<select class="w-full bg-surface-container-low text-on-surface px-3 py-2 rounded-xl text-body-sm border-none outline-none">
+<option>All Types</option>
+<option>Formative Checkpoints</option>
+<option>Summative Exams</option>
+</select>
+</div>
+<div>
+<label class="text-label-md text-on-surface-variant mb-1 block">Participant Status</label>
+<select class="w-full bg-surface-container-low text-on-surface px-3 py-2 rounded-xl text-body-sm border-none outline-none">
+<option>Completed &amp; Verified</option>
+<option>All Enrolled</option>
+<option>Active Only</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Privacy Controls & Compliance -->
+<div class="bg-surface-container p-6 rounded-xl border border-primary/20">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-headline-md font-semibold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+            Privacy Controls &amp; Compliance
+          </h3>
+<span class="px-3 py-1 bg-primary/10 text-primary text-label-md font-semibold rounded-full flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            Privacy Check: Verified &amp; Compliant
+          </span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<label class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low">
+<span class="text-body-sm text-on-surface">Anonymous Participant IDs</span>
+<input checked="" class="accent-primary w-4 h-4" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low">
+<span class="text-body-sm text-on-surface">Remove Unnecessary PII</span>
+<input checked="" class="accent-primary w-4 h-4" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low">
+<span class="text-body-sm text-on-surface">Minimum Necessary Data</span>
+<input checked="" class="accent-primary w-4 h-4" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low">
+<span class="text-body-sm text-on-surface">Research-Use Confirmation</span>
+<input checked="" class="accent-primary w-4 h-4" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Right Column: Data Preview & Validation (5 Cols) -->
+<div class="lg:col-span-5 flex flex-col space-y-6">
+<!-- Validation Checklist Widget -->
+<div class="bg-surface-container p-6 rounded-xl">
+<h3 class="text-headline-md font-semibold text-on-surface mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">checklist</span>
+          Export Validation Checklist
+        </h3>
+<div class="space-y-2.5">
+<div class="flex items-center justify-between text-body-sm p-2.5 rounded-lg bg-surface-container-low">
+<span class="text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+              Filters validated successfully
+            </span>
+<span class="text-primary font-mono text-xs">PASS</span>
+</div>
+<div class="flex items-center justify-between text-body-sm p-2.5 rounded-lg bg-surface-container-low">
+<span class="text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+              Required fields available
+            </span>
+<span class="text-primary font-mono text-xs">100%</span>
+</div>
+<div class="flex items-center justify-between text-body-sm p-2.5 rounded-lg bg-surface-container-low">
+<span class="text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+              Missing data detected
+            </span>
+<span class="text-on-surface-variant font-mono text-xs">None (0.0%)</span>
+</div>
+<div class="flex items-center justify-between text-body-sm p-2.5 rounded-lg bg-surface-container-low">
+<span class="text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+              Anonymous IDs confirmed
+            </span>
+<span class="text-primary font-mono text-xs">SHA-256</span>
+</div>
+<div class="flex items-center justify-between text-body-sm p-2.5 rounded-lg bg-surface-container-low">
+<span class="text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+              Institutional review board clearance
+            </span>
+<span class="text-primary font-mono text-xs">IRB-#8821</span>
+</div>
+</div>
+</div>
+<!-- Interactive Data Preview Table -->
+<div class="bg-surface-container p-6 rounded-xl flex-1 flex flex-col">
+<div class="flex items-center justify-between mb-3">
+<h3 class="text-headline-md font-semibold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">table_chart</span>
+            Column Selection &amp; Preview
+          </h3>
+<span class="text-code-sm text-on-surface-variant font-mono">14,280 Records</span>
+</div>
+<p class="text-body-sm text-on-surface-variant mb-4">Deselect specific schema columns to omit from output.</p>
+<div class="flex-1 overflow-x-auto">
+<table class="w-full text-left text-body-sm">
+<thead>
+<tr class="text-on-surface-variant text-[11px] uppercase font-mono tracking-wider">
+<th class="pb-3 font-medium">Include</th>
+<th class="pb-3 font-medium">Column Name</th>
+<th class="pb-3 font-medium">Type</th>
+<th class="pb-3 font-medium">Example Value</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high font-code-sm">
+<tr>
+<td class="py-2.5"><input checked="" class="accent-primary" type="checkbox"/></td>
+<td class="py-2.5 text-on-surface font-semibold">participant_hash</td>
+<td class="py-2.5 text-on-surface-variant">String</td>
+<td class="py-2.5 text-on-surface-variant">a9f8e21c...</td>
+</tr>
+<tr>
+<td class="py-2.5"><input checked="" class="accent-primary" type="checkbox"/></td>
+<td class="py-2.5 text-on-surface font-semibold">session_timestamp</td>
+<td class="py-2.5 text-on-surface-variant">DateTime</td>
+<td class="py-2.5 text-on-surface-variant">2025-03-29T14:12:00Z</td>
+</tr>
+<tr>
+<td class="py-2.5"><input checked="" class="accent-primary" type="checkbox"/></td>
+<td class="py-2.5 text-on-surface font-semibold">experimental_arm</td>
+<td class="py-2.5 text-on-surface-variant">Category</td>
+<td class="py-2.5 text-on-surface-variant">Reasoning-Visible</td>
+</tr>
+<tr>
+<td class="py-2.5"><input checked="" class="accent-primary" type="checkbox"/></td>
+<td class="py-2.5 text-on-surface font-semibold">ast_error_count</td>
+<td class="py-2.5 text-on-surface-variant">Integer</td>
+<td class="py-2.5 text-on-surface-variant">2</td>
+</tr>
+<tr>
+<td class="py-2.5"><input checked="" class="accent-primary" type="checkbox"/></td>
+<td class="py-2.5 text-on-surface font-semibold">tutor_prompt_tokens</td>
+<td class="py-2.5 text-on-surface-variant">Integer</td>
+<td class="py-2.5 text-on-surface-variant">412</td>
+</tr>
+<tr>
+<td class="py-2.5"><input checked="" class="accent-primary" type="checkbox"/></td>
+<td class="py-2.5 text-on-surface font-semibold">cosine_similarity_score</td>
+<td class="py-2.5 text-on-surface-variant">Float</td>
+<td class="py-2.5 text-on-surface-variant">0.8921</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<!-- Research Report Generator Section -->
+<div class="bg-surface-container p-8 rounded-xl">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+<div>
+<h2 class="text-headline-lg font-bold text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-[28px]">description</span>
+          Research Report Generator
+        </h2>
+<p class="text-body-md text-on-surface-variant mt-1">Compile comprehensive Markdown/PDF academic study summaries from active experimental telemetry.</p>
+</div>
+<button class="px-6 py-3 rounded-xl bg-primary text-on-primary text-body-md font-semibold transition-all hover:bg-primary-fixed-dim flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(76,215,246,0.2)]">
+<span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+        Generate Full Study Report
+      </button>
+</div>
+<!-- Report options checkboxes -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+<label class="flex items-center gap-3 p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container-high cursor-pointer transition-all">
+<input checked="" class="accent-primary w-4 h-4" type="checkbox"/>
+<span class="text-body-sm font-medium text-on-surface">Study Summary</span>
+</label>
+<label class="flex items-center gap-3 p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container-high cursor-pointer transition-all">
+<input checked="" class="accent-primary w-4 h-4" type="checkbox"/>
+<span class="text-body-sm font-medium text-on-surface">Participant Progress</span>
+</label>
+<label class="flex items-center gap-3 p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container-high cursor-pointer transition-all">
+<input checked="" class="accent-primary w-4 h-4" type="checkbox"/>
+<span class="text-body-sm font-medium text-on-surface">Assessment Results</span>
+</label>
+<label class="flex items-center gap-3 p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container-high cursor-pointer transition-all">
+<input checked="" class="accent-primary w-4 h-4" type="checkbox"/>
+<span class="text-body-sm font-medium text-on-surface">Learning Gain</span>
+</label>
+<label class="flex items-center gap-3 p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container-high cursor-pointer transition-all">
+<input checked="" class="accent-primary w-4 h-4" type="checkbox"/>
+<span class="text-body-sm font-medium text-on-surface">Transfer Performance</span>
+</label>
+<label class="flex items-center gap-3 p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container-high cursor-pointer transition-all">
+<input class="accent-primary w-4 h-4" type="checkbox"/>
+<span class="text-body-sm font-medium text-on-surface">Expert Validation</span>
+</label>
+<label class="flex items-center gap-3 p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container-high cursor-pointer transition-all">
+<input checked="" class="accent-primary w-4 h-4" type="checkbox"/>
+<span class="text-body-sm font-medium text-on-surface">RAG Quality</span>
+</label>
+<label class="flex items-center gap-3 p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container-high cursor-pointer transition-all">
+<input checked="" class="accent-primary w-4 h-4" type="checkbox"/>
+<span class="text-body-sm font-medium text-on-surface">Telemetry Summary</span>
+</label>
+</div>
+<!-- Academic Disclaimer -->
+<div class="p-4 rounded-xl bg-surface-container-low flex items-start gap-3">
+<span class="material-symbols-outlined text-outline mt-0.5">info</span>
+<p class="text-body-sm text-on-surface-variant italic">
+        "Reports compile observed empirical telemetry and assessment metrics. Does not fabricate statistical findings or causal conclusions. All synthesized metrics adhere to institution-approved double-blind research methodologies."
+      </p>
+</div>
+</div>
+<!-- Export History & Management Table -->
+<div class="bg-surface-container p-8 rounded-xl">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h2 class="text-headline-lg font-bold text-on-surface">Export History &amp; Management</h2>
+<p class="text-body-md text-on-surface-variant mt-1">Access past bundles, check task status, and download previously compiled datasets.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="bg-surface-container-low px-3 py-1.5 rounded-xl flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">filter_list</span>
+<span class="text-body-sm text-on-surface">Filter History</span>
+</div>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-body-md">
+<thead>
+<tr class="text-on-surface-variant text-[11px] uppercase font-mono tracking-wider border-b border-surface-container-high pb-3">
+<th class="pb-4 font-medium">Export ID</th>
+<th class="pb-4 font-medium">Dataset</th>
+<th class="pb-4 font-medium">Filters</th>
+<th class="pb-4 font-medium">Format</th>
+<th class="pb-4 font-medium">Records</th>
+<th class="pb-4 font-medium">Created By</th>
+<th class="pb-4 font-medium">Date</th>
+<th class="pb-4 font-medium">Status</th>
+<th class="pb-4 font-medium text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-4 font-code-sm text-primary font-medium">EXP-9921</td>
+<td class="py-4 text-on-surface font-semibold">Participants + Telemetry</td>
+<td class="py-4 text-on-surface-variant text-code-sm">Q1 2025 • Reasoning-Visible</td>
+<td class="py-4 font-mono text-xs uppercase text-on-surface-variant">CSV</td>
+<td class="py-4 font-mono text-xs text-on-surface-variant">14,280</td>
+<td class="py-4 text-on-surface">Dr. A. Vance</td>
+<td class="py-4 text-on-surface-variant text-code-sm">2025-03-29</td>
+<td class="py-4">
+<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400">Ready</span>
+</td>
+<td class="py-4 text-right space-x-2">
+<button class="p-1.5 rounded-lg hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors" onclick="openDetailModal('EXP-9921')" title="View Detail">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors" title="Download">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container-high text-error hover:text-error transition-colors" title="Delete">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-4 font-code-sm text-primary font-medium">EXP-9918</td>
+<td class="py-4 text-on-surface font-semibold">Full RAG Retrieval Log</td>
+<td class="py-4 text-on-surface-variant text-code-sm">Q4 2024 • Python Only</td>
+<td class="py-4 font-mono text-xs uppercase text-on-surface-variant">JSONL</td>
+<td class="py-4 font-mono text-xs text-on-surface-variant">48,912</td>
+<td class="py-4 text-on-surface">Prof. J. Doe</td>
+<td class="py-4 text-on-surface-variant text-code-sm">2025-03-28</td>
+<td class="py-4">
+<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400">Ready</span>
+</td>
+<td class="py-4 text-right space-x-2">
+<button class="p-1.5 rounded-lg hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors" onclick="openDetailModal('EXP-9918')" title="View Detail">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors" title="Download">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container-high text-error hover:text-error transition-colors" title="Delete">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-4 font-code-sm text-primary font-medium">EXP-9910</td>
+<td class="py-4 text-on-surface font-semibold">Expert Validation Rubrics</td>
+<td class="py-4 text-on-surface-variant text-code-sm">All Cohorts • Java</td>
+<td class="py-4 font-mono text-xs uppercase text-on-surface-variant">CSV</td>
+<td class="py-4 font-mono text-xs text-on-surface-variant">3,120</td>
+<td class="py-4 text-on-surface">Dr. A. Vance</td>
+<td class="py-4 text-on-surface-variant text-code-sm">2025-03-25</td>
+<td class="py-4">
+<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400">Preparing</span>
+</td>
+<td class="py-4 text-right space-x-2">
+<button class="p-1.5 rounded-lg hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors" onclick="openDetailModal('EXP-9910')" title="View Detail">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-lg opacity-40 cursor-not-allowed text-on-surface-variant" disabled="" title="Download">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container-high text-error hover:text-error transition-colors" title="Delete">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-4 font-code-sm text-primary font-medium">EXP-9884</td>
+<td class="py-4 text-on-surface font-semibold">Assessment Test Outcomes</td>
+<td class="py-4 text-on-surface-variant text-code-sm">Q3 2024 • Control Group</td>
+<td class="py-4 font-mono text-xs uppercase text-on-surface-variant">CSV</td>
+<td class="py-4 font-mono text-xs text-on-surface-variant">9,400</td>
+<td class="py-4 text-on-surface">T. Miller</td>
+<td class="py-4 text-on-surface-variant text-code-sm">2025-02-14</td>
+<td class="py-4">
+<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400">Failed</span>
+</td>
+<td class="py-4 text-right space-x-2">
+<button class="p-1.5 rounded-lg hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors" onclick="openDetailModal('EXP-9884')" title="View Detail">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-lg opacity-40 cursor-not-allowed text-on-surface-variant" disabled="" title="Download">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container-high text-error hover:text-error transition-colors" title="Delete">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Detail Modal Drawer (Hidden by default, toggled via JS) -->
+<div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-end" id="detail-drawer">
+<div class="w-full max-w-xl h-full bg-surface-container p-8 overflow-y-auto flex flex-col justify-between shadow-2xl animate-in slide-in-from-right duration-300">
+<div>
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center gap-3">
+<span class="p-2 rounded-xl bg-primary/10 text-primary material-symbols-outlined">info</span>
+<div>
+<h3 class="text-headline-lg font-bold text-on-surface" id="modal-title">Export Detail: EXP-9921</h3>
+<p class="text-body-sm text-on-surface-variant">Generated 2025-03-29 by Dr. A. Vance</p>
+</div>
+</div>
+<button class="p-2 rounded-xl hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface" onclick="closeDetailModal()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="space-y-6">
+<div class="bg-surface-container-low p-4 rounded-xl space-y-3">
+<h4 class="text-label-md uppercase font-mono text-primary">Configuration Summary</h4>
+<div class="grid grid-cols-2 gap-4 text-body-sm">
+<div>
+<span class="text-on-surface-variant block">Dataset Bundle</span>
+<span class="text-on-surface font-medium">Participants, Telemetry</span>
+</div>
+<div>
+<span class="text-on-surface-variant block">Format</span>
+<span class="text-on-surface font-medium">CSV (.zip)</span>
+</div>
+<div>
+<span class="text-on-surface-variant block">Total Records</span>
+<span class="text-on-surface font-medium">14,280 rows</span>
+</div>
+<div>
+<span class="text-on-surface-variant block">File Size</span>
+<span class="text-on-surface font-medium">4.2 MB</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl space-y-3">
+<h4 class="text-label-md uppercase font-mono text-primary">Applied Filters</h4>
+<div class="flex flex-wrap gap-2">
+<span class="px-2.5 py-1 bg-surface-container rounded-lg text-code-sm text-on-surface">date_range: 2025-Q1</span>
+<span class="px-2.5 py-1 bg-surface-container rounded-lg text-code-sm text-on-surface">cohort: Q1 &amp; Q2</span>
+<span class="px-2.5 py-1 bg-surface-container rounded-lg text-code-sm text-on-surface">arm: Reasoning-Visible</span>
+<span class="px-2.5 py-1 bg-surface-container rounded-lg text-code-sm text-on-surface">pii_stripped: true</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl space-y-3">
+<h4 class="text-label-md uppercase font-mono text-primary">Schema Preview</h4>
+<pre class="bg-surface-container-lowest p-3 rounded-lg text-code-sm font-code-sm text-primary overflow-x-auto"><code>participant_hash,session_timestamp,experimental_arm,ast_error_count,tutor_prompt_tokens,cosine_similarity_score
+a9f8e21c...,2025-03-29T14:12:00Z,Reasoning-Visible,2,412,0.8921
+b4e2a11f...,2025-03-29T14:15:30Z,Reasoning-Visible,0,180,0.9450</code></pre>
+</div>
+</div>
+</div>
+<div class="pt-6 border-t border-surface-container-high flex items-center justify-end gap-3">
+<button class="px-4 py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-label-md font-medium" onclick="closeDetailModal()">Close</button>
+<button class="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-fixed-dim text-on-primary text-label-md font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">download</span>
+          Download Bundle
+        </button>
+</div>
+</div>
+</div>
+<script>
+    function setFormat(fmt) {
+      const csvBtn = document.getElementById('format-csv');
+      const jsonBtn = document.getElementById('format-json');
+      if (fmt === 'csv') {
+        csvBtn.className = "py-2.5 rounded-lg bg-primary text-on-primary text-label-md font-semibold transition-all text-center";
+        jsonBtn.className = "py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface text-label-md font-semibold transition-all text-center";
+      } else {
+        jsonBtn.className = "py-2.5 rounded-lg bg-primary text-on-primary text-label-md font-semibold transition-all text-center";
+        csvBtn.className = "py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface text-label-md font-semibold transition-all text-center";
+      }
+    }
+
+    function openDetailModal(id) {
+      document.getElementById('modal-title').innerText = "Export Detail: " + id;
+      const drawer = document.getElementById('detail-drawer');
+      drawer.classList.remove('hidden');
+      drawer.classList.add('flex');
+    }
+
+    function closeDetailModal() {
+      const drawer = document.getElementById('detail-drawer');
+      drawer.classList.remove('flex');
+      drawer.classList.add('hidden');
+    }
+
+    function triggerExport() {
+      alert("Research export compilation task successfully initiated! You will be notified when the bundle is ready.");
+    }
+  </script>
+</div></main></div></body></html>

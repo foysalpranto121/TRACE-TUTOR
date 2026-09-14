@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TRACE Tutor — Transparent Reasoning and Adaptive Coding Education</title>
+<style>
+  @layer base { 
+    html, body { margin: 0; padding: 0; scroll-behavior: smooth; } 
+    body { overscroll-behavior: none; } 
+    main > :first-child { margin-top: 0 !important; } 
+    main > :last-child { margin-bottom: 0 !important; } 
+  } 
+  ::-webkit-scrollbar { display: none; }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "on-secondary-fixed": "#07006c",
+          "inverse-surface": "#dae2fd",
+          "tertiary-fixed": "#d8e3fb",
+          "outline": "#869397",
+          "secondary-container": "#3131c0",
+          "surface-variant": "#2d3449",
+          "primary": "#4cd7f6",
+          "tertiary-fixed-dim": "#bcc7de",
+          "error": "#ffb4ab",
+          "surface-dim": "#0b1326",
+          "inverse-primary": "#00687a",
+          "on-secondary-container": "#b0b2ff",
+          "on-secondary-fixed-variant": "#2f2ebe",
+          "error-container": "#93000a",
+          "background": "#0b1326",
+          "primary-container": "#06b6d4",
+          "tertiary-container": "#9ca7be",
+          "on-error-container": "#ffdad6",
+          "primary-fixed-dim": "#4cd7f6",
+          "surface-container-highest": "#2d3449",
+          "surface-bright": "#31394d",
+          "secondary": "#c0c1ff",
+          "secondary-fixed": "#e1e0ff",
+          "surface-tint": "#4cd7f6",
+          "on-surface-variant": "#bcc9cd",
+          "on-primary-container": "#00424f",
+          "on-tertiary-container": "#313c4f",
+          "surface": "#0b1326",
+          "on-primary-fixed-variant": "#004e5c",
+          "on-tertiary-fixed-variant": "#3c475a",
+          "surface-container": "#171f33",
+          "on-tertiary-fixed": "#111c2d",
+          "on-background": "#dae2fd",
+          "on-surface": "#dae2fd",
+          "on-primary-fixed": "#001f26",
+          "on-secondary": "#1000a9",
+          "outline-variant": "#3d494c",
+          "on-tertiary": "#263143",
+          "surface-container-low": "#131b2e",
+          "secondary-fixed-dim": "#c0c1ff",
+          "surface-container-lowest": "#060e20",
+          "on-error": "#690005",
+          "surface-container-high": "#222a3d",
+          "on-primary": "#003640",
+          "tertiary": "#bcc7de",
+          "primary-fixed": "#acedff",
+          "inverse-on-surface": "#283044"
+        },
+        borderRadius: {
+          DEFAULT: "0.125rem",
+          lg: "0.25rem",
+          xl: "0.5rem",
+          full: "0.75rem"
+        },
+        spacing: {
+          "space-xs": "0.25rem",
+          "space-lg": "1.5rem",
+          "space-xl": "2rem",
+          "margin": "1.5rem",
+          "space-sm": "0.5rem",
+          "gutter": "1rem",
+          "space-md": "1rem"
+        },
+        fontFamily: {
+          "headline-lg": ["Inter"],
+          "code-md": ["JetBrains Mono"],
+          "body-lg": ["Inter"],
+          "code-sm": ["JetBrains Mono"],
+          "label-md": ["Inter"],
+          "body-md": ["Inter"],
+          "headline-md": ["Inter"],
+          "body-sm": ["Inter"],
+          "headline-xl": ["Inter"]
+        }
+      }
+    }
+  }
+</script>
+</head>
+<body class="bg-surface font-body-md text-on-surface transition-colors duration-200">
+<div class="min-h-screen bg-surface text-on-surface font-body-md relative overflow-hidden flex flex-col">
+<div class="absolute -top-20 -left-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute top-1/3 -right-20 w-96 h-96 bg-secondary/10 rounded-full blur-3xl pointer-events-none"></div>
+<!-- Header -->
+<header class="fixed top-0 left-0 right-0 h-20 bg-surface/80 backdrop-blur-xl z-50 flex items-center justify-between px-6 lg:px-12 border-b border-surface-container-high/50">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shadow-lg shadow-primary/10">
+<span class="material-symbols-outlined text-[24px]">code_blocks</span>
+</div>
+<div>
+<span class="text-headline-md font-bold text-on-surface tracking-tight block">TRACE Tutor</span>
+<span class="text-[10px] text-primary font-medium tracking-wider uppercase block">HSC ICT AI Platform</span>
+</div>
+</div>
+<nav class="hidden xl:flex items-center gap-7 text-body-md text-on-surface-variant font-medium">
+<a class="hover:text-primary transition-colors" href="#home">Home</a>
+<a class="hover:text-primary transition-colors" href="#how-it-works">How It Works</a>
+<a class="hover:text-primary transition-colors" href="#curriculum">HSC ICT Curriculum</a>
+<a class="hover:text-primary transition-colors" href="#features">Features</a>
+<a class="hover:text-primary transition-colors" href="#research">Research</a>
+<a class="hover:text-primary transition-colors" href="#about">About</a>
+</nav>
+<div class="flex items-center gap-4">
+<!-- Language Selector -->
+<div class="relative hidden sm:block">
+<select class="bg-surface-container border border-surface-container-high rounded-xl px-3 py-1.5 text-on-surface-variant text-body-sm focus:outline-none focus:border-primary transition-colors cursor-pointer">
+<option value="bn">বাংলা (Bangla)</option>
+<option value="en">English</option>
+<option selected="" value="bilingual">বাংলা + English</option>
+</select>
+</div>
+<!-- Theme Switcher -->
+<button class="p-2 rounded-xl bg-surface-container border border-surface-container-high text-on-surface-variant hover:text-primary transition-all" onclick="document.documentElement.classList.toggle('dark')" title="Toggle Theme">
+<span class="material-symbols-outlined text-[20px] dark:hidden">dark_mode</span>
+<span class="material-symbols-outlined text-[20px] hidden dark:block">light_mode</span>
+</button>
+<a class="hidden sm:inline-block text-on-surface hover:text-primary transition-colors font-medium text-body-md px-4 py-2" href="#signin">Sign In</a>
+<a class="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-semibold hover:bg-primary-fixed-dim transition-all shadow-lg shadow-primary/20" href="#get-started">শুরু করুন / Start</a>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 pt-20" id="home">
+<!-- Hero Section -->
+<section class="max-w-7xl mx-auto px-6 py-16 md:py-24 flex flex-col items-center text-center relative z-10">
+<div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container border border-primary/20 text-primary text-label-md uppercase tracking-wider font-semibold mb-6 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">auto_awesome</span>
+        NCTB Curriculum Grounded • বিশেষভাবে এইচএসসি আইসিটি শিক্ষার্থীদের জন্য
+      </div>
+<h1 class="text-headline-xl md:text-5xl lg:text-6xl font-bold tracking-tight text-on-surface max-w-5xl mb-4 leading-tight">
+        Learn the logic. Understand the code. Build the skill.
+      </h1>
+<p class="text-secondary font-semibold text-headline-md md:text-xl mb-6">
+        কোড মুখস্থ নয়, লজিক বুঝুন। HSC ICT-তে আত্মস্থ হোন।
+      </p>
+<p class="text-on-surface-variant text-body-lg md:text-[18px] max-w-3xl mb-10 leading-relaxed">
+        AI-powered programming learning grounded in the HSC ICT curriculum — built to help Bangladeshi students understand code, not just copy answers.
+      </p>
+<div class="flex flex-col sm:flex-row items-center gap-4 mb-16">
+<a class="w-full sm:w-auto px-8 py-4 rounded-xl bg-primary text-on-primary font-semibold hover:bg-primary-fixed-dim transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-2 text-body-lg" href="#get-started">
+<span>Start Learning (শুরু করুন)</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</a>
+<a class="w-full sm:w-auto px-8 py-4 rounded-xl bg-surface-container border border-surface-container-high text-on-surface font-semibold hover:bg-surface-variant transition-all flex items-center justify-center gap-2 text-body-lg" href="#how-it-works">
+<span>How It Works (কিভাবে কাজ করে)</span>
+<span class="material-symbols-outlined text-[20px]">explore</span>
+</a>
+</div>
+<!-- Visual Coding Diagram / Interactive IDE Demo -->
+<div class="w-full bg-surface-container rounded-2xl border border-surface-container-high shadow-2xl overflow-hidden p-4 md:p-6 text-left">
+<div class="flex items-center justify-between pb-4 mb-4 border-b border-surface-container-high flex-wrap gap-3">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-error"></div>
+<div class="w-3 h-3 rounded-full bg-tertiary"></div>
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+<span class="ml-2 text-code-sm text-outline">hsc_ict_chapter5_c_problem.c — TRACE IDE v3.2</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-label-md font-medium">NCTB Class XI-XII ICT</span>
+<span class="px-3 py-1 rounded-full bg-secondary/10 text-secondary text-label-md font-medium">বাংলা + English AI Guidance</span>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 font-code-md text-code-md text-on-surface">
+<div class="lg:col-span-2 bg-surface-container-lowest rounded-xl p-4 overflow-x-auto shadow-inner space-y-1">
+<div class="text-tertiary text-xs mb-2">// Problem: Find Largest Number among three numbers (বড় সংখ্যা নির্ণয়)</div>
+<div class="flex"><span class="w-8 text-outline select-none">1</span><span class="text-primary-fixed-dim">#include</span> <span class="text-secondary">&lt;stdio.h&gt;</span></div>
+<div class="flex"><span class="w-8 text-outline select-none">2</span><span class="text-primary-fixed-dim">int</span> <span class="text-on-surface font-bold">main</span>() {</div>
+<div class="flex"><span class="w-8 text-outline select-none">3</span> <span class="text-primary-fixed-dim">int</span> a, b, c;</div>
+<div class="flex"><span class="w-8 text-outline select-none">4</span>    printf(<span class="text-secondary">"Enter three numbers: "</span>);</div>
+<div class="flex"><span class="w-8 text-outline select-none">5</span>    scanf(<span class="text-secondary">"%d %d %d"</span>, &amp;a, &amp;b, &amp;c);</div>
+<div class="flex bg-surface-container-high/60 -mx-4 px-4 border-l-2 border-primary"><span class="w-8 text-outline select-none">6</span> <span class="text-primary-fixed-dim">if</span> (a &gt;= b &amp;&amp; a &gt;= c) <span class="text-tertiary">/* &lt;-- TRACE AI: বাংলায় লজিক চেক করুন: a কি b ও c উভয় অপেক্ষা বড়? */</span></div>
+<div class="flex"><span class="w-8 text-outline select-none">7</span>        printf(<span class="text-secondary">"Largest: %d"</span>, a);</div>
+<div class="flex"><span class="w-8 text-outline select-none">8</span> <span class="text-primary-fixed-dim">return</span> 0;</div>
+<div class="flex"><span class="w-8 text-outline select-none">9</span>}</div>
+</div>
+<div class="bg-surface-container-low rounded-xl p-4 flex flex-col justify-between font-body-md">
+<div class="flex items-center justify-between mb-3">
+<span class="text-headline-md font-semibold flex items-center gap-1.5"><span class="material-symbols-outlined text-primary">psychology</span> TRACE AI Feedback</span>
+<span class="px-2 py-0.5 rounded bg-primary/20 text-primary text-[10px]">Active Socratic Mode</span>
+</div>
+<div class="space-y-3 text-body-sm">
+<div class="bg-surface-container p-3 rounded-lg border border-primary/10">
+<div class="flex items-center gap-2 text-primary font-medium mb-1">
+<span class="material-symbols-outlined text-[16px]">lightbulb</span> Logic Breakdown (লজিক বিশ্লেষণ)
+                </div>
+<p class="text-on-surface-variant text-xs">Notice how logical AND (<code class="text-primary">&amp;&amp;</code>) ensures both conditions are met. বাংলায়: a যদি b এবং c উভয়ের চেয়ে বড় বা সমান হয় তবেই এটি সত্য হবে।</p>
+</div>
+<div class="bg-surface-container p-3 rounded-lg border border-secondary/10">
+<div class="flex items-center gap-2 text-secondary font-medium mb-1">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> Flowchart Match
+                </div>
+<p class="text-on-surface-variant text-xs">Matches NCTB Textbook Chapter 5 Flowchart Decision Box structure perfectly.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Value Proposition Section -->
+<section class="max-w-7xl mx-auto px-6 py-12 border-t border-surface-container-high">
+<div class="text-center max-w-3xl mx-auto mb-12">
+<h2 class="text-headline-xl font-bold mb-3">Built for the way HSC ICT students learn</h2>
+<p class="text-on-surface-variant text-body-lg">এইচএসসি আইসিটি শিক্ষার্থীদের কথা মাথায় রেখে বিশেষভাবে তৈরি প্ল্যাটফর্ম</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="bg-surface-container p-6 rounded-2xl flex items-start gap-4 border border-surface-container-high">
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[24px]">psychology</span>
+</div>
+<div>
+<h3 class="text-headline-md font-semibold mb-1">Understand Before You Memorize</h3>
+<p class="text-on-surface-variant text-body-sm">কোড মুখস্থ করার বদলে প্রতিটি সিনট্যাক্স এবং লজিকের অন্তρόing বুঝুন।</p>
+</div>
+</div>
+<div class="bg-surface-container p-6 rounded-2xl flex items-start gap-4 border border-surface-container-high">
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[24px]">menu_book</span>
+</div>
+<div>
+<h3 class="text-headline-md font-semibold mb-1">Curriculum Grounded (NCTB)</h3>
+<p class="text-on-surface-variant text-body-sm">জাতীয় শিক্ষাক্রম ও পাঠ্যপুস্তক বোর্ড (NCTB) সিলেবাসের সাথে সম্পূর্ণ সামঞ্জস্যপূর্ণ।</p>
+</div>
+</div>
+<div class="bg-surface-container p-6 rounded-2xl flex items-start gap-4 border border-surface-container-high">
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[24px]">translate</span>
+</div>
+<div>
+<h3 class="text-headline-md font-semibold mb-1">Bangla + English Bilingual Support</h3>
+<p class="text-on-surface-variant text-body-sm">বাংলা ও ইংরেজি উভয় ভাষাতেই সহজবোধ্য এআই গাইডেন্স ও ব্যাখ্যা।</p>
+</div>
+</div>
+<div class="bg-surface-container p-6 rounded-2xl flex items-start gap-4 border border-surface-container-high">
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[24px]">support_agent</span>
+</div>
+<div>
+<h3 class="text-headline-md font-semibold mb-1">Practice With Guidance</h3>
+<p class="text-on-surface-variant text-body-sm">সক্রেটিক মেথডে এআই আপনাকে সরাসরি উত্তর না দিয়ে নিজে নিজে সমাধান করতে সাহায্য করবে।</p>
+</div>
+</div>
+<div class="bg-surface-container p-6 rounded-2xl flex items-start gap-4 border border-surface-container-high">
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[24px]">science</span>
+</div>
+<div>
+<h3 class="text-headline-md font-semibold mb-1">Research-Backed Learning</h3>
+<p class="text-on-surface-variant text-body-sm">শিক্ষাগত গবেষণালব্ধ পেমেন্ট ও এনালিটিক্স মেথডোলজি দ্বারা পরিচালিত।</p>
+</div>
+</div>
+<div class="bg-surface-container p-6 rounded-2xl flex items-start gap-4 border border-surface-container-high">
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[24px]">verified</span>
+</div>
+<div>
+<h3 class="text-headline-md font-semibold mb-1">Board Exam Ready</h3>
+<p class="text-on-surface-variant text-body-sm">এইচএসসি বোর্ড পরীক্ষার সৃজনশীল প্রশ্ন ও এমসিকিউ (MCQ) এর প্রস্তুতিমূলক মডিউল।</p>
+</div>
+</div>
+</div>
+</section>
+<!-- How TRACE Tutor Helps Section (7 Steps) -->
+<section class="max-w-7xl mx-auto px-6 py-20" id="how-it-works">
+<div class="text-center max-w-2xl mx-auto mb-16">
+<h2 class="text-headline-xl font-bold mb-4">How TRACE Tutor Helps</h2>
+<p class="text-on-surface-variant text-body-lg">একটি সুশৃঙ্খল ৭-ধরের লার্নিং লুপ যা আপনাকে দক্ষ করে তোলে।</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- 01 -->
+<div class="bg-surface-container p-6 rounded-2xl relative border border-surface-container-high flex flex-col justify-between">
+<div class="absolute top-4 right-4 text-3xl font-bold text-surface-container-high select-none">01</div>
+<div>
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+<span class="material-symbols-outlined text-[24px]">lightbulb</span>
+</div>
+<h3 class="text-headline-md font-semibold mb-2">Learn the Concept (লজিক বুঝুন)</h3>
+<p class="text-on-surface-variant text-body-sm">প্রতিটি আইসিটি অধ্যায়ের মূল ধারণা সহজ বাংলায় পরিষ্কার করুন।</p>
+</div>
+</div>
+<!-- 02 -->
+<div class="bg-surface-container p-6 rounded-2xl relative border border-surface-container-high flex flex-col justify-between">
+<div class="absolute top-4 right-4 text-3xl font-bold text-surface-container-high select-none">02</div>
+<div>
+<div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary mb-4">
+<span class="material-symbols-outlined text-[24px]">assignment</span>
+</div>
+<h3 class="text-headline-md font-semibold mb-2">Try the Problem (কোডিং প্র্যাকটিস)</h3>
+<p class="text-on-surface-variant text-body-sm">বোর্ড পরীক্ষার আদলে তৈরি প্রবলেম নিয়ে কাজ শুরু করুন।</p>
+</div>
+</div>
+<!-- 03 -->
+<div class="bg-surface-container p-6 rounded-2xl relative border border-surface-container-high flex flex-col justify-between">
+<div class="absolute top-4 right-4 text-3xl font-bold text-surface-container-high select-none">03</div>
+<div>
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+<span class="material-symbols-outlined text-[24px]">terminal</span>
+</div>
+<h3 class="text-headline-md font-semibold mb-2">Write Code (কোড লিখুন)</h3>
+<p class="text-on-surface-variant text-body-sm">ব্রাউজার বেসড বিল্ট-ইন আইডিতে সরাসরি সি (C) বা অন্যান্য কোড লিখুন।</p>
+</div>
+</div>
+<!-- 04 -->
+<div class="bg-surface-container p-6 rounded-2xl relative border border-surface-container-high flex flex-col justify-between">
+<div class="absolute top-4 right-4 text-3xl font-bold text-surface-container-high select-none">04</div>
+<div>
+<div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary mb-4">
+<span class="material-symbols-outlined text-[24px]">psychology</span>
+</div>
+<h3 class="text-headline-md font-semibold mb-2">Get Guidance (এআই গাইডেন্স)</h3>
+<p class="text-on-surface-variant text-body-sm">কোডে ভুল থাকলে এআই হINTS বা দিকনির্দেশনা প্রদান করবে।</p>
+</div>
+</div>
+<!-- 05 -->
+<div class="bg-surface-container p-6 rounded-2xl relative border border-surface-container-high flex flex-col justify-between">
+<div class="absolute top-4 right-4 text-3xl font-bold text-surface-container-high select-none">05</div>
+<div>
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+<span class="material-symbols-outlined text-[24px]">bug_report</span>
+</div>
+<h3 class="text-headline-md font-semibold mb-2">Run &amp; Debug (ডিবাগ করুন)</h3>
+<p class="text-on-surface-variant text-body-sm">রিয়েল-টাইম এরর অ্যানালাইসিস দিয়ে কোড সংশোধন করুন।</p>
+</div>
+</div>
+<!-- 06 -->
+<div class="bg-surface-container p-6 rounded-2xl relative border border-surface-container-high flex flex-col justify-between">
+<div class="absolute top-4 right-4 text-3xl font-bold text-surface-container-high select-none">06</div>
+<div>
+<div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary mb-4">
+<span class="material-symbols-outlined text-[24px]">task_alt</span>
+</div>
+<h3 class="text-headline-md font-semibold mb-2">Understand Solution (সঠিক সমাধান)</h3>
+<p class="text-on-surface-variant text-body-sm">ধাপভিত্তিক ব্যাখ্যাসহ আদর্শ সমাধান দেখে নিন।</p>
+</div>
+</div>
+<!-- 07 -->
+<div class="bg-surface-container p-6 rounded-2xl relative border border-surface-container-high flex flex-col justify-between md:col-span-2 lg:col-span-2">
+<div class="absolute top-4 right-4 text-3xl font-bold text-surface-container-high select-none">07</div>
+<div>
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+<span class="material-symbols-outlined text-[24px]">trending_up</span>
+</div>
+<h3 class="text-headline-md font-semibold mb-2">Track Progress (প্রোগ্রেস ট্র্যাক করুন)</h3>
+<p class="text-on-surface-variant text-body-sm">আপনার দক্ষতা কোন পর্যায়ে আছে তা গ্রাফ ও অ্যানালিটিক্সের মাধ্যমে মনিটর করুন।</p>
+</div>
+</div>
+</div>
+</section>
+<!-- HSC ICT Curriculum Connection Section -->
+<section class="max-w-7xl mx-auto px-6 py-20 border-t border-surface-container-high" id="curriculum">
+<div class="text-center max-w-2xl mx-auto mb-16">
+<h2 class="text-headline-xl font-bold mb-4">HSC ICT Curriculum Connection</h2>
+<p class="text-on-surface-variant text-body-lg">এইচএসসি আইসিটি সিলেবাসের প্রতিটি অধ্যায়ের সাথে সরাসরি সংযুক্ত মডিউল</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="bg-surface-container p-6 rounded-2xl border border-surface-container-high hover:border-primary/50 transition-all">
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+<span class="material-symbols-outlined text-[24px]">memory</span>
+</div>
+<h3 class="text-headline-md font-semibold mb-2">Programming Fundamentals</h3>
+<p class="text-on-surface-variant text-body-sm">Data types, variables, operators, and control structures.</p>
+</div>
+<div class="bg-surface-container p-6 rounded-2xl border border-surface-container-high hover:border-primary/50 transition-all">
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+<span class="material-symbols-outlined text-[24px]">account_tree</span>
+</div>
+<h3 class="text-headline-md font-semibold mb-2">Algorithms &amp; Flowcharts</h3>
+<p class="text-on-surface-variant text-body-sm">Visualizing logic flow, pseudocode, and problem-solving steps.</p>
+</div>
+<div class="bg-surface-container p-6 rounded-2xl border border-surface-container-high hover:border-primary/50 transition-all">
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+<span class="material-symbols-outlined text-[24px]">code</span>
+</div>
+<h3 class="text-headline-md font-semibold mb-2">C Programming</h3>
+<p class="text-on-surface-variant text-body-sm">Functions, arrays, pointers, and file operations in C.</p>
+</div>
+<div class="bg-surface-container p-6 rounded-2xl border border-surface-container-high hover:border-primary/50 transition-all">
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+<span class="material-symbols-outlined text-[24px]">database</span>
+</div>
+<h3 class="text-headline-md font-semibold mb-2">Database Management</h3>
+<p class="text-on-surface-variant text-body-sm">DBMS concepts, tables, queries, and relational design.</p>
+</div>
+<div class="bg-surface-container p-6 rounded-2xl border border-surface-container-high hover:border-primary/50 transition-all">
+<div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary mb-4">
+<span class="material-symbols-outlined text-[24px]">globe</span>
+</div>
+<h3 class="text-headline-md font-semibold mb-2">Web Technology</h3>
+<p class="text-on-surface-variant text-body-sm">HTML, CSS basics, and website structure design.</p>
+</div>
+<div class="bg-surface-container p-6 rounded-2xl border border-surface-container-high hover:border-primary/50 transition-all">
+<div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary mb-4">
+<span class="material-symbols-outlined text-[24px]">binary</span>
+</div>
+<h3 class="text-headline-md font-semibold mb-2">Number Systems</h3>
+<p class="text-on-surface-variant text-body-sm">Binary, Octal, Decimal, Hexadecimal conversions and arithmetic.</p>
+</div>
+<div class="bg-surface-container p-6 rounded-2xl border border-surface-container-high hover:border-primary/50 transition-all md:col-span-2">
+<div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary mb-4">
+<span class="material-symbols-outlined text-[24px]">logic_andal</span>
+</div>
+<h3 class="text-headline-md font-semibold mb-2">Boolean Logic &amp; Gates</h3>
+<p class="text-on-surface-variant text-body-sm">Truth tables, logic gates (AND, OR, NOT), and Boolean algebra simplification.</p>
+</div>
+</div>
+</section>
+<!-- Trust & Research Section -->
+<section class="max-w-7xl mx-auto px-6 py-20 border-t border-surface-container-high" id="research">
+<div class="bg-gradient-to-br from-surface-container to-surface-container-high rounded-2xl p-8 md:p-12 border border-primary/20 relative overflow-hidden">
+<div class="absolute -right-20 -bottom-20 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+<div class="relative z-10 max-w-3xl">
+<div class="flex items-center gap-2 text-primary mb-4">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+<span class="text-label-md uppercase tracking-wider font-semibold">Designed for Bangladeshi learners. Built for serious learning.</span>
+</div>
+<h2 class="text-headline-lg md:text-headline-xl font-bold mb-4">Evidence-Based Evaluation of AI Tutoring</h2>
+<p class="text-on-surface-variant text-body-lg mb-6 leading-relaxed">
+            TRACE Tutor is built from the ground up to support rigorous empirical research in computer science and ICT education in Bangladesh. We record structured pedagogical guidance metrics, NCTB textbook RAG retrieval evidence, and observable student learning outcomes under IRB protocols.
+          </p>
+<a class="text-primary font-medium hover:underline inline-flex items-center gap-1 text-body-md" href="#research-details">Read our Research &amp; Curriculum Validation Guidelines →</a>
+</div>
+</div>
+</section>
+<!-- Call to Action Section -->
+<section class="max-w-7xl mx-auto px-6 py-20 text-center border-t border-surface-container-high">
+<div class="max-w-2xl mx-auto space-y-6" id="get-started">
+<h2 class="text-headline-xl font-bold">Build better programming understanding today.</h2>
+<p class="text-on-surface-variant text-body-lg">Join HSC students across Bangladesh already mastering ICT with TRACE Tutor.</p>
+<div class="flex items-center justify-center gap-4 pt-4 flex-wrap">
+<a class="px-8 py-4 rounded-xl bg-primary text-on-primary font-semibold hover:bg-primary-fixed-dim transition-all shadow-xl shadow-primary/20 text-body-lg" href="#start">Start Learning (শুরু করুন)</a>
+<a class="px-8 py-4 rounded-xl bg-surface-container border border-surface-container-high text-on-surface font-semibold hover:bg-surface-variant transition-all text-body-lg" href="#signin">Sign In (লগইন)</a>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest border-t border-surface-container-high py-12 px-6 lg:px-12" id="about">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">code_blocks</span>
+</div>
+<span class="text-headline-md font-bold text-on-surface tracking-tight">TRACE Tutor</span>
+</div>
+<div class="flex flex-wrap items-center justify-center gap-6 text-body-sm text-on-surface-variant">
+<a class="hover:text-primary transition-colors" href="#home">Home</a>
+<a class="hover:text-primary transition-colors" href="#how-it-works">How It Works</a>
+<a class="hover:text-primary transition-colors" href="#curriculum">Curriculum</a>
+<a class="hover:text-primary transition-colors" href="#research">Research</a>
+<a class="hover:text-primary transition-colors" href="#privacy">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#contact">Contact</a>
+</div>
+<p class="text-outline text-body-sm">© 2025 TRACE Tutor Platform. Designed for HSC ICT.</p>
+</div>
+</footer>
+</div>
+</body></html>

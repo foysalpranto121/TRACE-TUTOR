@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-variant": "#2d3449", "surface-container": "#171f33", "surface-container-high": "#222a3d", "primary-container": "#06b6d4", "tertiary-fixed": "#d8e3fb", "on-tertiary": "#263143", "outline": "#869397", "inverse-surface": "#dae2fd", "on-background": "#dae2fd", "surface-container-lowest": "#060e20", "on-secondary": "#1000a9", "on-tertiary-container": "#313c4f", "on-primary-container": "#00424f", "on-secondary-container": "#b0b2ff", "on-primary": "#003640", "on-primary-fixed-variant": "#004e5c", "tertiary": "#bcc7de", "surface": "#0b1326", "on-error-container": "#ffdad6", "inverse-on-surface": "#283044", "error": "#ffb4ab", "on-tertiary-fixed-variant": "#3c475a", "secondary": "#c0c1ff", "secondary-container": "#3131c0", "on-secondary-fixed": "#07006c", "secondary-fixed-dim": "#c0c1ff", "error-container": "#93000a", "on-primary-fixed": "#001f26", "on-secondary-fixed-variant": "#2f2ebe", "primary-fixed-dim": "#4cd7f6", "on-surface-variant": "#bcc9cd", "on-tertiary-fixed": "#111c2d", "primary-fixed": "#acedff", "surface-container-low": "#131b2e", "surface-tint": "#4cd7f6", "surface-bright": "#31394d", "inverse-primary": "#00687a", "outline-variant": "#3d494c", "surface-dim": "#0b1326", "secondary-fixed": "#e1e0ff", "tertiary-fixed-dim": "#bcc7de", "on-surface": "#dae2fd", "on-error": "#690005", "primary": "#4cd7f6", "tertiary-container": "#9ca7be", "surface-container-highest": "#2d3449", "background": "#0b1326" }, borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" }, spacing: { "space-sm": "0.5rem", "space-lg": "1.5rem", gutter: "1rem", "space-xl": "2rem", "space-xs": "0.25rem", margin: "1.5rem", "space-md": "1rem" }, fontFamily: { "body-lg": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "body-md": ["Inter"], "code-md": ["JetBrains Mono"], "code-sm": ["JetBrains Mono"], "body-sm": ["Inter"], "headline-md": ["Inter"], "headline-lg": ["Inter"] }, fontSize: { "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" }], "headline-xl": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "code-md": ["13px", { lineHeight: "20px", fontWeight: "400" }], "code-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "body-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }], "headline-md": ["18px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "500" }], "headline-lg": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }] } } } }</script></head><body class="bg-surface font-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-50 flex flex-col pt-6 pb-8"><div class="px-6 mb-8 flex items-center gap-3"><img alt="TRACE Tutor Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfM_7kNhwwQNVBovRwEsMxKDQadqvyAcEq5dXSTbuAtthafX8CleaZMMmVKWjaLuLYQXIDTuud81KQeL2akevwHcIqNoyIZ0fewFY18ZMtTreK4EkscGzlBUdGJBnSHcnUZEtOtyJQPo6Fub1Vb8vXPr94iG92fseArQ21q6Hbk03pPrFvm4twF7toUIM6nP4f3vonU4EyjQX4LtT8SXMIJ1rUsusVOi7nJSs8y51yxD2sheayfC0"/><span class="text-headline-md font-bold text-on-surface tracking-tight">TRACE Tutor</span></div><div class="px-4 mb-6"><div class="bg-surface-container p-2 rounded-xl flex items-center justify-between"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[20px]">school</span><span class="text-label-md text-on-surface font-medium">Student Mode</span></div><span class="material-symbols-outlined text-on-surface-variant text-[18px] cursor-pointer">unfold_more</span></div></div><nav class="flex-1 px-4 space-y-1 overflow-y-auto" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a aria-current="page" class="flex items-center px-4 py-2.5 rounded-xl transition-all bg-primary-container text-on-primary-container font-semibold" data-path="dashboard" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">dashboard</span>Dashboard</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="workspace" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">code</span>Workspace</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="assessments" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">assignment</span>Assessments</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="progress" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">trending_up</span>Progress</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="expert" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">psychology</span>Expert</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="research" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">science</span>Research</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">settings</span>Settings</a></nav></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 flex items-center justify-between px-8 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center flex-1 max-w-md bg-surface-container rounded-xl px-4 py-2"><span class="material-symbols-outlined text-on-surface-variant mr-3 text-[20px]">search</span><input class="bg-transparent border-none outline-none text-on-surface text-body-md w-full placeholder:text-outline" placeholder="Search code, diagnostics, or concepts..." type="text"/></div><div class="flex items-center gap-4"><div class="relative cursor-pointer"><span class="material-symbols-outlined text-on-surface-variant hover:text-on-surface transition-colors">notifications</span><span class="absolute top-0 right-0 w-2 h-2 rounded-full bg-primary"></span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full min-h-screen bg-surface text-on-surface p-8 space-y-8">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h1 class="text-headline-xl font-bold text-on-surface tracking-tight">Telemetry Analytics</h1>
+<p class="text-body-md text-on-surface-variant mt-1">“Analyze learner interactions, coding activity, and session behavior.”</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center bg-surface-container px-3 py-2 rounded-xl text-body-sm text-on-surface cursor-pointer hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px] mr-2 text-primary">calendar_today</span>
+<span>Last 7 Days (Oct 12 - Oct 19)</span>
+<span class="material-symbols-outlined text-[18px] ml-2 text-outline">expand_more</span>
+</div>
+<button class="flex items-center bg-surface-container hover:bg-surface-container-high px-3 py-2 rounded-xl text-body-sm text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[18px] mr-2 text-primary">download</span>
+        Export Data
+      </button>
+<button class="flex items-center bg-primary text-on-primary hover:bg-primary-fixed px-3 py-2 rounded-xl text-body-sm font-semibold transition-colors">
+<span class="material-symbols-outlined text-[18px] mr-2">refresh</span>
+        Refresh
+      </button>
+</div>
+</div>
+<div class="bg-surface-container rounded-2xl p-6 shadow-sm">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4 mb-4">
+<div class="flex flex-col">
+<label class="text-label-md text-on-surface-variant mb-1">Participant ID</label>
+<input class="bg-surface-container-high border border-outline-variant/30 rounded-xl px-3 py-2 text-body-sm text-on-surface outline-none focus:border-primary" placeholder="e.g. UID-88421" type="text"/>
+</div>
+<div class="flex flex-col">
+<label class="text-label-md text-on-surface-variant mb-1">Experimental Arm</label>
+<select class="bg-surface-container-high border border-outline-variant/30 rounded-xl px-3 py-2 text-body-sm text-on-surface outline-none focus:border-primary">
+<option>All Arms</option>
+<option>REASONING_VISIBLE</option>
+<option>ANSWER_ONLY</option>
+</select>
+</div>
+<div class="flex flex-col">
+<label class="text-label-md text-on-surface-variant mb-1">Session ID</label>
+<input class="bg-surface-container-high border border-outline-variant/30 rounded-xl px-3 py-2 text-body-sm text-on-surface outline-none focus:border-primary" placeholder="Session filter..." type="text"/>
+</div>
+<div class="flex flex-col">
+<label class="text-label-md text-on-surface-variant mb-1">Event Type</label>
+<select class="bg-surface-container-high border border-outline-variant/30 rounded-xl px-3 py-2 text-body-sm text-on-surface outline-none focus:border-primary">
+<option>All Events</option>
+<option>HELP_REQUEST</option>
+<option>RESPONSE_VIEW</option>
+<option>CODE_RUN</option>
+<option>COPY_PASTE</option>
+<option>TIME_ON_TASK</option>
+</select>
+</div>
+<div class="flex flex-col">
+<label class="text-label-md text-on-surface-variant mb-1">Topic</label>
+<select class="bg-surface-container-high border border-outline-variant/30 rounded-xl px-3 py-2 text-body-sm text-on-surface outline-none focus:border-primary">
+<option>All Topics</option>
+<option>Binary Search</option>
+<option>Array Max</option>
+<option>Recursion Latency</option>
+</select>
+</div>
+<div class="flex items-end gap-2 xl:col-span-2">
+<button class="flex-1 bg-primary text-on-primary py-2 rounded-xl text-body-sm font-semibold hover:bg-primary-fixed transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px] mr-1">filter_alt</span> Apply Filters
+        </button>
+<button class="flex-1 bg-surface-container-high text-on-surface-variant py-2 rounded-xl text-body-sm font-semibold hover:text-on-surface hover:bg-surface-container-highest transition-colors">
+          Reset
+        </button>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+<div class="bg-surface-container p-5 rounded-2xl flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="text-label-md font-semibold">Total Events</span>
+<span class="material-symbols-outlined text-[20px] text-primary">analytics</span>
+</div>
+<div class="mt-4">
+<div class="text-headline-lg font-bold text-on-surface font-code-md">84,291</div>
+<div class="text-code-sm text-primary mt-1 flex items-center">
+<span class="material-symbols-outlined text-[14px] mr-1">trending_up</span> +12.4% today
+        </div>
+</div>
+</div>
+<div class="bg-surface-container p-5 rounded-2xl flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="text-label-md font-semibold">Active Sessions</span>
+<span class="material-symbols-outlined text-[20px] text-primary">group</span>
+</div>
+<div class="mt-4">
+<div class="text-headline-lg font-bold text-on-surface font-code-md">142</div>
+<div class="text-code-sm text-on-surface-variant mt-1 flex items-center">
+<span class="w-2 h-2 rounded-full bg-primary inline-block mr-1.5 animate-pulse"></span> live sessions
+        </div>
+</div>
+</div>
+<div class="bg-surface-container p-5 rounded-2xl flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="text-label-md font-semibold">Tutor Requests</span>
+<span class="material-symbols-outlined text-[20px] text-primary">psychology</span>
+</div>
+<div class="mt-4">
+<div class="text-headline-lg font-bold text-on-surface font-code-md">4,821</div>
+<div class="text-code-sm text-on-surface-variant mt-1">Avg 3.8 / session</div>
+</div>
+</div>
+<div class="bg-surface-container p-5 rounded-2xl flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="text-label-md font-semibold">Code Runs</span>
+<span class="material-symbols-outlined text-[20px] text-primary">code</span>
+</div>
+<div class="mt-4">
+<div class="text-headline-lg font-bold text-on-surface font-code-md">18,940</div>
+<div class="text-code-sm text-primary mt-1">Pass rate: 76.4%</div>
+</div>
+</div>
+<div class="bg-surface-container p-5 rounded-2xl flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="text-label-md font-semibold">Avg. Time on Task</span>
+<span class="material-symbols-outlined text-[20px] text-primary">timer</span>
+</div>
+<div class="mt-4">
+<div class="text-headline-lg font-bold text-on-surface font-code-md">42m 18s</div>
+<div class="text-code-sm text-on-surface-variant mt-1">Across all arms</div>
+</div>
+</div>
+<div class="bg-surface-container p-5 rounded-2xl flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="text-label-md font-semibold">Copy/Paste Events</span>
+<span class="material-symbols-outlined text-[20px] text-primary">content_paste</span>
+</div>
+<div class="mt-4">
+<div class="text-headline-lg font-bold text-on-surface font-code-md">312</div>
+<div class="text-code-sm text-on-surface-variant mt-1">Neutral monitoring</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<div class="bg-surface-container rounded-2xl p-6 flex flex-col justify-between">
+<div>
+<h2 class="text-headline-md font-semibold text-on-surface mb-2">Event Types Overview</h2>
+<p class="text-body-sm text-on-surface-variant mb-6">Frequency distribution across primary interaction categories.</p>
+<div class="space-y-4">
+<div>
+<div class="flex justify-between text-body-sm mb-1">
+<span class="font-code-md text-on-surface">CODE_RUN</span>
+<span class="text-on-surface-variant">32,410 (38%)</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 38%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-body-sm mb-1">
+<span class="font-code-md text-on-surface">TIME_ON_TASK</span>
+<span class="text-on-surface-variant">21,800 (26%)</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 26%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-body-sm mb-1">
+<span class="font-code-md text-on-surface">HELP_REQUEST</span>
+<span class="text-on-surface-variant">12,140 (14%)</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 14%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-body-sm mb-1">
+<span class="font-code-md text-on-surface">RESPONSE_VIEW</span>
+<span class="text-on-surface-variant">9,520 (11%)</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-secondary-container h-full rounded-full" style="width: 11%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-body-sm mb-1">
+<span class="font-code-md text-on-surface">LOGIN / LOGOUT</span>
+<span class="text-on-surface-variant">6,509 (8%)</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-outline h-full rounded-full" style="width: 8%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-body-sm mb-1">
+<span class="font-code-md text-on-surface">COPY_PASTE</span>
+<span class="text-on-surface-variant">1,912 (3%)</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full rounded-full" style="width: 3%"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-4 border-t border-outline-variant/10 text-body-sm text-on-surface-variant">
+        Aggregated stream data updated in real-time via WebSocket worker nodes.
+      </div>
+</div>
+<div class="bg-surface-container rounded-2xl p-6 lg:col-span-2 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-2">
+<h2 class="text-headline-md font-semibold text-on-surface">Experimental Arm Comparison</h2>
+<span class="text-code-sm bg-surface-container-high px-2 py-1 rounded-xl text-primary font-medium">REASONING_VISIBLE vs ANSWER_ONLY</span>
+</div>
+<p class="text-body-sm text-on-surface-variant mb-6">Grouped comparative metrics analyzing pedagogical condition impacts.</p>
+<div class="space-y-6">
+<div>
+<div class="flex justify-between text-body-sm mb-2">
+<span class="text-on-surface font-medium">Avg. Help Requests per Session</span>
+<span class="font-code-md text-primary">RV: 4.2 | AO: 2.8</span>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div class="bg-surface-container-high p-3 rounded-xl flex items-center justify-between">
+<span class="text-body-sm text-on-surface-variant">REASONING_VISIBLE</span>
+<span class="font-code-md font-bold text-on-surface">4.2</span>
+</div>
+<div class="bg-surface-container-high p-3 rounded-xl flex items-center justify-between">
+<span class="text-body-sm text-on-surface-variant">ANSWER_ONLY</span>
+<span class="font-code-md font-bold text-on-surface">2.8</span>
+</div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-body-sm mb-2">
+<span class="text-on-surface font-medium">Avg. Code Executions (Runs)</span>
+<span class="font-code-md text-primary">RV: 14.1 | AO: 16.5</span>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div class="bg-surface-container-high p-3 rounded-xl flex items-center justify-between">
+<span class="text-body-sm text-on-surface-variant">REASONING_VISIBLE</span>
+<span class="font-code-md font-bold text-on-surface">14.1</span>
+</div>
+<div class="bg-surface-container-high p-3 rounded-xl flex items-center justify-between">
+<span class="text-body-sm text-on-surface-variant">ANSWER_ONLY</span>
+<span class="font-code-md font-bold text-on-surface">16.5</span>
+</div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-body-sm mb-2">
+<span class="text-on-surface font-medium">Avg. Response Views</span>
+<span class="font-code-md text-primary">RV: 5.4 | AO: 3.1</span>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div class="bg-surface-container-high p-3 rounded-xl flex items-center justify-between">
+<span class="text-body-sm text-on-surface-variant">REASONING_VISIBLE</span>
+<span class="font-code-md font-bold text-on-surface">5.4</span>
+</div>
+<div class="bg-surface-container-high p-3 rounded-xl flex items-center justify-between">
+<span class="text-body-sm text-on-surface-variant">ANSWER_ONLY</span>
+<span class="font-code-md font-bold text-on-surface">3.1</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-4 border-t border-outline-variant/10 text-body-sm text-on-surface-variant italic">
+        Note: Descriptive results; statistical inference (ANOVA / mixed-effects models) performed separately in R environment.
+      </div>
+</div>
+</div>
+<div class="bg-surface-container rounded-2xl p-6">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+<div>
+<h2 class="text-headline-md font-semibold text-on-surface">Interaction Timeline</h2>
+<p class="text-body-sm text-on-surface-variant">Real-time chronological stream of telemetry events.</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-primary animate-ping"></span>
+<span class="text-code-sm text-primary font-medium">Live Stream Active</span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant/20 text-label-md text-on-surface-variant">
+<th class="py-3 px-4">Timestamp</th>
+<th class="py-3 px-4">Event Type</th>
+<th class="py-3 px-4">Participant ID</th>
+<th class="py-3 px-4">Context / Metadata</th>
+<th class="py-3 px-4 text-right">Status</th>
+</tr>
+</thead>
+<tbody class="text-body-sm divide-y divide-outline-variant/10 font-code-md">
+<tr class="hover:bg-surface-container-high/50 transition-colors">
+<td class="py-3 px-4 text-on-surface-variant">10:32:14</td>
+<td class="py-3 px-4"><span class="bg-primary/10 text-primary px-2 py-1 rounded text-code-sm font-semibold">CODE_RUN</span></td>
+<td class="py-3 px-4 text-on-surface">UID-88421</td>
+<td class="py-3 px-4 text-on-surface-variant">Python Binary Search</td>
+<td class="py-3 px-4 text-right text-primary">Passed</td>
+</tr>
+<tr class="hover:bg-surface-container-high/50 transition-colors">
+<td class="py-3 px-4 text-on-surface-variant">10:33:02</td>
+<td class="py-3 px-4"><span class="bg-secondary/10 text-secondary px-2 py-1 rounded text-code-sm font-semibold">HELP_REQUEST</span></td>
+<td class="py-3 px-4 text-on-surface">UID-88421</td>
+<td class="py-3 px-4 text-on-surface-variant">RAG query: "Explain recursion latency"</td>
+<td class="py-3 px-4 text-right text-on-surface-variant">Resolved</td>
+</tr>
+<tr class="hover:bg-surface-container-high/50 transition-colors">
+<td class="py-3 px-4 text-on-surface-variant">10:33:08</td>
+<td class="py-3 px-4"><span class="bg-tertiary/10 text-tertiary px-2 py-1 rounded text-code-sm font-semibold">RESPONSE_VIEW</span></td>
+<td class="py-3 px-4 text-on-surface">UID-88421</td>
+<td class="py-3 px-4 text-on-surface-variant">Reasoning timeline rendered</td>
+<td class="py-3 px-4 text-right text-on-surface-variant">Rendered</td>
+</tr>
+<tr class="hover:bg-surface-container-high/50 transition-colors">
+<td class="py-3 px-4 text-on-surface-variant">10:35:41</td>
+<td class="py-3 px-4"><span class="bg-primary/10 text-primary px-2 py-1 rounded text-code-sm font-semibold">CODE_RUN</span></td>
+<td class="py-3 px-4 text-on-surface">UID-88422</td>
+<td class="py-3 px-4 text-on-surface-variant">JavaScript Array Max</td>
+<td class="py-3 px-4 text-right text-error">Failed test 2</td>
+</tr>
+<tr class="hover:bg-surface-container-high/50 transition-colors">
+<td class="py-3 px-4 text-on-surface-variant">10:38:17</td>
+<td class="py-3 px-4"><span class="bg-error/10 text-error px-2 py-1 rounded text-code-sm font-semibold">COPY_PASTE</span></td>
+<td class="py-3 px-4 text-on-surface">UID-88422</td>
+<td class="py-3 px-4 text-on-surface-variant">12 lines pasted from external reference</td>
+<td class="py-3 px-4 text-right text-warning">Flagged</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="bg-surface-container rounded-2xl p-6">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+<div>
+<h2 class="text-headline-md font-semibold text-on-surface">Session Overview Table</h2>
+<p class="text-body-sm text-on-surface-variant">Comprehensive breakdown of active and completed study sessions.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center bg-surface-container-high px-3 py-1.5 rounded-xl text-body-sm">
+<span class="material-symbols-outlined text-[18px] mr-2 text-on-surface-variant">search</span>
+<input class="bg-transparent border-none outline-none text-on-surface placeholder:text-outline w-36" placeholder="Search sessions..." type="text"/>
+</div>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant/20 text-label-md text-on-surface-variant">
+<th class="py-3 px-4">Participant</th>
+<th class="py-3 px-4">Arm</th>
+<th class="py-3 px-4">Session ID</th>
+<th class="py-3 px-4">Duration</th>
+<th class="py-3 px-4 text-center">Problems Attempted</th>
+<th class="py-3 px-4 text-center">Code Runs</th>
+<th class="py-3 px-4 text-center">Tutor Req.</th>
+<th class="py-3 px-4 text-right">Action</th>
+</tr>
+</thead>
+<tbody class="text-body-sm divide-y divide-outline-variant/10">
+<tr class="hover:bg-surface-container-high/50 transition-colors">
+<td class="py-3 px-4 font-medium text-on-surface">UID-88421</td>
+<td class="py-3 px-4"><span class="text-code-sm bg-primary/10 text-primary px-2 py-0.5 rounded">REASONING_VISIBLE</span></td>
+<td class="py-3 px-4 font-code-md text-on-surface-variant">SES-99102</td>
+<td class="py-3 px-4 font-code-md">45m 12s</td>
+<td class="py-3 px-4 text-center font-code-md">3</td>
+<td class="py-3 px-4 text-center font-code-md">14</td>
+<td class="py-3 px-4 text-center font-code-md">5</td>
+<td class="py-3 px-4 text-right">
+<button class="text-primary hover:text-primary-fixed font-medium text-body-sm">View Session</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high/50 transition-colors">
+<td class="py-3 px-4 font-medium text-on-surface">UID-88422</td>
+<td class="py-3 px-4"><span class="text-code-sm bg-secondary/10 text-secondary px-2 py-0.5 rounded">ANSWER_ONLY</span></td>
+<td class="py-3 px-4 font-code-md text-on-surface-variant">SES-99103</td>
+<td class="py-3 px-4 font-code-md">38m 40s</td>
+<td class="py-3 px-4 text-center font-code-md">2</td>
+<td class="py-3 px-4 text-center font-code-md">18</td>
+<td class="py-3 px-4 text-center font-code-md">2</td>
+<td class="py-3 px-4 text-right">
+<button class="text-primary hover:text-primary-fixed font-medium text-body-sm">View Session</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high/50 transition-colors">
+<td class="py-3 px-4 font-medium text-on-surface">UID-88423</td>
+<td class="py-3 px-4"><span class="text-code-sm bg-primary/10 text-primary px-2 py-0.5 rounded">REASONING_VISIBLE</span></td>
+<td class="py-3 px-4 font-code-md text-on-surface-variant">SES-99104</td>
+<td class="py-3 px-4 font-code-md">52m 05s</td>
+<td class="py-3 px-4 text-center font-code-md">4</td>
+<td class="py-3 px-4 text-center font-code-md">22</td>
+<td class="py-3 px-4 text-center font-code-md">7</td>
+<td class="py-3 px-4 text-right">
+<button class="text-primary hover:text-primary-fixed font-medium text-body-sm">View Session</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex items-center justify-between mt-6 pt-4 border-t border-outline-variant/10 text-body-sm text-on-surface-variant">
+<span>Showing 1-3 of 142 sessions</span>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1 bg-surface-container-high rounded-xl text-on-surface disabled:opacity-50">Prev</button>
+<button class="px-3 py-1 bg-primary text-on-primary rounded-xl font-semibold">1</button>
+<button class="px-3 py-1 bg-surface-container-high rounded-xl text-on-surface">2</button>
+<button class="px-3 py-1 bg-surface-container-high rounded-xl text-on-surface">3</button>
+<button class="px-3 py-1 bg-surface-container-high rounded-xl text-on-surface">Next</button>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<div class="bg-surface-container rounded-2xl p-6 flex flex-col justify-between">
+<div>
+<h2 class="text-headline-md font-semibold text-on-surface mb-2">Time-on-Task Distribution</h2>
+<p class="text-body-sm text-on-surface-variant mb-6">Comparative duration spread across experimental arms.</p>
+<div class="space-y-4">
+<div>
+<div class="flex justify-between text-body-sm mb-1">
+<span class="text-on-surface">REASONING_VISIBLE (Mean: 45m)</span>
+<span class="font-code-md text-primary">72% optimal range</span>
+</div>
+<div class="w-full bg-surface-container-high h-3 rounded-full overflow-hidden flex">
+<div class="bg-surface-container-lowest h-full" style="width: 10%"></div>
+<div class="bg-primary h-full" style="width: 72%"></div>
+<div class="bg-surface-container-lowest h-full" style="width: 18%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-body-sm mb-1">
+<span class="text-on-surface">ANSWER_ONLY (Mean: 38m)</span>
+<span class="font-code-md text-secondary">64% optimal range</span>
+</div>
+<div class="w-full bg-surface-container-high h-3 rounded-full overflow-hidden flex">
+<div class="bg-surface-container-lowest h-full" style="width: 20%"></div>
+<div class="bg-secondary h-full" style="width: 64%"></div>
+<div class="bg-surface-container-lowest h-full" style="width: 16%"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-4 border-t border-outline-variant/10 text-body-sm text-on-surface-variant">
+        Optimal engagement threshold defined between 30m and 60m continuous interaction.
+      </div>
+</div>
+<div class="bg-surface-container rounded-2xl p-6 flex flex-col justify-between">
+<div>
+<h2 class="text-headline-md font-semibold text-on-surface mb-2">Code Interaction Metrics</h2>
+<p class="text-body-sm text-on-surface-variant mb-6">Neutral academic monitoring of editing habits.</p>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-high p-4 rounded-xl">
+<div class="text-label-md text-on-surface-variant">Copy Events</div>
+<div class="text-headline-lg font-bold text-on-surface font-code-md mt-1">1.2 avg</div>
+<div class="text-code-sm text-primary mt-1">Per student / session</div>
+</div>
+<div class="bg-surface-container-high p-4 rounded-xl">
+<div class="text-label-md text-on-surface-variant">Paste Events</div>
+<div class="text-headline-lg font-bold text-on-surface font-code-md mt-1">0.8 avg</div>
+<div class="text-code-sm text-primary mt-1">Per student / session</div>
+</div>
+<div class="bg-surface-container-high p-4 rounded-xl">
+<div class="text-label-md text-on-surface-variant">Submission Attempts</div>
+<div class="text-headline-lg font-bold text-on-surface font-code-md mt-1">4.6 avg</div>
+<div class="text-code-sm text-primary mt-1">Final correctness: 82%</div>
+</div>
+<div class="bg-surface-container-high p-4 rounded-xl">
+<div class="text-label-md text-on-surface-variant">Syntax Error Rate</div>
+<div class="text-headline-lg font-bold text-on-surface font-code-md mt-1">14.3%</div>
+<div class="text-code-sm text-primary mt-1">Corrected in &lt; 2m</div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-4 border-t border-outline-variant/10 text-body-sm text-on-surface-variant">
+        All telemetry captured in compliance with IRB institutional research protocols.
+      </div>
+</div>
+</div>
+<div class="bg-surface-container rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+<div>
+<h2 class="text-headline-md font-semibold text-on-surface">Data Export &amp; Research Packages</h2>
+<p class="text-body-sm text-on-surface-variant mt-1">Download complete telemetry bundles formatted for statistical analysis pipelines.</p>
+</div>
+<div class="flex items-center gap-3 w-full md:w-auto">
+<button class="flex-1 md:flex-initial flex items-center justify-center bg-surface-container-high hover:bg-surface-container-highest px-4 py-2.5 rounded-xl text-body-sm font-semibold text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[18px] mr-2 text-primary">code</span> CSV Export
+      </button>
+<button class="flex-1 md:flex-initial flex items-center justify-center bg-surface-container-high hover:bg-surface-container-highest px-4 py-2.5 rounded-xl text-body-sm font-semibold text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[18px] mr-2 text-primary">data_object</span> JSON Bundle
+      </button>
+<button class="flex-1 md:flex-initial flex items-center justify-center bg-primary text-on-primary hover:bg-primary-fixed px-4 py-2.5 rounded-xl text-body-sm font-semibold transition-colors">
+<span class="material-symbols-outlined text-[18px] mr-2">description</span> Research Summary
+      </button>
+</div>
+</div>
+</div></main></div></body></html>

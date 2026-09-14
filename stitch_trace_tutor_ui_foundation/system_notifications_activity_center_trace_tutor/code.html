@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-variant": "#2d3449", "surface-container": "#171f33", "surface-container-high": "#222a3d", "primary-container": "#06b6d4", "tertiary-fixed": "#d8e3fb", "on-tertiary": "#263143", "outline": "#869397", "inverse-surface": "#dae2fd", "on-background": "#dae2fd", "surface-container-lowest": "#060e20", "on-secondary": "#1000a9", "on-tertiary-container": "#313c4f", "on-primary-container": "#00424f", "on-secondary-container": "#b0b2ff", "on-primary": "#003640", "on-primary-fixed-variant": "#004e5c", "tertiary": "#bcc7de", "surface": "#0b1326", "on-error-container": "#ffdad6", "inverse-on-surface": "#283044", "error": "#ffb4ab", "on-tertiary-fixed-variant": "#3c475a", "secondary": "#c0c1ff", "secondary-container": "#3131c0", "on-secondary-fixed": "#07006c", "secondary-fixed-dim": "#c0c1ff", "error-container": "#93000a", "on-primary-fixed": "#001f26", "on-secondary-fixed-variant": "#2f2ebe", "primary-fixed-dim": "#4cd7f6", "on-surface-variant": "#bcc9cd", "on-tertiary-fixed": "#111c2d", "primary-fixed": "#acedff", "surface-container-low": "#131b2e", "surface-tint": "#4cd7f6", "surface-bright": "#31394d", "inverse-primary": "#00687a", "outline-variant": "#3d494c", "surface-dim": "#0b1326", "secondary-fixed": "#e1e0ff", "tertiary-fixed-dim": "#bcc7de", "on-surface": "#dae2fd", "on-error": "#690005", "primary": "#4cd7f6", "tertiary-container": "#9ca7be", "surface-container-highest": "#2d3449", "background": "#0b1326" }, borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" }, spacing: { "space-sm": "0.5rem", "space-lg": "1.5rem", gutter: "1rem", "space-xl": "2rem", "space-xs": "0.25rem", margin: "1.5rem", "space-md": "1rem" }, fontFamily: { "body-lg": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "body-md": ["Inter"], "code-md": ["JetBrains Mono"], "code-sm": ["JetBrains Mono"], "body-sm": ["Inter"], "headline-md": ["Inter"], "headline-lg": ["Inter"] }, fontSize: { "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" }], "headline-xl": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "code-md": ["13px", { lineHeight: "20px", fontWeight: "400" }], "code-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "body-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }], "headline-md": ["18px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "500" }], "headline-lg": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }] } } } }</script></head><body class="bg-surface font-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-50 flex flex-col pt-6 pb-8"><div class="px-6 mb-8 flex items-center gap-3"><img alt="TRACE Tutor Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfM_7kNhwwQNVBovRwEsMxKDQadqvyAcEq5dXSTbuAtthafX8CleaZMMmVKWjaLuLYQXIDTuud81KQeL2akevwHcIqNoyIZ0fewFY18ZMtTreK4EkscGzlBUdGJBnSHcnUZEtOtyJQPo6Fub1Vb8vXPr94iG92fseArQ21q6Hbk03pPrFvm4twF7toUIM6nP4f3vonU4EyjQX4LtT8SXMIJ1rUsusVOi7nJSs8y51yxD2sheayfC0"/><span class="text-headline-md font-bold text-on-surface tracking-tight">TRACE Tutor</span></div><div class="px-4 mb-6"><div class="bg-surface-container p-2 rounded-xl flex items-center justify-between"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[20px]">school</span><span class="text-label-md text-on-surface font-medium">Student Mode</span></div><span class="material-symbols-outlined text-on-surface-variant text-[18px] cursor-pointer">unfold_more</span></div></div><nav class="flex-1 px-4 space-y-1 overflow-y-auto" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="dashboard" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">dashboard</span>Dashboard</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="workspace" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">code</span>Workspace</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="tutor" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">smart_toy</span>AI Tutor</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="assessments" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">assignment</span>Assessments</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="progress" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">trending_up</span>Progress</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="expert" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">psychology</span>Expert</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="research" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">science</span>Research</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="data-export" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">download</span>Data Export &amp; Reporting</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">settings</span>Settings</a></nav></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 flex items-center justify-between px-8 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center flex-1 max-w-md bg-surface-container rounded-xl px-4 py-2"><span class="material-symbols-outlined text-on-surface-variant mr-3 text-[20px]">search</span><input class="bg-transparent border-none outline-none text-on-surface text-body-md w-full placeholder:text-outline" placeholder="Search code, diagnostics, or concepts..." type="text"/></div><div class="flex items-center gap-4"><div class="relative cursor-pointer"><span class="material-symbols-outlined text-on-surface-variant hover:text-on-surface transition-colors">notifications</span><span class="absolute top-0 right-0 w-2 h-2 rounded-full bg-primary"></span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Top Hero / Page Header -->
+<div class="px-8 pt-8 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h1 class="font-headline-xl text-on-surface">Notifications</h1>
+<p class="text-body-md text-on-surface-variant mt-1">Stay updated on important learning, assessment, and system activity</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 bg-surface-container hover:bg-surface-container-high text-on-surface text-label-md rounded-xl transition-all flex items-center gap-2 cursor-pointer shadow-sm" onclick="markAllRead()">
+<span class="material-symbols-outlined text-[18px]">done_all</span>
+        Mark All as Read
+      </button>
+<button class="px-4 py-2 bg-primary-container text-on-primary-container hover:opacity-90 text-label-md rounded-xl transition-all flex items-center gap-2 cursor-pointer shadow-sm" onclick="openSettings()">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+        Notification Settings
+      </button>
+</div>
+</div>
+<!-- Main Grid Layout -->
+<div class="px-8 pb-16 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- Left Column: Notifications Feed -->
+<div class="lg:col-span-8 flex flex-col gap-6">
+<!-- Search & Category Tabs -->
+<div class="bg-surface-container-low p-3 rounded-2xl flex flex-col gap-4 shadow-sm">
+<div class="flex items-center bg-surface-container rounded-xl px-4 py-2">
+<span class="material-symbols-outlined text-on-surface-variant mr-3 text-[20px]">search</span>
+<input class="bg-transparent border-none outline-none text-on-surface text-body-md w-full placeholder:text-outline" id="notifSearch" onkeyup="filterNotifications()" placeholder="Search notifications by keyword, ID, or component..." type="text"/>
+</div>
+<!-- Tabs -->
+<div class="flex items-center gap-1.5 overflow-x-auto pb-1">
+<button class="tab-btn px-3.5 py-1.5 rounded-lg text-label-md font-medium transition-all bg-primary text-on-primary cursor-pointer shrink-0" onclick="filterTab('all', this)">
+            All <span class="ml-1 opacity-75">12</span>
+</button>
+<button class="tab-btn px-3.5 py-1.5 rounded-lg text-label-md font-medium transition-all text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer shrink-0" onclick="filterTab('learning', this)">
+            Learning <span class="ml-1 opacity-75">3</span>
+</button>
+<button class="tab-btn px-3.5 py-1.5 rounded-lg text-label-md font-medium transition-all text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer shrink-0" onclick="filterTab('assessments', this)">
+            Assessments <span class="ml-1 opacity-75">2</span>
+</button>
+<button class="tab-btn px-3.5 py-1.5 rounded-lg text-label-md font-medium transition-all text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer shrink-0" onclick="filterTab('tutor', this)">
+            Tutor <span class="ml-1 opacity-75">2</span>
+</button>
+<button class="tab-btn px-3.5 py-1.5 rounded-lg text-label-md font-medium transition-all text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer shrink-0" onclick="filterTab('system', this)">
+            System <span class="ml-1 opacity-75">1</span>
+</button>
+<button class="tab-btn px-3.5 py-1.5 rounded-lg text-label-md font-medium transition-all text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer shrink-0" onclick="filterTab('reviews', this)">
+            Reviews <span class="ml-1 opacity-75">2</span>
+</button>
+<button class="tab-btn px-3.5 py-1.5 rounded-lg text-label-md font-medium transition-all text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer shrink-0" onclick="filterTab('research', this)">
+            Research <span class="ml-1 opacity-75">2</span>
+</button>
+</div>
+</div>
+<!-- Notifications List -->
+<div class="flex flex-col gap-3" id="notificationList">
+<!-- Item 1: Warning -->
+<div class="notif-card group relative bg-surface-container-low hover:bg-surface-container transition-all p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm" data-category="system" data-id="1">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 bg-error rounded-r"></div>
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-xl bg-error/10 flex items-center justify-center shrink-0 text-error">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="text-headline-md text-on-surface font-semibold">RAG Alert — Low-confidence retrievals detected in C++ verified corpus.</span>
+<span class="px-2 py-0.5 bg-error/20 text-error text-label-md rounded font-medium">Warning</span>
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+</div>
+<p class="text-body-md text-on-surface-variant">Model outputs for pointer manipulation queries showed slight semantic drift. Manual verification recommended.</p>
+<span class="text-body-sm text-outline mt-1 font-mono">12m ago • System Pipeline</span>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0 self-end md:self-center">
+<button class="px-4 py-2 bg-surface-container-high hover:bg-surface-variant text-on-surface text-label-md rounded-xl transition-all cursor-pointer" onclick="openDetail('1', 'RAG Alert — Low-confidence retrievals detected in C++ verified corpus.', 'Model outputs for pointer manipulation queries showed slight semantic drift. Manual verification recommended.', '12m ago', 'Warning', 'System Pipeline', 'Review Corpus')">
+              Review Corpus
+            </button>
+<button class="p-2 text-outline hover:text-on-surface transition-colors cursor-pointer" onclick="dismissNotif(this)" title="Dismiss">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<!-- Item 2: Critical -->
+<div class="notif-card group relative bg-surface-container-low hover:bg-surface-container transition-all p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm" data-category="reviews" data-id="2">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 bg-error-container text-error rounded-r"></div>
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-xl bg-error/15 flex items-center justify-center shrink-0 text-error">
+<span class="material-symbols-outlined text-[20px]">error</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="text-headline-md text-on-surface font-semibold">Expert Review Assigned — 3 flagged items waiting for validation in Item Bank #4.</span>
+<span class="px-2 py-0.5 bg-error/20 text-error text-label-md rounded font-medium">Critical</span>
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+</div>
+<p class="text-body-md text-on-surface-variant">Your domain expert account has been designated to validate psychometric indices for advanced graph traversal testlets.</p>
+<span class="text-body-sm text-outline mt-1 font-mono">1h ago • Expert Panel</span>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0 self-end md:self-center">
+<button class="px-4 py-2 bg-primary text-on-primary hover:opacity-90 text-label-md rounded-xl transition-all font-medium cursor-pointer" onclick="openDetail('2', 'Expert Review Assigned — 3 flagged items waiting for validation in Item Bank #4.', 'Your domain expert account has been designated to validate psychometric indices for advanced graph traversal testlets.', '1h ago', 'Critical', 'Expert Panel', 'Review Bank')">
+              Review Bank
+            </button>
+<button class="p-2 text-outline hover:text-on-surface transition-colors cursor-pointer" onclick="dismissNotif(this)" title="Dismiss">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<!-- Item 3: Important -->
+<div class="notif-card group relative bg-surface-container-low hover:bg-surface-container transition-all p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm" data-category="assessments" data-id="3">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 bg-primary rounded-r"></div>
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined text-[20px]">assignment</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="text-headline-md text-on-surface font-semibold">Assessment Available — Your Post-Test is ready for Q1-2024 Advanced Algorithms.</span>
+<span class="px-2 py-0.5 bg-primary/20 text-primary text-label-md rounded font-medium">Important</span>
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+</div>
+<p class="text-body-md text-on-surface-variant">Timed evaluation covering dynamic programming, amortized analysis, and self-balancing trees. 60 minutes allocated.</p>
+<span class="text-body-sm text-outline mt-1 font-mono">3h ago • Assessments Engine</span>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0 self-end md:self-center">
+<button class="px-4 py-2 bg-primary text-on-primary hover:opacity-90 text-label-md rounded-xl transition-all font-medium cursor-pointer" onclick="openDetail('3', 'Assessment Available — Your Post-Test is ready for Q1-2024 Advanced Algorithms.', 'Timed evaluation covering dynamic programming, amortized analysis, and self-balancing trees. 60 minutes allocated.', '3h ago', 'Important', 'Assessments Engine', 'Start Assessment')">
+              Start Assessment
+            </button>
+<button class="p-2 text-outline hover:text-on-surface transition-colors cursor-pointer" onclick="dismissNotif(this)" title="Dismiss">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<!-- Item 4: Informational (Read) -->
+<div class="notif-card group bg-surface-container-low hover:bg-surface-container transition-all p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm opacity-80" data-category="assessments" data-id="4">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-xl bg-surface-variant flex items-center justify-center shrink-0 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">task_alt</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="text-headline-md text-on-surface font-semibold">Assessment Completed — Your Post-Test result is available (Score: 92%).</span>
+<span class="px-2 py-0.5 bg-surface-variant text-on-surface-variant text-label-md rounded font-medium">Informational</span>
+</div>
+<p class="text-body-md text-on-surface-variant">Great work! You demonstrated high proficiency in greedy algorithms and graph coloring bounds.</p>
+<span class="text-body-sm text-outline mt-1 font-mono">1d ago • Assessments Engine</span>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0 self-end md:self-center">
+<button class="px-4 py-2 bg-surface-container-high hover:bg-surface-variant text-on-surface text-label-md rounded-xl transition-all cursor-pointer" onclick="openDetail('4', 'Assessment Completed — Your Post-Test result is available (Score: 92%).', 'Great work! You demonstrated high proficiency in greedy algorithms and graph coloring bounds.', '1d ago', 'Informational', 'Assessments Engine', 'View Results')">
+              View Results
+            </button>
+<button class="p-2 text-outline hover:text-on-surface transition-colors cursor-pointer" onclick="dismissNotif(this)" title="Dismiss">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<!-- Item 5: Informational (Read) -->
+<div class="notif-card group bg-surface-container-low hover:bg-surface-container transition-all p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm opacity-80" data-category="learning" data-id="5">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-xl bg-surface-variant flex items-center justify-center shrink-0 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">school</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="text-headline-md text-on-surface font-semibold">Learning Reminder — Continue your current topic: AVL Tree Rotations.</span>
+<span class="px-2 py-0.5 bg-surface-variant text-on-surface-variant text-label-md rounded font-medium">Informational</span>
+</div>
+<p class="text-body-md text-on-surface-variant">You left off at double rotation step 3. Complete the interactive sandbox exercise to solidify understanding.</p>
+<span class="text-body-sm text-outline mt-1 font-mono">2d ago • Curriculum Engine</span>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0 self-end md:self-center">
+<button class="px-4 py-2 bg-surface-container-high hover:bg-surface-variant text-on-surface text-label-md rounded-xl transition-all cursor-pointer" onclick="openDetail('5', 'Learning Reminder — Continue your current topic: AVL Tree Rotations.', 'You left off at double rotation step 3. Complete the interactive sandbox exercise to solidify understanding.', '2d ago', 'Informational', 'Curriculum Engine', 'Resume Learning')">
+              Resume Learning
+            </button>
+<button class="p-2 text-outline hover:text-on-surface transition-colors cursor-pointer" onclick="dismissNotif(this)" title="Dismiss">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<!-- Item 6: Important -->
+<div class="notif-card group bg-surface-container-low hover:bg-surface-container transition-all p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm opacity-80" data-category="reviews" data-id="6">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-xl bg-surface-variant flex items-center justify-center shrink-0 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">psychology</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="text-headline-md text-on-surface font-semibold">Validation Completed — Expert review submitted by Dr. A. Vance for CS-204 Graph Cycles.</span>
+<span class="px-2 py-0.5 bg-primary/20 text-primary text-label-md rounded font-medium">Important</span>
+</div>
+<p class="text-body-md text-on-surface-variant">Content Validity Index (CVI) scored at 0.94. Item approved for standard student cohort delivery.</p>
+<span class="text-body-sm text-outline mt-1 font-mono">2d ago • Expert Panel</span>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0 self-end md:self-center">
+<button class="px-4 py-2 bg-surface-container-high hover:bg-surface-variant text-on-surface text-label-md rounded-xl transition-all cursor-pointer" onclick="openDetail('6', 'Validation Completed — Expert review submitted by Dr. A. Vance for CS-204 Graph Cycles.', 'Content Validity Index (CVI) scored at 0.94. Item approved for standard student cohort delivery.', '2d ago', 'Important', 'Expert Panel', 'View Analytics')">
+              View Analytics
+            </button>
+<button class="p-2 text-outline hover:text-on-surface transition-colors cursor-pointer" onclick="dismissNotif(this)" title="Dismiss">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<!-- Item 7: Informational -->
+<div class="notif-card group bg-surface-container-low hover:bg-surface-container transition-all p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm opacity-80" data-category="system" data-id="7">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-xl bg-surface-variant flex items-center justify-center shrink-0 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">dns</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="text-headline-md text-on-surface font-semibold">System Update — Scheduled maintenance on telemetry aggregation pipeline complete.</span>
+<span class="px-2 py-0.5 bg-surface-variant text-on-surface-variant text-label-md rounded font-medium">Informational</span>
+</div>
+<p class="text-body-md text-on-surface-variant">All telemetry services restored with 14% lower latency on real-time code trace parsing.</p>
+<span class="text-body-sm text-outline mt-1 font-mono">3d ago • Infrastructure</span>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0 self-end md:self-center">
+<button class="px-4 py-2 bg-surface-container-high hover:bg-surface-variant text-on-surface text-label-md rounded-xl transition-all cursor-pointer" onclick="openDetail('7', 'System Update — Scheduled maintenance on telemetry aggregation pipeline complete.', 'All telemetry services restored with 14% lower latency on real-time code trace parsing.', '3d ago', 'Informational', 'Infrastructure', 'View Status')">
+              View Status
+            </button>
+<button class="p-2 text-outline hover:text-on-surface transition-colors cursor-pointer" onclick="dismissNotif(this)" title="Dismiss">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Recent Activity Feed & Notification Preferences Summary -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<!-- Recent Activity Feed -->
+<div class="bg-surface-container-low p-6 rounded-2xl flex flex-col gap-5 shadow-sm">
+<div class="flex items-center justify-between">
+<h2 class="text-headline-md text-on-surface font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">history</span>
+            Recent Activity Feed
+          </h2>
+<span class="text-label-md text-outline font-mono">LIVE LOG</span>
+</div>
+<div class="flex flex-col gap-4 relative before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-[2px] before:bg-surface-variant">
+<!-- Activity 1 -->
+<div class="flex items-start gap-4 relative">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center shrink-0 z-10 text-primary border-2 border-surface-container-low">
+<span class="material-symbols-outlined text-[16px]">code</span>
+</div>
+<div class="flex flex-col">
+<span class="text-body-md text-on-surface font-medium">Problem solved: CS-204 Graph Cycles (DFS Coloring) - Python</span>
+<span class="text-body-sm text-outline font-mono mt-0.5">4h ago</span>
+</div>
+</div>
+<!-- Activity 2 -->
+<div class="flex items-start gap-4 relative">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center shrink-0 z-10 text-primary border-2 border-surface-container-low">
+<span class="material-symbols-outlined text-[16px]">assignment</span>
+</div>
+<div class="flex flex-col">
+<span class="text-body-md text-on-surface font-medium">Assessment completed: Post-Test Advanced Algorithms - Score 92%</span>
+<span class="text-body-sm text-outline font-mono mt-0.5">1d ago</span>
+</div>
+</div>
+<!-- Activity 3 -->
+<div class="flex items-start gap-4 relative">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center shrink-0 z-10 text-primary border-2 border-surface-container-low">
+<span class="material-symbols-outlined text-[16px]">school</span>
+</div>
+<div class="flex flex-col">
+<span class="text-body-md text-on-surface font-medium">Topic completed: AVL Tree Rotations &amp; Rebalancing</span>
+<span class="text-body-sm text-outline font-mono mt-0.5">2d ago</span>
+</div>
+</div>
+<!-- Activity 4 -->
+<div class="flex items-start gap-4 relative">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center shrink-0 z-10 text-primary border-2 border-surface-container-low">
+<span class="material-symbols-outlined text-[16px]">smart_toy</span>
+</div>
+<div class="flex flex-col">
+<span class="text-body-md text-on-surface font-medium">Tutor interaction: REASONING_VISIBLE trace session on Pointer Arithmetic</span>
+<span class="text-body-sm text-outline font-mono mt-0.5">3d ago</span>
+</div>
+</div>
+<!-- Activity 5 -->
+<div class="flex items-start gap-4 relative">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center shrink-0 z-10 text-primary border-2 border-surface-container-low">
+<span class="material-symbols-outlined text-[16px]">psychology</span>
+</div>
+<div class="flex flex-col">
+<span class="text-body-md text-on-surface font-medium">Expert review submitted: CVI Rating 0.94 for CS-202</span>
+<span class="text-body-sm text-outline font-mono mt-0.5">4d ago</span>
+</div>
+</div>
+<!-- Activity 6 -->
+<div class="flex items-start gap-4 relative">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center shrink-0 z-10 text-primary border-2 border-surface-container-low">
+<span class="material-symbols-outlined text-[16px]">science</span>
+</div>
+<div class="flex flex-col">
+<span class="text-body-md text-on-surface font-medium">Research configuration updated: Cohort Q2-2024 parameters modified</span>
+<span class="text-body-sm text-outline font-mono mt-0.5">5d ago</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Notification Preferences Summary Card -->
+<div class="bg-surface-container-low p-6 rounded-2xl flex flex-col gap-4 shadow-sm">
+<div class="flex items-center justify-between">
+<h2 class="text-headline-md text-on-surface font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">tune</span>
+            Preferences Summary
+          </h2>
+<button class="text-primary text-label-md hover:underline cursor-pointer" onclick="openSettings()">Configure</button>
+</div>
+<p class="text-body-sm text-on-surface-variant">Active delivery routing for high-priority academic &amp; telemetry alerts.</p>
+<div class="flex flex-col gap-3 pt-2">
+<div class="flex items-center justify-between p-3 bg-surface-container rounded-xl">
+<span class="text-body-md text-on-surface">In-App Banner Alerts</span>
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container rounded-xl">
+<span class="text-body-md text-on-surface">Email Digest (Daily)</span>
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container rounded-xl">
+<span class="text-body-md text-on-surface">Critical System Webhooks</span>
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Notification Detail Drawer / Modal (Hidden by default) -->
+<div class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm hidden flex items-center justify-center p-4" id="notifModal">
+<div class="bg-surface-container-high w-full max-w-lg rounded-2xl p-6 flex flex-col gap-5 shadow-2xl relative border border-outline-variant/30">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 bg-primary/20 text-primary text-label-md rounded font-medium" id="modalPriorityBadge">Priority</span>
+<span class="text-body-sm text-outline font-mono" id="modalSource">Source</span>
+</div>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface rounded-lg hover:bg-surface-variant transition-all cursor-pointer" onclick="closeDetail()">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div class="flex flex-col gap-2">
+<h3 class="text-headline-lg text-on-surface font-semibold" id="modalTitle">Notification Title</h3>
+<span class="text-body-sm text-outline font-mono" id="modalTime">Timestamp</span>
+</div>
+<div class="bg-surface-container p-4 rounded-xl">
+<p class="text-body-md text-on-surface leading-relaxed" id="modalDesc">Full notification description and detailed payload trace will appear here.</p>
+</div>
+<div class="flex items-center justify-end gap-3 pt-2">
+<button class="px-4 py-2 bg-surface-variant hover:bg-surface-container-high text-on-surface text-label-md rounded-xl transition-all cursor-pointer" onclick="closeDetail()">
+          Close
+        </button>
+<button class="px-5 py-2 bg-primary text-on-primary hover:opacity-90 text-label-md rounded-xl transition-all font-medium cursor-pointer flex items-center gap-2" id="modalActionBtn" onclick="triggerModalAction()">
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+<span>Action</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Client-side Interactive Script -->
+<script>
+    function filterTab(category, btnElement) {
+      // Update active tab style
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.className = "tab-btn px-3.5 py-1.5 rounded-lg text-label-md font-medium transition-all text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer shrink-0";
+      });
+      btnElement.className = "tab-btn px-3.5 py-1.5 rounded-lg text-label-md font-medium transition-all bg-primary text-on-primary cursor-pointer shrink-0";
+
+      // Filter cards
+      const cards = document.querySelectorAll('.notif-card');
+      cards.forEach(card => {
+        if (category === 'all' || card.getAttribute('data-category') === category) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function filterNotifications() {
+      const query = document.getElementById('notifSearch').value.toLowerCase();
+      const cards = document.querySelectorAll('.notif-card');
+      cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        if (text.includes(query)) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function markAllRead() {
+      document.querySelectorAll('.notif-card').forEach(card => {
+        card.classList.add('opacity-80');
+        const pulse = card.querySelector('.animate-pulse');
+        if (pulse) pulse.remove();
+        const indicator = card.querySelector('.absolute.left-0');
+        if (indicator) indicator.remove();
+      });
+      // Show toast or subtle notification feedback
+    }
+
+    function dismissNotif(btn) {
+      const card = btn.closest('.notif-card');
+      card.style.transform = 'scale(0.95)';
+      card.style.opacity = '0';
+      setTimeout(() => {
+        card.remove();
+      }, 200);
+    }
+
+    function openDetail(id, title, desc, time, priority, source, actionText) {
+      document.getElementById('modalTitle').innerText = title;
+      document.getElementById('modalDesc').innerText = desc;
+      document.getElementById('modalTime').innerText = time + ' • ' + source;
+      document.getElementById('modalPriorityBadge').innerText = priority;
+      document.querySelector('#modalActionBtn span:last-child').innerText = actionText;
+      
+      const badge = document.getElementById('modalPriorityBadge');
+      if(priority === 'Critical' || priority === 'Warning') {
+        badge.className = "px-2.5 py-1 bg-error/20 text-error text-label-md rounded font-medium";
+      } else {
+        badge.className = "px-2.5 py-1 bg-primary/20 text-primary text-label-md rounded font-medium";
+      }
+
+      document.getElementById('notifModal').classList.remove('hidden');
+    }
+
+    function closeDetail() {
+      document.getElementById('notifModal').classList.add('hidden');
+    }
+
+    function triggerModalAction() {
+      closeDetail();
+    }
+
+    function openSettings() {
+      alert("Opening Notification Settings & Webhook Routing Panel...");
+    }
+  </script>
+</div></main></div></body></html>

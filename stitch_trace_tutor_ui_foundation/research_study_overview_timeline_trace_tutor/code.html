@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-variant": "#2d3449", "surface-container": "#171f33", "surface-container-high": "#222a3d", "primary-container": "#06b6d4", "tertiary-fixed": "#d8e3fb", "on-tertiary": "#263143", "outline": "#869397", "inverse-surface": "#dae2fd", "on-background": "#dae2fd", "surface-container-lowest": "#060e20", "on-secondary": "#1000a9", "on-tertiary-container": "#313c4f", "on-primary-container": "#00424f", "on-secondary-container": "#b0b2ff", "on-primary": "#003640", "on-primary-fixed-variant": "#004e5c", "tertiary": "#bcc7de", "surface": "#0b1326", "on-error-container": "#ffdad6", "inverse-on-surface": "#283044", "error": "#ffb4ab", "on-tertiary-fixed-variant": "#3c475a", "secondary": "#c0c1ff", "secondary-container": "#3131c0", "on-secondary-fixed": "#07006c", "secondary-fixed-dim": "#c0c1ff", "error-container": "#93000a", "on-primary-fixed": "#001f26", "on-secondary-fixed-variant": "#2f2ebe", "primary-fixed-dim": "#4cd7f6", "on-surface-variant": "#bcc9cd", "on-tertiary-fixed": "#111c2d", "primary-fixed": "#acedff", "surface-container-low": "#131b2e", "surface-tint": "#4cd7f6", "surface-bright": "#31394d", "inverse-primary": "#00687a", "outline-variant": "#3d494c", "surface-dim": "#0b1326", "secondary-fixed": "#e1e0ff", "tertiary-fixed-dim": "#bcc7de", "on-surface": "#dae2fd", "on-error": "#690005", "primary": "#4cd7f6", "tertiary-container": "#9ca7be", "surface-container-highest": "#2d3449", "background": "#0b1326" }, borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" }, spacing: { "space-sm": "0.5rem", "space-lg": "1.5rem", gutter: "1rem", "space-xl": "2rem", "space-xs": "0.25rem", margin: "1.5rem", "space-md": "1rem" }, fontFamily: { "body-lg": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "body-md": ["Inter"], "code-md": ["JetBrains Mono"], "code-sm": ["JetBrains Mono"], "body-sm": ["Inter"], "headline-md": ["Inter"], "headline-lg": ["Inter"] }, fontSize: { "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" }], "headline-xl": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "code-md": ["13px", { lineHeight: "20px", fontWeight: "400" }], "code-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "body-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }], "headline-md": ["18px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "500" }], "headline-lg": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }] } } } }</script></head><body class="bg-surface font-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-50 flex flex-col pt-6 pb-8"><div class="px-6 mb-8 flex items-center gap-3"><img alt="TRACE Tutor Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfM_7kNhwwQNVBovRwEsMxKDQadqvyAcEq5dXSTbuAtthafX8CleaZMMmVKWjaLuLYQXIDTuud81KQeL2akevwHcIqNoyIZ0fewFY18ZMtTreK4EkscGzlBUdGJBnSHcnUZEtOtyJQPo6Fub1Vb8vXPr94iG92fseArQ21q6Hbk03pPrFvm4twF7toUIM6nP4f3vonU4EyjQX4LtT8SXMIJ1rUsusVOi7nJSs8y51yxD2sheayfC0"/><span class="text-headline-md font-bold text-on-surface tracking-tight">TRACE Tutor</span></div><div class="px-4 mb-6"><div class="bg-surface-container p-2 rounded-xl flex items-center justify-between"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[20px]">school</span><span class="text-label-md text-on-surface font-medium">Student Mode</span></div><span class="material-symbols-outlined text-on-surface-variant text-[18px] cursor-pointer">unfold_more</span></div></div><nav class="flex-1 px-4 space-y-1 overflow-y-auto" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="dashboard" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">dashboard</span>Dashboard</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="workspace" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">code</span>Workspace</a><a aria-current="page" class="flex items-center px-4 py-2.5 rounded-xl transition-all bg-primary-container text-on-primary-container font-semibold" data-path="tutor" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">smart_toy</span>AI Tutor</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="assessments" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">assignment</span>Assessments</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="progress" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">trending_up</span>Progress</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="expert" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">psychology</span>Expert</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="research" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">science</span>Research</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">settings</span>Settings</a></nav></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 flex items-center justify-between px-8 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center flex-1 max-w-md bg-surface-container rounded-xl px-4 py-2"><span class="material-symbols-outlined text-on-surface-variant mr-3 text-[20px]">search</span><input class="bg-transparent border-none outline-none text-on-surface text-body-md w-full placeholder:text-outline" placeholder="Search code, diagnostics, or concepts..." type="text"/></div><div class="flex items-center gap-4"><div class="relative cursor-pointer"><span class="material-symbols-outlined text-on-surface-variant hover:text-on-surface transition-colors">notifications</span><span class="absolute top-0 right-0 w-2 h-2 rounded-full bg-primary"></span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full p-8 space-y-8 bg-surface text-on-surface">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-surface-container p-6 rounded-xl shadow-sm">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-0.5 rounded text-label-md bg-primary/10 text-primary uppercase tracking-wider font-code-md">IRB Study Protocol #TRC-2024-912</span>
+<span class="px-2.5 py-0.5 rounded text-label-md bg-surface-variant text-on-surface-variant font-code-md">Active Protocol</span>
+</div>
+<h1 class="font-headline-xl text-on-surface tracking-tight">Research Study Overview</h1>
+<p class="text-body-md text-on-surface-variant">Monitor study progress, milestones, and research workflow across active cohorts and experimental arms.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 bg-surface-variant hover:bg-surface-bright text-on-surface text-body-md font-medium rounded-xl transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">edit</span>Edit Study
+      </button>
+<button class="px-4 py-2 bg-surface-variant hover:bg-surface-bright text-on-surface text-body-md font-medium rounded-xl transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">pause</span>Pause Study
+      </button>
+<button class="px-4 py-2 bg-primary-container hover:bg-primary text-on-primary-container text-body-md font-semibold rounded-xl transition-all flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">download</span>Export Summary
+      </button>
+</div>
+</div>
+<!-- Study Progress Horizontal Timeline -->
+<div class="bg-surface-container p-6 rounded-xl space-y-6">
+<div class="flex items-center justify-between">
+<div class="space-y-1">
+<h2 class="font-headline-lg text-on-surface">Study Phase Progression</h2>
+<p class="text-body-sm text-on-surface-variant">Overall study completion stands at <span class="text-primary font-semibold">52%</span>. Currently executing Learning Sessions.</p>
+</div>
+<div class="flex items-center gap-2 text-body-sm text-on-surface-variant font-code-md">
+<span>Elapsed: 34 Days</span>
+<span>•</span>
+<span>Remaining: 26 Days</span>
+</div>
+</div>
+<!-- Timeline Steps -->
+<div class="grid grid-cols-2 md:grid-cols-8 gap-2 relative pt-4">
+<!-- Step 1: Setup -->
+<div class="flex flex-col space-y-2 group">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-code-md text-body-sm font-semibold border border-primary/40">01</div>
+<div class="flex-1 h-0.5 bg-primary"></div>
+</div>
+<span class="text-label-md text-primary font-semibold">Setup</span>
+<span class="text-body-sm text-on-surface-variant text-xs">Completed</span>
+</div>
+<!-- Step 2: Enrollment -->
+<div class="flex flex-col space-y-2 group">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-code-md text-body-sm font-semibold border border-primary/40">02</div>
+<div class="flex-1 h-0.5 bg-primary"></div>
+</div>
+<span class="text-label-md text-primary font-semibold">Enrollment</span>
+<span class="text-body-sm text-on-surface-variant text-xs">Completed</span>
+</div>
+<!-- Step 3: Pre-Test -->
+<div class="flex flex-col space-y-2 group">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-code-md text-body-sm font-semibold border border-primary/40">03</div>
+<div class="flex-1 h-0.5 bg-primary"></div>
+</div>
+<span class="text-label-md text-primary font-semibold">Pre-Test</span>
+<span class="text-body-sm text-on-surface-variant text-xs">Completed</span>
+</div>
+<!-- Step 4: Learning (Active) -->
+<div class="flex flex-col space-y-2 group">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-code-md text-body-sm font-bold shadow-[0_0_12px_rgba(76,215,246,0.4)]">04</div>
+<div class="flex-1 h-0.5 bg-primary/40"></div>
+</div>
+<span class="text-label-md text-primary font-bold">Learning</span>
+<span class="text-body-sm text-primary font-medium text-xs">Active (68%)</span>
+</div>
+<!-- Step 5: Post-Test -->
+<div class="flex flex-col space-y-2 group opacity-60">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center font-code-md text-body-sm">05</div>
+<div class="flex-1 h-0.5 bg-surface-variant"></div>
+</div>
+<span class="text-label-md text-on-surface">Post-Test</span>
+<span class="text-body-sm text-on-surface-variant text-xs">Upcoming</span>
+</div>
+<!-- Step 6: Transfer -->
+<div class="flex flex-col space-y-2 group opacity-60">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center font-code-md text-body-sm">06</div>
+<div class="flex-1 h-0.5 bg-surface-variant"></div>
+</div>
+<span class="text-label-md text-on-surface">Transfer</span>
+<span class="text-body-sm text-on-surface-variant text-xs">Upcoming</span>
+</div>
+<!-- Step 7: Analysis -->
+<div class="flex flex-col space-y-2 group opacity-60">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center font-code-md text-body-sm">07</div>
+<div class="flex-1 h-0.5 bg-surface-variant"></div>
+</div>
+<span class="text-label-md text-on-surface">Analysis</span>
+<span class="text-body-sm text-on-surface-variant text-xs">Upcoming</span>
+</div>
+<!-- Step 8: Completed -->
+<div class="flex flex-col space-y-2 group opacity-60">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center font-code-md text-body-sm">08</div>
+</div>
+<span class="text-label-md text-on-surface">Completed</span>
+<span class="text-body-sm text-on-surface-variant text-xs">Upcoming</span>
+</div>
+</div>
+<!-- Progress Bar Highlight -->
+<div class="pt-2">
+<div class="flex justify-between text-body-sm mb-1">
+<span class="text-on-surface-variant">Phase 4 Milestone Execution</span>
+<span class="font-code-md text-primary">68% Complete</span>
+</div>
+<div class="w-full h-2 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-500" style="width: 68%;"></div>
+</div>
+</div>
+</div>
+<!-- Key Metrics Grid (6 compact cards) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+<!-- Card 1 -->
+<div class="bg-surface-container p-5 rounded-xl flex flex-col justify-between space-y-3">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="text-label-md uppercase tracking-wider">Total Participants</span>
+<span class="material-symbols-outlined text-primary text-[20px]">group</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="text-headline-xl font-bold font-code-md">342</span>
+<span class="text-label-md text-primary bg-primary/10 px-2 py-0.5 rounded font-code-md">+12% vs last cohort</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container p-5 rounded-xl flex flex-col justify-between space-y-3">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="text-label-md uppercase tracking-wider">Active Participants</span>
+<span class="material-symbols-outlined text-primary text-[20px]">bolt</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="text-headline-xl font-bold font-code-md">188</span>
+<span class="text-label-md text-on-surface-variant font-code-md">54.9% active pool</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container p-5 rounded-xl flex flex-col justify-between space-y-3">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="text-label-md uppercase tracking-wider">Completion Rate</span>
+<span class="material-symbols-outlined text-primary text-[20px]">task_alt</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="text-headline-xl font-bold font-code-md">96.8%</span>
+<span class="text-label-md text-primary font-code-md">Optimal retention</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container p-5 rounded-xl flex flex-col justify-between space-y-3">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="text-label-md uppercase tracking-wider">Pre-Test Completion</span>
+<span class="material-symbols-outlined text-primary text-[20px]">quiz</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="text-headline-xl font-bold font-code-md">338 / 342</span>
+<span class="text-label-md text-primary font-code-md">98.8%</span>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="bg-surface-container p-5 rounded-xl flex flex-col justify-between space-y-3">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="text-label-md uppercase tracking-wider">Post-Test Completion</span>
+<span class="material-symbols-outlined text-primary text-[20px]">assignment_turned_in</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="text-headline-xl font-bold font-code-md">210 / 342</span>
+<span class="text-label-md text-on-surface-variant font-code-md">61.4%</span>
+</div>
+</div>
+<!-- Card 6 -->
+<div class="bg-surface-container p-5 rounded-xl flex flex-col justify-between space-y-3">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="text-label-md uppercase tracking-wider">Transfer Completion</span>
+<span class="material-symbols-outlined text-primary text-[20px]">science</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="text-headline-xl font-bold font-code-md">124 / 342</span>
+<span class="text-label-md text-on-surface-variant font-code-md">36.2%</span>
+</div>
+</div>
+</div>
+<!-- Cohort Overview Section -->
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-lg text-on-surface">Active Cohorts Overview</h2>
+<span class="text-body-sm text-on-surface-variant font-code-md">Total Active Enrolled: 342</span>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+<!-- Cohort 1 -->
+<div class="bg-surface-container p-5 rounded-xl space-y-4">
+<div class="flex items-start justify-between">
+<div>
+<h3 class="font-headline-md text-on-surface">Cohort Q1-2024</h3>
+<p class="text-body-sm text-primary font-code-md">Advanced Algorithms (Python 3.11)</p>
+</div>
+<span class="px-2 py-1 rounded text-xs bg-primary/10 text-primary font-code-md">Active (78%)</span>
+</div>
+<div class="grid grid-cols-2 gap-2 py-2 border-y border-surface-variant/40 text-body-sm">
+<div><span class="text-on-surface-variant">Participants:</span> <span class="font-code-md font-semibold">145</span></div>
+<div><span class="text-on-surface-variant">Active:</span> <span class="font-code-md font-semibold text-primary">82</span></div>
+<div><span class="text-on-surface-variant">Completed:</span> <span class="font-code-md font-semibold">54</span></div>
+<div><span class="text-on-surface-variant">Withdrawn:</span> <span class="font-code-md font-semibold text-error">9</span></div>
+</div>
+<div class="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 78%;"></div>
+</div>
+</div>
+<!-- Cohort 2 -->
+<div class="bg-surface-container p-5 rounded-xl space-y-4">
+<div class="flex items-start justify-between">
+<div>
+<h3 class="font-headline-md text-on-surface">Cohort Q2-2024</h3>
+<p class="text-body-sm text-primary font-code-md">Systems Programming (C++ 20)</p>
+</div>
+<span class="px-2 py-1 rounded text-xs bg-primary/10 text-primary font-code-md">Active (45%)</span>
+</div>
+<div class="grid grid-cols-2 gap-2 py-2 border-y border-surface-variant/40 text-body-sm">
+<div><span class="text-on-surface-variant">Participants:</span> <span class="font-code-md font-semibold">112</span></div>
+<div><span class="text-on-surface-variant">Active:</span> <span class="font-code-md font-semibold text-primary">76</span></div>
+<div><span class="text-on-surface-variant">Completed:</span> <span class="font-code-md font-semibold">32</span></div>
+<div><span class="text-on-surface-variant">Withdrawn:</span> <span class="font-code-md font-semibold text-error">4</span></div>
+</div>
+<div class="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 45%;"></div>
+</div>
+</div>
+<!-- Cohort 3 -->
+<div class="bg-surface-container p-5 rounded-xl space-y-4">
+<div class="flex items-start justify-between">
+<div>
+<h3 class="font-headline-md text-on-surface">Cohort Q3-2024</h3>
+<p class="text-body-sm text-primary font-code-md">Applied Data Structures (Java)</p>
+</div>
+<span class="px-2 py-1 rounded text-xs bg-primary/10 text-primary font-code-md">Active (92%)</span>
+</div>
+<div class="grid grid-cols-2 gap-2 py-2 border-y border-surface-variant/40 text-body-sm">
+<div><span class="text-on-surface-variant">Participants:</span> <span class="font-code-md font-semibold">85</span></div>
+<div><span class="text-on-surface-variant">Active:</span> <span class="font-code-md font-semibold text-primary">30</span></div>
+<div><span class="text-on-surface-variant">Completed:</span> <span class="font-code-md font-semibold">38</span></div>
+<div><span class="text-on-surface-variant">Withdrawn:</span> <span class="font-code-md font-semibold text-error">2</span></div>
+</div>
+<div class="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 92%;"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Experimental Arm Overview -->
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-lg text-on-surface">Experimental Arm Distribution</h2>
+<span class="text-body-sm text-on-surface-variant">Randomized Double-Blind Assignment (1:1 Ratio)</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Treatment Arm -->
+<div class="bg-surface-container p-6 rounded-xl space-y-4 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl"></div>
+<div class="flex items-center justify-between">
+<div>
+<span class="text-label-md text-primary font-code-md uppercase tracking-wider">Treatment Arm</span>
+<h3 class="font-headline-lg text-on-surface">REASONING_VISIBLE</h3>
+</div>
+<span class="px-3 py-1 bg-primary/10 text-primary rounded-full text-label-md font-code-md">50% Allocation</span>
+</div>
+<p class="text-body-sm text-on-surface-variant">AI tutor provides explicit step-by-step reasoning paths before code validation.</p>
+<div class="grid grid-cols-4 gap-2 pt-2 border-t border-surface-variant/40 text-center">
+<div class="bg-surface p-2 rounded">
+<span class="text-label-md text-on-surface-variant block">Total</span>
+<span class="font-code-md font-bold text-headline-md">171</span>
+</div>
+<div class="bg-surface p-2 rounded">
+<span class="text-label-md text-on-surface-variant block">Active</span>
+<span class="font-code-md font-bold text-headline-md text-primary">94</span>
+</div>
+<div class="bg-surface p-2 rounded">
+<span class="text-label-md text-on-surface-variant block">Completed</span>
+<span class="font-code-md font-bold text-headline-md">71</span>
+</div>
+<div class="bg-surface p-2 rounded">
+<span class="text-label-md text-on-surface-variant block">Withdrawn</span>
+<span class="font-code-md font-bold text-headline-md text-error">6</span>
+</div>
+</div>
+</div>
+<!-- Control Arm -->
+<div class="bg-surface-container p-6 rounded-xl space-y-4 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-surface-variant/20 rounded-full blur-2xl"></div>
+<div class="flex items-center justify-between">
+<div>
+<span class="text-label-md text-on-surface-variant font-code-md uppercase tracking-wider">Control Arm</span>
+<h3 class="font-headline-lg text-on-surface">ANSWER_ONLY</h3>
+</div>
+<span class="px-3 py-1 bg-surface-variant text-on-surface rounded-full text-label-md font-code-md">50% Allocation</span>
+</div>
+<p class="text-body-sm text-on-surface-variant">AI tutor provides direct answers and standard compiler diagnostics only.</p>
+<div class="grid grid-cols-4 gap-2 pt-2 border-t border-surface-variant/40 text-center">
+<div class="bg-surface p-2 rounded">
+<span class="text-label-md text-on-surface-variant block">Total</span>
+<span class="font-code-md font-bold text-headline-md">171</span>
+</div>
+<div class="bg-surface p-2 rounded">
+<span class="text-label-md text-on-surface-variant block">Active</span>
+<span class="font-code-md font-bold text-headline-md text-primary">94</span>
+</div>
+<div class="bg-surface p-2 rounded">
+<span class="text-label-md text-on-surface-variant block">Completed</span>
+<span class="font-code-md font-bold text-headline-md">53</span>
+</div>
+<div class="bg-surface p-2 rounded">
+<span class="text-label-md text-on-surface-variant block">Withdrawn</span>
+<span class="font-code-md font-bold text-headline-md text-error">9</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Assessment Progress Visual Funnel -->
+<div class="bg-surface-container p-6 rounded-xl space-y-6">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-lg text-on-surface">Assessment Progress Funnel</h2>
+<span class="text-body-sm text-on-surface-variant font-code-md">Conversion &amp; Retention Analysis</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+<!-- Funnel Step 1 -->
+<div class="bg-surface p-4 rounded-xl flex flex-col justify-between space-y-3 relative">
+<div class="flex items-center justify-between">
+<span class="text-label-md text-on-surface-variant">01. Enrollment</span>
+<span class="material-symbols-outlined text-primary text-[18px]">group_add</span>
+</div>
+<div>
+<span class="text-headline-lg font-bold font-code-md block">342</span>
+<span class="text-label-md text-primary font-code-md">100% baseline</span>
+</div>
+</div>
+<!-- Funnel Step 2 -->
+<div class="bg-surface p-4 rounded-xl flex flex-col justify-between space-y-3 relative">
+<div class="flex items-center justify-between">
+<span class="text-label-md text-on-surface-variant">02. Pre-Test</span>
+<span class="material-symbols-outlined text-primary text-[18px]">quiz</span>
+</div>
+<div>
+<span class="text-headline-lg font-bold font-code-md block">338</span>
+<span class="text-label-md text-primary font-code-md">98.8% conversion</span>
+</div>
+</div>
+<!-- Funnel Step 3 -->
+<div class="bg-surface p-4 rounded-xl flex flex-col justify-between space-y-3 relative">
+<div class="flex items-center justify-between">
+<span class="text-label-md text-on-surface-variant">03. Learning</span>
+<span class="material-symbols-outlined text-primary text-[18px]">code</span>
+</div>
+<div>
+<span class="text-headline-lg font-bold font-code-md block">274</span>
+<span class="text-label-md text-primary font-code-md">80.1% active modules</span>
+</div>
+</div>
+<!-- Funnel Step 4 -->
+<div class="bg-surface p-4 rounded-xl flex flex-col justify-between space-y-3 relative">
+<div class="flex items-center justify-between">
+<span class="text-label-md text-on-surface-variant">04. Post-Test</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">assignment</span>
+</div>
+<div>
+<span class="text-headline-lg font-bold font-code-md block">210</span>
+<span class="text-label-md text-on-surface-variant font-code-md">61.4% conversion</span>
+</div>
+</div>
+<!-- Funnel Step 5 -->
+<div class="bg-surface p-4 rounded-xl flex flex-col justify-between space-y-3 relative">
+<div class="flex items-center justify-between">
+<span class="text-label-md text-on-surface-variant">05. Transfer</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">science</span>
+</div>
+<div>
+<span class="text-headline-lg font-bold font-code-md block">124</span>
+<span class="text-label-md text-on-surface-variant font-code-md">36.2% conversion</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Study Milestones Chronological Timeline -->
+<div class="bg-surface-container p-6 rounded-xl space-y-6">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-lg text-on-surface">Chronological Milestones</h2>
+<span class="text-body-sm text-on-surface-variant font-code-md">Protocol Timeline</span>
+</div>
+<div class="space-y-4 pl-2 border-l border-surface-variant/60 ml-2">
+<!-- Milestone 1 -->
+<div class="relative pl-6 flex items-start justify-between">
+<div class="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-primary border-4 border-surface-container"></div>
+<div class="space-y-0.5">
+<h4 class="text-body-md font-semibold text-on-surface">Study Created</h4>
+<p class="text-body-sm text-on-surface-variant">Initial protocol scaffolding and parameter initialization.</p>
+</div>
+<span class="text-label-md font-code-md text-primary bg-primary/10 px-2.5 py-1 rounded">Nov 1, 2024 — Completed</span>
+</div>
+<!-- Milestone 2 -->
+<div class="relative pl-6 flex items-start justify-between">
+<div class="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-primary border-4 border-surface-container"></div>
+<div class="space-y-0.5">
+<h4 class="text-body-md font-semibold text-on-surface">Configuration Validated</h4>
+<p class="text-body-sm text-on-surface-variant">IRB compliance checks and safety guardrails verified.</p>
+</div>
+<span class="text-label-md font-code-md text-primary bg-primary/10 px-2.5 py-1 rounded">Nov 2, 2024 — Completed</span>
+</div>
+<!-- Milestone 3 -->
+<div class="relative pl-6 flex items-start justify-between">
+<div class="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-primary border-4 border-surface-container"></div>
+<div class="space-y-0.5">
+<h4 class="text-body-md font-semibold text-on-surface">Enrollment Started</h4>
+<p class="text-body-sm text-on-surface-variant">Participant intake across target university computer science courses.</p>
+</div>
+<span class="text-label-md font-code-md text-primary bg-primary/10 px-2.5 py-1 rounded">Nov 5, 2024 — Completed</span>
+</div>
+<!-- Milestone 4 -->
+<div class="relative pl-6 flex items-start justify-between">
+<div class="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-primary border-4 border-surface-container"></div>
+<div class="space-y-0.5">
+<h4 class="text-body-md font-semibold text-on-surface">Pre-Test Started</h4>
+<p class="text-body-sm text-on-surface-variant">Baseline competency assessment administration.</p>
+</div>
+<span class="text-label-md font-code-md text-primary bg-primary/10 px-2.5 py-1 rounded">Nov 10, 2024 — Completed</span>
+</div>
+<!-- Milestone 5 -->
+<div class="relative pl-6 flex items-start justify-between">
+<div class="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-primary border-4 border-surface-container"></div>
+<div class="space-y-0.5">
+<h4 class="text-body-md font-semibold text-on-surface">Learning Started</h4>
+<p class="text-body-sm text-on-surface-variant">Core experimental intervention modules opened.</p>
+</div>
+<span class="text-label-md font-code-md text-primary bg-primary/10 px-2.5 py-1 rounded">Nov 12, 2024 — Completed</span>
+</div>
+<!-- Milestone 6 -->
+<div class="relative pl-6 flex items-start justify-between">
+<div class="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-primary shadow-[0_0_10px_rgba(76,215,246,0.6)] border-4 border-surface-container"></div>
+<div class="space-y-0.5">
+<h4 class="text-body-md font-semibold text-on-surface">Post-Test Started</h4>
+<p class="text-body-sm text-on-surface-variant">Summative evaluation of algorithmic mastery.</p>
+</div>
+<span class="text-label-md font-code-md text-primary bg-primary/20 px-2.5 py-1 rounded font-bold">Dec 1, 2024 — In Progress</span>
+</div>
+<!-- Milestone 7 -->
+<div class="relative pl-6 flex items-start justify-between opacity-60">
+<div class="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-surface-variant border-4 border-surface-container"></div>
+<div class="space-y-0.5">
+<h4 class="text-body-md font-semibold text-on-surface">Transfer Started</h4>
+<p class="text-body-sm text-on-surface-variant">Far-transfer coding problems and novel algorithmic tasks.</p>
+</div>
+<span class="text-label-md font-code-md text-on-surface-variant bg-surface-variant px-2.5 py-1 rounded">Dec 15, 2024 — Upcoming</span>
+</div>
+<!-- Milestone 8 -->
+<div class="relative pl-6 flex items-start justify-between opacity-60">
+<div class="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-surface-variant border-4 border-surface-container"></div>
+<div class="space-y-0.5">
+<h4 class="text-body-md font-semibold text-on-surface">Analysis Ready</h4>
+<p class="text-body-sm text-on-surface-variant">Final dataset locking, telemetry aggregation, and export.</p>
+</div>
+<span class="text-label-md font-code-md text-on-surface-variant bg-surface-variant px-2.5 py-1 rounded">Jan 10, 2025 — Upcoming</span>
+</div>
+</div>
+</div>
+<!-- Research Alerts Section -->
+<div class="space-y-4">
+<h2 class="font-headline-lg text-on-surface">Research Protocol Alerts</h2>
+<div class="space-y-3">
+<!-- Alert 1 -->
+<div class="bg-surface-container p-4 rounded-xl flex items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<span class="px-2 py-1 bg-amber-500/10 text-amber-400 rounded text-label-md font-code-md">WARNING</span>
+<p class="text-body-md text-on-surface">Cohort Q2-2024 post-test submission rate lagging 8% behind Q1 benchmark.</p>
+</div>
+<button class="text-primary hover:underline text-body-sm whitespace-nowrap font-medium">Investigate</button>
+</div>
+<!-- Alert 2 -->
+<div class="bg-surface-container p-4 rounded-xl flex items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<span class="px-2 py-1 bg-primary/10 text-primary rounded text-label-md font-code-md">INFO</span>
+<p class="text-body-md text-on-surface">RAG knowledge base indexing completed successfully for C++ 20 verified corpus.</p>
+</div>
+<button class="text-primary hover:underline text-body-sm whitespace-nowrap font-medium">View Corpus</button>
+</div>
+<!-- Alert 3 -->
+<div class="bg-surface-container p-4 rounded-xl flex items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<span class="px-2 py-1 bg-error/10 text-error rounded text-label-md font-code-md">CRITICAL</span>
+<p class="text-body-md text-on-surface">3 flagged expert validation items pending review in Item Bank #4.</p>
+</div>
+<button class="text-primary hover:underline text-body-sm whitespace-nowrap font-medium">Review Bank</button>
+</div>
+</div>
+</div>
+<!-- Quick Actions Footer / Toolbar -->
+<div class="bg-surface-container p-6 rounded-xl flex flex-wrap items-center justify-between gap-4">
+<div class="space-y-1">
+<span class="text-label-md text-on-surface-variant uppercase tracking-wider">Quick Actions</span>
+<h3 class="font-headline-md text-on-surface">Study Management Toolbar</h3>
+</div>
+<div class="flex flex-wrap items-center gap-3">
+<button class="px-4 py-2 bg-surface-variant hover:bg-surface-bright text-on-surface text-body-md font-medium rounded-xl transition-all">Manage Participants</button>
+<button class="px-4 py-2 bg-surface-variant hover:bg-surface-bright text-on-surface text-body-md font-medium rounded-xl transition-all">View Analytics</button>
+<button class="px-4 py-2 bg-surface-variant hover:bg-surface-bright text-on-surface text-body-md font-medium rounded-xl transition-all">View Telemetry</button>
+<button class="px-4 py-2 bg-surface-variant hover:bg-surface-bright text-on-surface text-body-md font-medium rounded-xl transition-all">Review Item Bank</button>
+<button class="px-4 py-2 bg-surface-variant hover:bg-surface-bright text-on-surface text-body-md font-medium rounded-xl transition-all">Expert Validation</button>
+<button class="px-4 py-2 bg-primary-container hover:bg-primary text-on-primary-container text-body-md font-semibold rounded-xl transition-all shadow-sm">RAG Monitoring</button>
+</div>
+</div>
+</div></main></div></body></html>

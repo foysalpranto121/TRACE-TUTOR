@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-variant": "#2d3449", "surface-container": "#171f33", "surface-container-high": "#222a3d", "primary-container": "#06b6d4", "tertiary-fixed": "#d8e3fb", "on-tertiary": "#263143", "outline": "#869397", "inverse-surface": "#dae2fd", "on-background": "#dae2fd", "surface-container-lowest": "#060e20", "on-secondary": "#1000a9", "on-tertiary-container": "#313c4f", "on-primary-container": "#00424f", "on-secondary-container": "#b0b2ff", "on-primary": "#003640", "on-primary-fixed-variant": "#004e5c", "tertiary": "#bcc7de", "surface": "#0b1326", "on-error-container": "#ffdad6", "inverse-on-surface": "#283044", "error": "#ffb4ab", "on-tertiary-fixed-variant": "#3c475a", "secondary": "#c0c1ff", "secondary-container": "#3131c0", "on-secondary-fixed": "#07006c", "secondary-fixed-dim": "#c0c1ff", "error-container": "#93000a", "on-primary-fixed": "#001f26", "on-secondary-fixed-variant": "#2f2ebe", "primary-fixed-dim": "#4cd7f6", "on-surface-variant": "#bcc9cd", "on-tertiary-fixed": "#111c2d", "primary-fixed": "#acedff", "surface-container-low": "#131b2e", "surface-tint": "#4cd7f6", "surface-bright": "#31394d", "inverse-primary": "#00687a", "outline-variant": "#3d494c", "surface-dim": "#0b1326", "secondary-fixed": "#e1e0ff", "tertiary-fixed-dim": "#bcc7de", "on-surface": "#dae2fd", "on-error": "#690005", "primary": "#4cd7f6", "tertiary-container": "#9ca7be", "surface-container-highest": "#2d3449", "background": "#0b1326" }, borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" }, spacing: { "space-sm": "0.5rem", "space-lg": "1.5rem", gutter: "1rem", "space-xl": "2rem", "space-xs": "0.25rem", margin: "1.5rem", "space-md": "1rem" }, fontFamily: { "body-lg": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "body-md": ["Inter"], "code-md": ["JetBrains Mono"], "code-sm": ["JetBrains Mono"], "body-sm": ["Inter"], "headline-md": ["Inter"], "headline-lg": ["Inter"] }, fontSize: { "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" }], "headline-xl": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "code-md": ["13px", { lineHeight: "20px", fontWeight: "400" }], "code-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "body-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }], "headline-md": ["18px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "500" }], "headline-lg": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }] } } } }</script></head><body class="bg-surface font-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-50 flex flex-col pt-6 pb-8"><div class="px-6 mb-8 flex items-center gap-3"><img alt="TRACE Tutor Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfM_7kNhwwQNVBovRwEsMxKDQadqvyAcEq5dXSTbuAtthafX8CleaZMMmVKWjaLuLYQXIDTuud81KQeL2akevwHcIqNoyIZ0fewFY18ZMtTreK4EkscGzlBUdGJBnSHcnUZEtOtyJQPo6Fub1Vb8vXPr94iG92fseArQ21q6Hbk03pPrFvm4twF7toUIM6nP4f3vonU4EyjQX4LtT8SXMIJ1rUsusVOi7nJSs8y51yxD2sheayfC0"/><span class="text-headline-md font-bold text-on-surface tracking-tight">TRACE Tutor</span></div><div class="px-4 mb-6"><div class="bg-surface-container p-2 rounded-xl flex items-center justify-between"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[20px]">school</span><span class="text-label-md text-on-surface font-medium">Student Mode</span></div><span class="material-symbols-outlined text-on-surface-variant text-[18px] cursor-pointer">unfold_more</span></div></div><nav class="flex-1 px-4 space-y-1 overflow-y-auto" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a aria-current="page" class="flex items-center px-4 py-2.5 rounded-xl transition-all bg-primary-container text-on-primary-container font-semibold" data-path="dashboard" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">dashboard</span>Dashboard</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="workspace" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">code</span>Workspace</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="assessments" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">assignment</span>Assessments</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="progress" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">trending_up</span>Progress</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="expert" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">psychology</span>Expert</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="research" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">science</span>Research</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">settings</span>Settings</a></nav></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 flex items-center justify-between px-8 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center flex-1 max-w-md bg-surface-container rounded-xl px-4 py-2"><span class="material-symbols-outlined text-on-surface-variant mr-3 text-[20px]">search</span><input class="bg-transparent border-none outline-none text-on-surface text-body-md w-full placeholder:text-outline" placeholder="Search code, diagnostics, or concepts..." type="text"/></div><div class="flex items-center gap-4"><div class="relative cursor-pointer"><span class="material-symbols-outlined text-on-surface-variant hover:text-on-surface transition-colors">notifications</span><span class="absolute top-0 right-0 w-2 h-2 rounded-full bg-primary"></span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full p-8 max-w-[1600px] mx-auto space-y-8">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h1 class="text-headline-xl text-on-surface tracking-tight flex items-center gap-3">
+        Good evening, Alex 
+        <span class="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary font-code-sm border border-primary/20">CS 301 Active</span>
+</h1>
+<p class="text-body-md text-on-surface-variant mt-1">Continue building your programming skills with real-time AI tracing.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-body-md transition-all">
+<span class="material-symbols-outlined text-[18px] text-primary">terminal</span>
+<span>Open Workspace</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-on-primary font-medium hover:bg-primary-fixed-dim transition-all shadow-lg shadow-primary/10">
+<span class="material-symbols-outlined text-[18px]">psychology</span>
+<span>Ask TRACE AI</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="bg-surface-container p-5 rounded-xl relative overflow-hidden group hover:bg-surface-container-high transition-all">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all"></div>
+<div class="flex items-center justify-between mb-3">
+<span class="text-label-md text-on-surface-variant uppercase tracking-wider font-code-sm">Current Course</span>
+<span class="material-symbols-outlined text-primary">school</span>
+</div>
+<div class="text-headline-md text-on-surface font-semibold mb-1">CS 301 Data Structures</div>
+<div class="text-body-sm text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified</span> Advanced Track
+      </div>
+</div>
+<div class="bg-surface-container p-5 rounded-xl relative overflow-hidden group hover:bg-surface-container-high transition-all">
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full blur-2xl group-hover:bg-secondary/10 transition-all"></div>
+<div class="flex items-center justify-between mb-3">
+<span class="text-label-md text-on-surface-variant uppercase tracking-wider font-code-sm">Problems Solved</span>
+<span class="material-symbols-outlined text-secondary">check_circle</span>
+</div>
+<div class="text-headline-md text-on-surface font-semibold mb-1">24 <span class="text-body-md text-on-surface-variant">/ 50</span></div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full mt-3 overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 48%;"></div>
+</div>
+</div>
+<div class="bg-surface-container p-5 rounded-xl relative overflow-hidden group hover:bg-surface-container-high transition-all">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-container/5 rounded-full blur-2xl group-hover:bg-primary-container/10 transition-all"></div>
+<div class="flex items-center justify-between mb-3">
+<span class="text-label-md text-on-surface-variant uppercase tracking-wider font-code-sm">Learning Streak</span>
+<span class="material-symbols-outlined text-primary">local_fire_department</span>
+</div>
+<div class="text-headline-md text-on-surface font-semibold mb-1">7 Days</div>
+<div class="text-body-sm text-primary flex items-center gap-1 font-code-sm">
+<span class="material-symbols-outlined text-[14px]">add_circle</span> +1 streak today
+      </div>
+</div>
+<div class="bg-surface-container p-5 rounded-xl relative overflow-hidden group hover:bg-surface-container-high transition-all">
+<div class="absolute top-0 right-0 w-32 h-32 bg-tertiary/5 rounded-full blur-2xl group-hover:bg-tertiary/10 transition-all"></div>
+<div class="flex items-center justify-between mb-3">
+<span class="text-label-md text-on-surface-variant uppercase tracking-wider font-code-sm">Assessment Score</span>
+<span class="material-symbols-outlined text-tertiary">trending_up</span>
+</div>
+<div class="text-headline-md text-on-surface font-semibold mb-1">82%</div>
+<div class="text-body-sm text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">military_tech</span> Top 10% of cohort
+      </div>
+</div>
+</div>
+<div class="bg-gradient-to-br from-surface-container via-surface-container-low to-surface-container p-8 rounded-2xl relative overflow-hidden shadow-2xl">
+<div class="absolute -right-20 -bottom-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+<div class="max-w-2xl">
+<div class="flex items-center gap-3 mb-3">
+<span class="px-3 py-1 rounded-full bg-primary/20 text-primary text-code-sm font-medium">Programming Fundamentals</span>
+<span class="text-on-surface-variant text-body-sm">• Intermediate</span>
+<span class="text-on-surface-variant text-body-sm">• 25 min remaining</span>
+</div>
+<h2 class="text-headline-lg text-on-surface font-bold tracking-tight mb-2">Loops &amp; Arrays (Advanced Pointer Tracking)</h2>
+<p class="text-body-md text-on-surface-variant mb-6">Master memory allocation mechanics and multi-dimensional array traversal with real-time semantic feedback loops powered by TRACE AI.</p>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-3 px-6 py-3 rounded-xl bg-primary text-on-primary font-semibold hover:bg-primary-fixed-dim transition-all shadow-lg shadow-primary/20 group">
+<span>Continue Learning</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<div class="flex items-center gap-3 text-body-sm text-on-surface-variant font-code-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">timer</span>
+<span>Module 4 of 6</span>
+</div>
+</div>
+</div>
+<div class="lg:w-80 bg-surface-container-high/60 backdrop-blur-md p-6 rounded-xl flex flex-col justify-between">
+<div class="flex items-center justify-between mb-4">
+<span class="text-body-sm font-semibold text-on-surface">Overall Progress</span>
+<span class="text-primary font-code-sm font-bold">68%</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full mb-6 overflow-hidden">
+<div class="bg-gradient-to-r from-primary to-secondary h-full rounded-full" style="width: 68%;"></div>
+</div>
+<div class="space-y-3 pt-3 border-t border-outline-variant/20">
+<div class="flex items-center justify-between text-body-sm">
+<span class="text-on-surface-variant">Active Memory Leaks</span>
+<span class="text-green-400 font-code-sm">0 detected</span>
+</div>
+<div class="flex items-center justify-between text-body-sm">
+<span class="text-on-surface-variant">Trace Accuracy</span>
+<span class="text-primary font-code-sm">94.2%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div>
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-headline-md text-on-surface font-semibold">Recommended Practice</h3>
+<a class="text-body-sm text-primary hover:underline flex items-center gap-1 font-medium" href="#">View all problems <span class="material-symbols-outlined text-[16px]">chevron_right</span></a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="bg-surface-container hover:bg-surface-container-high p-5 rounded-xl transition-all flex flex-col justify-between group">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2.5 py-1 rounded bg-surface-container-high text-primary text-code-sm font-medium">Arrays</span>
+<span class="text-xs text-amber-400 font-code-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Intermediate
+            </span>
+</div>
+<h4 class="text-body-lg font-semibold text-on-surface mb-2 group-hover:text-primary transition-colors">Dynamic Array Resizing</h4>
+<p class="text-body-sm text-on-surface-variant mb-4">Implement a self-adjusting vector struct with amortized O(1) push operations and secure memory reallocation.</p>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-outline-variant/10">
+<div class="flex items-center gap-1.5 text-body-sm text-on-surface-variant font-code-sm">
+<span class="material-symbols-outlined text-[16px]">schedule</span> 30 min
+          </div>
+<button class="px-4 py-1.5 rounded-lg bg-surface hover:bg-primary hover:text-on-primary text-on-surface text-body-sm font-medium transition-all">Start</button>
+</div>
+</div>
+<div class="bg-surface-container hover:bg-surface-container-high p-5 rounded-xl transition-all flex flex-col justify-between group">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2.5 py-1 rounded bg-surface-container-high text-secondary text-code-sm font-medium">Fundamentals</span>
+<span class="text-xs text-green-400 font-code-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> Beginner
+            </span>
+</div>
+<h4 class="text-body-lg font-semibold text-on-surface mb-2 group-hover:text-secondary transition-colors">Pointer Arithmetic in C</h4>
+<p class="text-body-sm text-on-surface-variant mb-4">Master raw memory offsets, pointer dereferencing, and array subscript equivalence through guided tracing.</p>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-outline-variant/10">
+<div class="flex items-center gap-1.5 text-body-sm text-on-surface-variant font-code-sm">
+<span class="material-symbols-outlined text-[16px]">schedule</span> 20 min
+          </div>
+<button class="px-4 py-1.5 rounded-lg bg-surface hover:bg-secondary hover:text-on-secondary text-on-surface text-body-sm font-medium transition-all">Start</button>
+</div>
+</div>
+<div class="bg-surface-container hover:bg-surface-container-high p-5 rounded-xl transition-all flex flex-col justify-between group">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2.5 py-1 rounded bg-surface-container-high text-tertiary text-code-sm font-medium">Algorithms</span>
+<span class="text-xs text-red-400 font-code-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> Advanced
+            </span>
+</div>
+<h4 class="text-body-lg font-semibold text-on-surface mb-2 group-hover:text-tertiary transition-colors">Hash Collision Resolution</h4>
+<p class="text-body-sm text-on-surface-variant mb-4">Compare chaining vs. open addressing strategies with custom hash functions under high load factors.</p>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-outline-variant/10">
+<div class="flex items-center gap-1.5 text-body-sm text-on-surface-variant font-code-sm">
+<span class="material-symbols-outlined text-[16px]">schedule</span> 45 min
+          </div>
+<button class="px-4 py-1.5 rounded-lg bg-surface hover:bg-tertiary hover:text-on-tertiary text-on-surface text-body-sm font-medium transition-all">Start</button>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<div class="lg:col-span-2 space-y-8">
+<div class="bg-surface-container p-6 rounded-xl">
+<h3 class="text-headline-md text-on-surface font-semibold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">bar_chart</span>
+          Skill Progress &amp; Concept Mastery
+        </h3>
+<div class="space-y-4">
+<div>
+<div class="flex justify-between items-center mb-1.5 text-body-sm">
+<span class="text-on-surface font-medium">Variables &amp; Memory</span>
+<span class="text-primary font-code-sm font-semibold">95%</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 95%;"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-1.5 text-body-sm">
+<span class="text-on-surface font-medium">Conditions &amp; Logic</span>
+<span class="text-primary font-code-sm font-semibold">90%</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 90%;"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-1.5 text-body-sm">
+<span class="text-on-surface font-medium">Loops &amp; Iteration</span>
+<span class="text-secondary font-code-sm font-semibold">75%</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 75%;"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-1.5 text-body-sm">
+<span class="text-on-surface font-medium">Functions &amp; Scope</span>
+<span class="text-secondary font-code-sm font-semibold">80%</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 80%;"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-1.5 text-body-sm">
+<span class="text-on-surface font-medium">Arrays &amp; Pointers</span>
+<span class="text-amber-400 font-code-sm font-semibold">65%</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-amber-400 h-full rounded-full" style="width: 65%;"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-1.5 text-body-sm">
+<span class="text-on-surface font-medium">Algorithms &amp; Complexity</span>
+<span class="text-red-400 font-code-sm font-semibold">55%</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-red-400 h-full rounded-full" style="width: 55%;"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container p-6 rounded-xl">
+<h3 class="text-headline-md text-on-surface font-semibold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">history</span>
+          Recent Activity Timeline
+        </h3>
+<div class="space-y-6 relative before:absolute before:inset-0 before:left-3 before:w-0.5 before:bg-surface-container-high">
+<div class="flex items-start gap-4 relative">
+<div class="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 z-10">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<div>
+<div class="text-body-md text-on-surface font-medium">Completed “Array Traversal” practice module</div>
+<div class="text-body-sm text-on-surface-variant font-code-sm mt-0.5">2 hours ago • CS 301 Data Structures</div>
+</div>
+</div>
+<div class="flex items-start gap-4 relative">
+<div class="w-6 h-6 rounded-full bg-secondary/20 text-secondary flex items-center justify-center shrink-0 z-10">
+<span class="material-symbols-outlined text-[14px]">psychology</span>
+</div>
+<div>
+<div class="text-body-md text-on-surface font-medium">Asked TRACE Tutor for a memory leak hint</div>
+<div class="text-body-sm text-on-surface-variant font-code-sm mt-0.5">Yesterday • Workspace IDE session</div>
+</div>
+</div>
+<div class="flex items-start gap-4 relative">
+<div class="w-6 h-6 rounded-full bg-tertiary/20 text-tertiary flex items-center justify-center shrink-0 z-10">
+<span class="material-symbols-outlined text-[14px]">code</span>
+</div>
+<div>
+<div class="text-body-md text-on-surface font-medium">Passed 4/5 test cases on Dijkstra Heap Assignment</div>
+<div class="text-body-sm text-on-surface-variant font-code-sm mt-0.5">2 days ago • Assessment Portal</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="space-y-8">
+<div class="bg-surface-container p-6 rounded-xl">
+<h3 class="text-headline-md text-on-surface font-semibold mb-4">Quick Actions</h3>
+<div class="space-y-3">
+<button class="w-full flex items-center justify-between p-3.5 rounded-xl bg-surface hover:bg-surface-container-high text-on-surface transition-all group">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[18px]">code</span>
+</div>
+<span class="font-medium text-body-md">Practice Problem</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-3.5 rounded-xl bg-surface hover:bg-surface-container-high text-on-surface transition-all group">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[18px]">psychology</span>
+</div>
+<span class="font-medium text-body-md">Ask TRACE Tutor</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-3.5 rounded-xl bg-surface hover:bg-surface-container-high text-on-surface transition-all group">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-tertiary/10 text-tertiary flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[18px]">assignment</span>
+</div>
+<span class="font-medium text-body-md">Take Assessment</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-3.5 rounded-xl bg-surface hover:bg-surface-container-high text-on-surface transition-all group">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[18px]">trending_up</span>
+</div>
+<span class="font-medium text-body-md">View Progress</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="bg-gradient-to-br from-primary/10 via-surface-container to-surface-container p-6 rounded-xl relative overflow-hidden">
+<div class="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-xl"></div>
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">smart_toy</span>
+</div>
+<div>
+<h4 class="text-body-lg font-semibold text-on-surface">TRACE AI Tutor</h4>
+<div class="flex items-center gap-1.5 text-xs text-primary font-code-sm">
+<span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> Online &amp; Analyzing
+            </div>
+</div>
+</div>
+<p class="text-body-sm text-on-surface-variant mb-4">Your AI companion is tuned to CS 301 curriculum standards. Ready to assist with pointer trace debugging or algorithm time complexity.</p>
+<div class="pt-4 border-t border-outline-variant/20 flex items-center justify-between text-body-sm">
+<span class="text-on-surface-variant">Next Milestone</span>
+<span class="text-primary font-code-sm font-semibold">Mid-term Exam Review (3d)</span>
+</div>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

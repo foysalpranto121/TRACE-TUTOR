@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-variant": "#2d3449", "surface-container": "#171f33", "surface-container-high": "#222a3d", "primary-container": "#06b6d4", "tertiary-fixed": "#d8e3fb", "on-tertiary": "#263143", "outline": "#869397", "inverse-surface": "#dae2fd", "on-background": "#dae2fd", "surface-container-lowest": "#060e20", "on-secondary": "#1000a9", "on-tertiary-container": "#313c4f", "on-primary-container": "#00424f", "on-secondary-container": "#b0b2ff", "on-primary": "#003640", "on-primary-fixed-variant": "#004e5c", "tertiary": "#bcc7de", "surface": "#0b1326", "on-error-container": "#ffdad6", "inverse-on-surface": "#283044", "error": "#ffb4ab", "on-tertiary-fixed-variant": "#3c475a", "secondary": "#c0c1ff", "secondary-container": "#3131c0", "on-secondary-fixed": "#07006c", "secondary-fixed-dim": "#c0c1ff", "error-container": "#93000a", "on-primary-fixed": "#001f26", "on-secondary-fixed-variant": "#2f2ebe", "primary-fixed-dim": "#4cd7f6", "on-surface-variant": "#bcc9cd", "on-tertiary-fixed": "#111c2d", "primary-fixed": "#acedff", "surface-container-low": "#131b2e", "surface-tint": "#4cd7f6", "surface-bright": "#31394d", "inverse-primary": "#00687a", "outline-variant": "#3d494c", "surface-dim": "#0b1326", "secondary-fixed": "#e1e0ff", "tertiary-fixed-dim": "#bcc7de", "on-surface": "#dae2fd", "on-error": "#690005", "primary": "#4cd7f6", "tertiary-container": "#9ca7be", "surface-container-highest": "#2d3449", "background": "#0b1326" }, borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" }, spacing: { "space-sm": "0.5rem", "space-lg": "1.5rem", gutter: "1rem", "space-xl": "2rem", "space-xs": "0.25rem", margin: "1.5rem", "space-md": "1rem" }, fontFamily: { "body-lg": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "body-md": ["Inter"], "code-md": ["JetBrains Mono"], "code-sm": ["JetBrains Mono"], "body-sm": ["Inter"], "headline-md": ["Inter"], "headline-lg": ["Inter"] }, fontSize: { "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" }], "headline-xl": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "code-md": ["13px", { lineHeight: "20px", fontWeight: "400" }], "code-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "body-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }], "headline-md": ["18px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "500" }], "headline-lg": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }] } } } }</script></head><body class="bg-surface font-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-50 flex flex-col pt-6 pb-8"><div class="px-6 mb-8 flex items-center gap-3"><img alt="TRACE Tutor Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfM_7kNhwwQNVBovRwEsMxKDQadqvyAcEq5dXSTbuAtthafX8CleaZMMmVKWjaLuLYQXIDTuud81KQeL2akevwHcIqNoyIZ0fewFY18ZMtTreK4EkscGzlBUdGJBnSHcnUZEtOtyJQPo6Fub1Vb8vXPr94iG92fseArQ21q6Hbk03pPrFvm4twF7toUIM6nP4f3vonU4EyjQX4LtT8SXMIJ1rUsusVOi7nJSs8y51yxD2sheayfC0"/><span class="text-headline-md font-bold text-on-surface tracking-tight">TRACE Tutor</span></div><div class="px-4 mb-6"><div class="bg-surface-container p-2 rounded-xl flex items-center justify-between"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[20px]">school</span><span class="text-label-md text-on-surface font-medium">Student Mode</span></div><span class="material-symbols-outlined text-on-surface-variant text-[18px] cursor-pointer">unfold_more</span></div></div><nav class="flex-1 px-4 space-y-1 overflow-y-auto" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="dashboard" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">dashboard</span>Dashboard</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="workspace" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">code</span>Workspace</a><a aria-current="page" class="flex items-center px-4 py-2.5 rounded-xl transition-all bg-primary-container text-on-primary-container font-semibold" data-path="tutor" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">smart_toy</span>AI Tutor</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="assessments" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">assignment</span>Assessments</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="progress" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">trending_up</span>Progress</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="expert" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">psychology</span>Expert</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="research" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">science</span>Research</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">settings</span>Settings</a></nav></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 flex items-center justify-between px-8 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center flex-1 max-w-md bg-surface-container rounded-xl px-4 py-2"><span class="material-symbols-outlined text-on-surface-variant mr-3 text-[20px]">search</span><input class="bg-transparent border-none outline-none text-on-surface text-body-md w-full placeholder:text-outline" placeholder="Search code, diagnostics, or concepts..." type="text"/></div><div class="flex items-center gap-4"><div class="relative cursor-pointer"><span class="material-symbols-outlined text-on-surface-variant hover:text-on-surface transition-colors">notifications</span><span class="absolute top-0 right-0 w-2 h-2 rounded-full bg-primary"></span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full pb-16">
+<!-- Top Header Section -->
+<div class="px-8 pt-8 pb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<div>
+<div class="flex items-center gap-3 mb-1">
+<span class="text-label-md uppercase tracking-wider text-primary font-code-sm">IRB Protocol #4482-A</span>
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span class="text-label-md text-on-surface-variant font-code-sm">Double-Blind Study Active</span>
+</div>
+<h1 class="text-headline-xl text-on-surface tracking-tight">Participants</h1>
+<p class="text-body-md text-on-surface-variant mt-1">Manage research participants and study progress</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 bg-surface-container hover:bg-surface-container-high text-on-surface px-4 py-2.5 rounded-xl text-label-md transition-all" onclick="openImportModal()">
+<span class="material-symbols-outlined text-[18px]">upload_file</span>
+        Import Participants
+      </button>
+<button class="flex items-center gap-2 bg-surface-container hover:bg-surface-container-high text-on-surface px-4 py-2.5 rounded-xl text-label-md transition-all" onclick="exportData()">
+<span class="material-symbols-outlined text-[18px]">download</span>
+        Export Data
+      </button>
+<button class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-on-primary px-4 py-2.5 rounded-xl text-label-md font-semibold transition-all shadow-[0_0_20px_rgba(76,215,246,0.15)]" onclick="openAddParticipantModal()">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+        Add Participant
+      </button>
+</div>
+</div>
+<!-- Key Metrics Bento Grid -->
+<div class="px-8 mb-8">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+<!-- Card 1 -->
+<div class="bg-surface-container p-5 rounded-xl flex flex-col justify-between relative overflow-hidden group hover:bg-surface-container-high transition-all">
+<div class="absolute -right-6 -bottom-6 w-24 h-24 bg-primary/5 rounded-full blur-xl group-hover:bg-primary/10 transition-all"></div>
+<div class="flex items-center justify-between mb-4">
+<span class="text-label-md text-on-surface-variant uppercase font-code-sm">Total Participants</span>
+<span class="material-symbols-outlined text-primary text-[20px]">group</span>
+</div>
+<div>
+<div class="text-headline-xl text-on-surface font-semibold">342</div>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="text-xs text-primary font-medium">+12%</span>
+<span class="text-xs text-on-surface-variant">vs last cohort</span>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container p-5 rounded-xl flex flex-col justify-between relative overflow-hidden group hover:bg-surface-container-high transition-all">
+<div class="absolute -right-6 -bottom-6 w-24 h-24 bg-primary-container/5 rounded-full blur-xl group-hover:bg-primary-container/10 transition-all"></div>
+<div class="flex items-center justify-between mb-4">
+<span class="text-label-md text-on-surface-variant uppercase font-code-sm">Active Participants</span>
+<span class="material-symbols-outlined text-primary-container text-[20px]">bolt</span>
+</div>
+<div>
+<div class="text-headline-xl text-on-surface font-semibold">188</div>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="text-xs text-primary-container font-medium">54.9%</span>
+<span class="text-xs text-on-surface-variant">of total active pool</span>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container p-5 rounded-xl flex flex-col justify-between relative overflow-hidden group hover:bg-surface-container-high transition-all">
+<div class="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl group-hover:bg-emerald-500/10 transition-all"></div>
+<div class="flex items-center justify-between mb-4">
+<span class="text-label-md text-on-surface-variant uppercase font-code-sm">Completed</span>
+<span class="material-symbols-outlined text-emerald-400 text-[20px]">task_alt</span>
+</div>
+<div>
+<div class="text-headline-xl text-on-surface font-semibold">124</div>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="text-xs text-emerald-400 font-medium">96.8%</span>
+<span class="text-xs text-on-surface-variant">completion rate</span>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container p-5 rounded-xl flex flex-col justify-between relative overflow-hidden group hover:bg-surface-container-high transition-all">
+<div class="absolute -right-6 -bottom-6 w-24 h-24 bg-amber-500/5 rounded-full blur-xl group-hover:bg-amber-500/10 transition-all"></div>
+<div class="flex items-center justify-between mb-4">
+<span class="text-label-md text-on-surface-variant uppercase font-code-sm">In Progress</span>
+<span class="material-symbols-outlined text-amber-400 text-[20px]">pending</span>
+</div>
+<div>
+<div class="text-headline-xl text-on-surface font-semibold">64</div>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="text-xs text-amber-400 font-medium">Avg T+14d</span>
+<span class="text-xs text-on-surface-variant">time in study</span>
+</div>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="bg-surface-container p-5 rounded-xl flex flex-col justify-between relative overflow-hidden group hover:bg-surface-container-high transition-all">
+<div class="absolute -right-6 -bottom-6 w-24 h-24 bg-rose-500/5 rounded-full blur-xl group-hover:bg-rose-500/10 transition-all"></div>
+<div class="flex items-center justify-between mb-4">
+<span class="text-label-md text-on-surface-variant uppercase font-code-sm">Withdrawn</span>
+<span class="material-symbols-outlined text-rose-400 text-[20px]">person_remove</span>
+</div>
+<div>
+<div class="text-headline-xl text-on-surface font-semibold">15</div>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="text-xs text-rose-400 font-medium">4.3%</span>
+<span class="text-xs text-on-surface-variant">attrition rate</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Filters Toolbar -->
+<div class="px-8 mb-6">
+<div class="bg-surface-container p-4 rounded-xl flex flex-wrap items-center justify-between gap-4">
+<div class="flex flex-wrap items-center gap-3 flex-1">
+<!-- Search -->
+<div class="relative flex-1 min-w-[220px]">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full bg-surface text-on-surface pl-10 pr-4 py-2 rounded-lg text-body-md outline-none focus:ring-1 focus:ring-primary transition-all" placeholder="Search participant ID..." type="text"/>
+</div>
+<!-- Cohort Filter -->
+<select class="bg-surface text-on-surface px-3 py-2 rounded-lg text-body-md outline-none cursor-pointer">
+<option>Cohort: Q1-Q3 2024</option>
+<option>Q3 2024 (Active)</option>
+<option>Q2 2024</option>
+<option>Q1 2024</option>
+</select>
+<!-- Experimental Arm -->
+<select class="bg-surface text-on-surface px-3 py-2 rounded-lg text-body-md outline-none cursor-pointer">
+<option>Arm: All Experimental Arms</option>
+<option>Reasoning-Visible</option>
+<option>Answer-Only</option>
+</select>
+<!-- Language -->
+<select class="bg-surface text-on-surface px-3 py-2 rounded-lg text-body-md outline-none cursor-pointer">
+<option>Language: All</option>
+<option>Python</option>
+<option>C++</option>
+<option>Java</option>
+</select>
+<!-- Status -->
+<select class="bg-surface text-on-surface px-3 py-2 rounded-lg text-body-md outline-none cursor-pointer">
+<option>Status: All Statuses</option>
+<option>Active</option>
+<option>Completed</option>
+<option>In Progress</option>
+<option>Withdrawn</option>
+</select>
+</div>
+<!-- Action / Reset -->
+<div class="flex items-center gap-2">
+<button class="text-on-surface-variant hover:text-on-surface text-label-md px-3 py-2 rounded-lg transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">restart_alt</span>
+          Reset Filters
+        </button>
+</div>
+</div>
+</div>
+<!-- Participant Table (Privacy-Safe) -->
+<div class="px-8 mb-8">
+<div class="bg-surface-container rounded-xl overflow-hidden">
+<!-- Table Header Bar -->
+<div class="px-6 py-4 flex items-center justify-between bg-surface-container-high/50">
+<div class="flex items-center gap-3">
+<input class="rounded bg-surface text-primary focus:ring-0 cursor-pointer" id="selectAll" onclick="toggleSelectAll(this)" type="checkbox"/>
+<span class="text-label-md text-on-surface-variant font-code-sm">Showing 1–10 of 342 participants</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-label-md text-on-surface-variant">Bulk Actions:</span>
+<button class="bg-surface hover:bg-surface-container text-on-surface px-3 py-1.5 rounded-lg text-label-md transition-all">Export Selected</button>
+<button class="bg-surface hover:bg-surface-container text-on-surface px-3 py-1.5 rounded-lg text-label-md transition-all">Assign Arm</button>
+</div>
+</div>
+<!-- Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-surface-variant/20 text-on-surface-variant text-label-md font-code-sm uppercase tracking-wider">
+<th class="py-3 px-6 w-10"></th>
+<th class="py-3 px-4">Participant ID</th>
+<th class="py-3 px-4">Cohort</th>
+<th class="py-3 px-4">Experimental Arm</th>
+<th class="py-3 px-4">Language</th>
+<th class="py-3 px-4">Progress</th>
+<th class="py-3 px-4">Pre-Test</th>
+<th class="py-3 px-4">Post-Test</th>
+<th class="py-3 px-4">Transfer</th>
+<th class="py-3 px-4">Status</th>
+<th class="py-3 px-6">Last Activity</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-variant/10 text-body-md text-on-surface">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-high/60 cursor-pointer transition-colors" onclick="openDrawer('TRACE-PAR-9021')">
+<td class="py-4 px-6" onclick="event.stopPropagation()">
+<input class="rounded bg-surface text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-4 px-4 font-code-md text-primary font-medium">TRACE-PAR-9021</td>
+<td class="py-4 px-4 text-on-surface-variant">Q3-2024</td>
+<td class="py-4 px-4">
+<span class="px-2.5 py-1 rounded-md text-[11px] font-code-sm bg-primary/10 text-primary">REASONING_VISIBLE</span>
+</td>
+<td class="py-4 px-4">Python</td>
+<td class="py-4 px-4 w-36">
+<div class="flex items-center gap-2">
+<div class="flex-1 bg-surface h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[85%] rounded-full"></div>
+</div>
+<span class="text-xs font-code-sm text-on-surface-variant">85%</span>
+</div>
+</td>
+<td class="py-4 px-4 font-code-md">78%</td>
+<td class="py-4 px-4 font-code-md text-primary">92%</td>
+<td class="py-4 px-4 font-code-md">88%</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  Completed
+                </span>
+</td>
+<td class="py-4 px-6 text-on-surface-variant text-xs">2 mins ago</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-high/60 cursor-pointer transition-colors" onclick="openDrawer('TRACE-PAR-8412')">
+<td class="py-4 px-6" onclick="event.stopPropagation()">
+<input class="rounded bg-surface text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-4 px-4 font-code-md text-primary font-medium">TRACE-PAR-8412</td>
+<td class="py-4 px-4 text-on-surface-variant">Q3-2024</td>
+<td class="py-4 px-4">
+<span class="px-2.5 py-1 rounded-md text-[11px] font-code-sm bg-surface-variant/40 text-on-surface-variant">ANSWER_ONLY</span>
+</td>
+<td class="py-4 px-4">C++</td>
+<td class="py-4 px-4 w-36">
+<div class="flex items-center gap-2">
+<div class="flex-1 bg-surface h-1.5 rounded-full overflow-hidden">
+<div class="bg-amber-400 h-full w-[45%] rounded-full"></div>
+</div>
+<span class="text-xs font-code-sm text-on-surface-variant">45%</span>
+</div>
+</td>
+<td class="py-4 px-4 font-code-md">62%</td>
+<td class="py-4 px-4 font-code-md text-on-surface-variant">—</td>
+<td class="py-4 px-4 font-code-md text-on-surface-variant">—</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                  In Progress
+                </span>
+</td>
+<td class="py-4 px-6 text-on-surface-variant text-xs">14 mins ago</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-high/60 cursor-pointer transition-colors" onclick="openDrawer('TRACE-PAR-7390')">
+<td class="py-4 px-6" onclick="event.stopPropagation()">
+<input class="rounded bg-surface text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-4 px-4 font-code-md text-primary font-medium">TRACE-PAR-7390</td>
+<td class="py-4 px-4 text-on-surface-variant">Q2-2024</td>
+<td class="py-4 px-4">
+<span class="px-2.5 py-1 rounded-md text-[11px] font-code-sm bg-primary/10 text-primary">REASONING_VISIBLE</span>
+</td>
+<td class="py-4 px-4">Java</td>
+<td class="py-4 px-4 w-36">
+<div class="flex items-center gap-2">
+<div class="flex-1 bg-surface h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[100%] rounded-full"></div>
+</div>
+<span class="text-xs font-code-sm text-on-surface-variant">100%</span>
+</div>
+</td>
+<td class="py-4 px-4 font-code-md">81%</td>
+<td class="py-4 px-4 font-code-md text-primary">95%</td>
+<td class="py-4 px-4 font-code-md">94%</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  Completed
+                </span>
+</td>
+<td class="py-4 px-6 text-on-surface-variant text-xs">1 day ago</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-high/60 cursor-pointer transition-colors" onclick="openDrawer('TRACE-PAR-6211')">
+<td class="py-4 px-6" onclick="event.stopPropagation()">
+<input class="rounded bg-surface text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-4 px-4 font-code-md text-primary font-medium">TRACE-PAR-6211</td>
+<td class="py-4 px-4 text-on-surface-variant">Q3-2024</td>
+<td class="py-4 px-4">
+<span class="px-2.5 py-1 rounded-md text-[11px] font-code-sm bg-surface-variant/40 text-on-surface-variant">ANSWER_ONLY</span>
+</td>
+<td class="py-4 px-4">Python</td>
+<td class="py-4 px-4 w-36">
+<div class="flex items-center gap-2">
+<div class="flex-1 bg-surface h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[20%] rounded-full"></div>
+</div>
+<span class="text-xs font-code-sm text-on-surface-variant">20%</span>
+</div>
+</td>
+<td class="py-4 px-4 font-code-md">55%</td>
+<td class="py-4 px-4 font-code-md text-on-surface-variant">—</td>
+<td class="py-4 px-4 font-code-md text-on-surface-variant">—</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Active
+                </span>
+</td>
+<td class="py-4 px-6 text-on-surface-variant text-xs">3 hours ago</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-high/60 cursor-pointer transition-colors" onclick="openDrawer('TRACE-PAR-5542')">
+<td class="py-4 px-6" onclick="event.stopPropagation()">
+<input class="rounded bg-surface text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-4 px-4 font-code-md text-primary font-medium">TRACE-PAR-5542</td>
+<td class="py-4 px-4 text-on-surface-variant">Q2-2024</td>
+<td class="py-4 px-4">
+<span class="px-2.5 py-1 rounded-md text-[11px] font-code-sm bg-primary/10 text-primary">REASONING_VISIBLE</span>
+</td>
+<td class="py-4 px-4">C++</td>
+<td class="py-4 px-4 w-36">
+<div class="flex items-center gap-2">
+<div class="flex-1 bg-surface h-1.5 rounded-full overflow-hidden">
+<div class="bg-rose-500 h-full w-[15%] rounded-full"></div>
+</div>
+<span class="text-xs font-code-sm text-on-surface-variant">15%</span>
+</div>
+</td>
+<td class="py-4 px-4 font-code-md">70%</td>
+<td class="py-4 px-4 font-code-md text-on-surface-variant">—</td>
+<td class="py-4 px-4 font-code-md text-on-surface-variant">—</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400">
+<span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                  Withdrawn
+                </span>
+</td>
+<td class="py-4 px-6 text-on-surface-variant text-xs">12 days ago</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="px-6 py-4 flex items-center justify-between border-t border-surface-variant/20 bg-surface-container-high/30">
+<div class="text-body-sm text-on-surface-variant">
+          Showing <span class="text-on-surface font-medium">1 to 10</span> of <span class="text-on-surface font-medium">342</span> results
+        </div>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-lg bg-surface text-on-surface-variant hover:text-on-surface text-label-md transition-colors disabled:opacity-50" disabled="">Previous</button>
+<button class="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-label-md font-semibold">1</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface text-on-surface-variant hover:text-on-surface text-label-md transition-colors">2</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface text-on-surface-variant hover:text-on-surface text-label-md transition-colors">3</button>
+<span class="text-on-surface-variant">...</span>
+<button class="px-3 py-1.5 rounded-lg bg-surface text-on-surface-variant hover:text-on-surface text-label-md transition-colors">35</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface text-on-surface-variant hover:text-on-surface text-label-md transition-colors">Next</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Privacy Compliance Footer / Notice -->
+<div class="px-8 mb-6">
+<div class="bg-surface-container/50 p-4 rounded-xl flex items-center gap-3 border border-outline-variant/10">
+<span class="material-symbols-outlined text-primary text-[20px]">verified_user</span>
+<p class="text-body-sm text-on-surface-variant">
+<strong class="text-on-surface font-medium">Research Privacy Notice:</strong> Using anonymous identifiers and minimum necessary participant data in compliance with institutional review board (IRB) protocols.
+      </p>
+</div>
+</div>
+<!-- Interactive Participant Detail Drawer -->
+<div class="fixed inset-0 z-50 overflow-hidden pointer-events-none transition-opacity duration-300 opacity-0" id="participantDrawer">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-surface/60 backdrop-blur-sm pointer-events-auto" onclick="closeDrawer()"></div>
+<!-- Drawer Panel -->
+<div class="absolute inset-y-0 right-0 max-w-full flex pl-10 transform translate-x-full transition-transform duration-300 ease-in-out pointer-events-auto" id="drawerPanel">
+<div class="w-screen max-w-xl bg-surface-container-lowest border-l border-surface-variant/30 flex flex-col shadow-2xl">
+<!-- Drawer Header -->
+<div class="px-8 py-6 flex items-center justify-between border-b border-surface-variant/20 bg-surface-container">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-code-md font-bold">
+              ID
+            </div>
+<div>
+<h2 class="text-headline-md text-on-surface font-code-md" id="drawerParticipantId">TRACE-PAR-9021</h2>
+<span class="text-label-md text-on-surface-variant">Enrolled in Cohort Q3-2024</span>
+</div>
+</div>
+<button class="w-8 h-8 rounded-full bg-surface-variant/30 flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" onclick="closeDrawer()">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Drawer Content -->
+<div class="flex-1 overflow-y-auto p-8 space-y-8">
+<!-- Overview metadata -->
+<div class="grid grid-cols-3 gap-4">
+<div class="bg-surface-container p-4 rounded-xl">
+<span class="text-label-md text-on-surface-variant uppercase font-code-sm block mb-1">Experimental Arm</span>
+<span class="text-body-md text-primary font-code-sm font-semibold">REASONING_VISIBLE</span>
+</div>
+<div class="bg-surface-container p-4 rounded-xl">
+<span class="text-label-md text-on-surface-variant uppercase font-code-sm block mb-1">Language</span>
+<span class="text-body-md text-on-surface font-semibold">Python 3.11</span>
+</div>
+<div class="bg-surface-container p-4 rounded-xl">
+<span class="text-label-md text-on-surface-variant uppercase font-code-sm block mb-1">Status</span>
+<span class="text-body-md text-emerald-400 font-semibold">Completed</span>
+</div>
+</div>
+<!-- Research Timeline -->
+<div>
+<h3 class="text-headline-md text-on-surface mb-4">Research Timeline</h3>
+<div class="bg-surface-container p-6 rounded-xl space-y-6">
+<!-- Timeline item 1 -->
+<div class="flex items-start gap-4 relative">
+<div class="absolute left-3 top-6 bottom-0 w-0.5 bg-primary/30"></div>
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs font-bold z-10">1</div>
+<div>
+<div class="text-body-md font-semibold text-on-surface">Enrollment &amp; Consent</div>
+<div class="text-body-sm text-on-surface-variant">IRB protocol verified, anonymous token assigned.</div>
+<div class="text-xs text-primary font-code-sm mt-1">Oct 12, 2024 - 09:00 UTC</div>
+</div>
+</div>
+<!-- Timeline item 2 -->
+<div class="flex items-start gap-4 relative">
+<div class="absolute left-3 top-6 bottom-0 w-0.5 bg-primary/30"></div>
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs font-bold z-10">2</div>
+<div>
+<div class="text-body-md font-semibold text-on-surface">Pre-Test Assessment</div>
+<div class="text-body-sm text-on-surface-variant">Baseline algorithmic diagnostics completed.</div>
+<div class="text-xs text-primary font-code-sm mt-1">Score: 78% • Oct 12, 2024</div>
+</div>
+</div>
+<!-- Timeline item 3 -->
+<div class="flex items-start gap-4 relative">
+<div class="absolute left-3 top-6 bottom-0 w-0.5 bg-primary/30"></div>
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs font-bold z-10">3</div>
+<div>
+<div class="text-body-md font-semibold text-on-surface">AI Tutoring Learning Sessions</div>
+<div class="text-body-sm text-on-surface-variant">14 interactive debugging and synthesis sessions.</div>
+<div class="text-xs text-primary font-code-sm mt-1">Duration: 4.5 hours total</div>
+</div>
+</div>
+<!-- Timeline item 4 -->
+<div class="flex items-start gap-4 relative">
+<div class="absolute left-3 top-6 bottom-0 w-0.5 bg-primary/30"></div>
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs font-bold z-10">4</div>
+<div>
+<div class="text-body-md font-semibold text-on-surface">Post-Test &amp; Transfer Evaluation</div>
+<div class="text-body-sm text-on-surface-variant">Evaluated on novel recursion and pointer tasks.</div>
+<div class="text-xs text-primary font-code-sm mt-1">Post: 92% • Transfer: 88%</div>
+</div>
+</div>
+<!-- Timeline item 5 -->
+<div class="flex items-start gap-4">
+<div class="w-6 h-6 rounded-full bg-emerald-500 text-on-primary flex items-center justify-center text-xs font-bold z-10">✓</div>
+<div>
+<div class="text-body-md font-semibold text-on-surface">Study Completion</div>
+<div class="text-body-sm text-on-surface-variant">All telemetry logs sanitized and archived for analysis.</div>
+<div class="text-xs text-emerald-400 font-code-sm mt-1">Oct 26, 2024</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Assessment Summary & Scores -->
+<div>
+<h3 class="text-headline-md text-on-surface mb-4">Performance Metrics</h3>
+<div class="bg-surface-container p-6 rounded-xl grid grid-cols-3 gap-4 text-center">
+<div>
+<span class="text-label-md text-on-surface-variant uppercase font-code-sm block mb-1">Pre-Test</span>
+<span class="text-headline-lg text-on-surface font-code-md">78%</span>
+</div>
+<div>
+<span class="text-label-md text-on-surface-variant uppercase font-code-sm block mb-1">Post-Test</span>
+<span class="text-headline-lg text-primary font-code-md">92%</span>
+</div>
+<div>
+<span class="text-label-md text-on-surface-variant uppercase font-code-sm block mb-1">Transfer</span>
+<span class="text-headline-lg text-emerald-400 font-code-md">88%</span>
+</div>
+</div>
+</div>
+<!-- Researcher Actions -->
+<div>
+<h3 class="text-headline-md text-on-surface mb-4">Researcher Controls</h3>
+<div class="grid grid-cols-2 gap-3">
+<button class="flex items-center justify-center gap-2 bg-surface-container hover:bg-surface-container-high text-on-surface p-3 rounded-xl text-label-md transition-all">
+<span class="material-symbols-outlined text-[18px]">monitoring</span>
+                View Progress
+              </button>
+<button class="flex items-center justify-center gap-2 bg-surface-container hover:bg-surface-container-high text-on-surface p-3 rounded-xl text-label-md transition-all">
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+                View Sessions
+              </button>
+<button class="flex items-center justify-center gap-2 bg-surface-container hover:bg-surface-container-high text-on-surface p-3 rounded-xl text-label-md transition-all">
+<span class="material-symbols-outlined text-[18px]">assignment</span>
+                View Assessments
+              </button>
+<button class="flex items-center justify-center gap-2 bg-surface-container hover:bg-surface-container-high text-on-surface p-3 rounded-xl text-label-md transition-all">
+<span class="material-symbols-outlined text-[18px]">data_object</span>
+                View Telemetry
+              </button>
+</div>
+<div class="mt-3">
+<button class="w-full flex items-center justify-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 p-3 rounded-xl text-label-md transition-all">
+<span class="material-symbols-outlined text-[18px]">person_off</span>
+                Mark Inactive / Withdraw Participant
+              </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- JavaScript for Drawer & Interactions -->
+<script>
+    function openDrawer(participantId) {
+      document.getElementById('drawerParticipantId').textContent = participantId;
+      const drawer = document.getElementById('participantDrawer');
+      const panel = document.getElementById('drawerPanel');
+      drawer.classList.remove('pointer-events-none', 'opacity-0');
+      drawer.classList.add('opacity-100');
+      panel.classList.remove('translate-x-full');
+      panel.classList.add('translate-x-0');
+    }
+
+    function closeDrawer() {
+      const drawer = document.getElementById('participantDrawer');
+      const panel = document.getElementById('drawerPanel');
+      drawer.classList.remove('opacity-100');
+      drawer.classList.add('opacity-0');
+      panel.classList.remove('translate-x-0');
+      panel.classList.add('translate-x-full');
+      setTimeout(() => {
+        drawer.classList.add('pointer-events-none');
+      }, 300);
+    }
+
+    function toggleSelectAll(masterCheckbox) {
+      const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+      checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
+    }
+
+    function openAddParticipantModal() {
+      alert("Add Participant Modal triggered. IRB secure token generator active.");
+    }
+
+    function openImportModal() {
+      alert("Participant batch CSV import wizard opening...");
+    }
+
+    function exportData() {
+      alert("Exporting sanitized CSV dataset for active cohort...");
+    }
+  </script>
+</div></main></div></body></html>

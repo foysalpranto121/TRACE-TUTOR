@@ -1,0 +1,367 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===========================================================================
+   TRACE Tutor design tokens
+   Colours are space-separated RGB triplets so Tailwind opacity modifiers work
+   (`bg-primary/20`). Themes swap the variables; components never hardcode hex.
+   =========================================================================== */
+@layer base {
+  :root,
+  .dark {
+    color-scheme: dark;
+
+    --surface: 7 11 24;
+    --surface-container-lowest: 9 14 30;
+    --surface-container-low: 13 21 42;
+    --surface-container: 17 26 50;
+    --surface-container-high: 26 38 68;
+    --surface-container-highest: 36 50 88;
+
+    --on-surface: 230 237 255;
+    --on-surface-variant: 154 169 201;
+    --outline: 110 126 160;
+    --outline-variant: 42 56 92;
+
+    --primary: 34 211 238;            /* electric cyan */
+    --primary-container: 6 182 212;
+    --on-primary: 3 20 28;
+    --on-primary-container: 220 250 255;
+
+    --secondary: 167 139 250;         /* violet - AI / reasoning */
+    --secondary-container: 124 58 237;
+    --on-secondary: 24 10 58;
+
+    --tertiary: 163 230 53;           /* lime - progress */
+    --tertiary-container: 132 204 22;
+
+    --success: 52 211 153;
+    --warning: 251 191 36;
+    --danger: 251 113 133;
+    --danger-container: 136 19 55;
+
+    --xp: 163 230 53;
+    --streak: 251 146 60;
+
+    /* Category accents - bright on dark so tinted chips glow */
+    --accent-rose: 251 113 133;
+    --accent-orange: 251 146 60;
+    --accent-amber: 250 204 21;
+    --accent-emerald: 52 211 153;
+    --accent-sky: 56 189 248;
+    --accent-violet: 167 139 250;
+    --accent-pink: 244 114 182;
+    --accent-teal: 45 212 191;
+
+    --shadow-color: 0 0 0;
+    --grid-line: 255 255 255;
+    --glass: 17 26 50;
+    --glass-alpha: 0.72;
+  }
+
+  /* "Soft" is the daytime theme. Deliberately NOT white: a warm, low-glare
+     parchment tone is easier on the eyes for long coding sessions, while the
+     saturated 700-level accents keep it colourful. */
+  .soft {
+    color-scheme: light;
+
+    --surface: 231 226 217;
+    --surface-container-lowest: 244 240 233;
+    --surface-container-low: 239 234 225;
+    --surface-container: 242 238 230;
+    --surface-container-high: 226 220 207;
+    --surface-container-highest: 214 207 191;
+
+    --on-surface: 42 38 32;
+    --on-surface-variant: 90 84 70;
+    --outline: 139 131 114;
+    --outline-variant: 207 199 182;
+
+    --primary: 15 118 110;            /* teal-700: AA on the warm surface */
+    --primary-container: 13 148 136;
+    --on-primary: 255 253 248;
+    --on-primary-container: 240 253 250;
+
+    --secondary: 109 40 217;
+    --secondary-container: 124 58 237;
+    --on-secondary: 255 253 248;
+
+    --tertiary: 77 124 15;
+    --tertiary-container: 101 163 13;
+
+    --xp: 77 124 15;
+    --streak: 194 65 12;
+
+    /* 700-level accents: colourful, yet dark enough to read as text on the warm base */
+    --accent-rose: 190 18 60;
+    --accent-orange: 194 65 12;
+    --accent-amber: 180 83 9;
+    --accent-emerald: 4 120 87;
+    --accent-sky: 3 105 161;
+    --accent-violet: 109 40 217;
+    --accent-pink: 190 24 93;
+    --accent-teal: 15 118 110;
+
+    --shadow-color: 58 50 38;
+    --grid-line: 42 38 32;
+    --glass: 242 238 230;
+    --glass-alpha: 0.86;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: rgb(var(--surface));
+    color: rgb(var(--on-surface));
+    font-family: "Hind Siliguri", Inter, "Noto Sans Bengali", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: "Space Grotesk", "Hind Siliguri", Inter, sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background: rgb(var(--primary) / 0.28);
+  }
+
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--outline-variant));
+    border-radius: 999px;
+    border: 2px solid rgb(var(--surface));
+  }
+  ::-webkit-scrollbar-thumb:hover { background: rgb(var(--outline)); }
+
+  /* Keyboard focus is always visible, mouse clicks stay clean. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--primary));
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+}
+
+/* ===========================================================================
+   Semantic raw-colour bridges
+   Pages written before the token system use Tailwind palette classes for
+   state colours. In light mode those shades are too pale, so remap the few
+   that carry meaning (specificity beats the utility, no !important needed).
+   =========================================================================== */
+.soft .text-emerald-400, .soft .text-emerald-300 { color: rgb(4 120 87); }
+.soft .text-rose-400, .soft .text-rose-300 { color: rgb(190 18 60); }
+.soft .text-amber-400, .soft .text-amber-300 { color: rgb(180 83 9); }
+.soft .text-purple-400, .soft .text-purple-300 { color: rgb(109 40 217); }
+.soft .text-sky-400, .soft .text-sky-300 { color: rgb(3 105 161); }
+.soft .text-cyan-300 { color: rgb(15 118 110); }
+.soft .bg-slate-900 { background-color: rgb(226 220 207); }
+.soft .bg-slate-900 pre, .soft .bg-slate-900 code { color: rgb(42 38 32); }
+
+@layer components {
+  /* ---------------------------------------------------------------------
+     Category colour system. Pass a hue with `style={{'--chip': 'var(--accent-sky)'}}`.
+     Light mode fills solid (white icon) for a bright, playful edtech feel;
+     dark mode uses a glowing tint so it doesn't blow out the dark surface.
+     --------------------------------------------------------------------- */
+  .icon-chip {
+    background: rgb(var(--chip));
+    color: #fffdf8;
+    border: 1px solid rgb(var(--chip));
+    box-shadow: 0 6px 16px -6px rgb(var(--chip) / 0.6);
+  }
+  .dark .icon-chip {
+    background: rgb(var(--chip) / 0.16);
+    color: rgb(var(--chip));
+    border-color: rgb(var(--chip) / 0.34);
+    box-shadow: none;
+  }
+
+  .tint-card {
+    background: rgb(var(--chip) / 0.055);
+    border-color: rgb(var(--chip) / 0.28);
+  }
+  .dark .tint-card {
+    background: rgb(var(--surface-container));
+    border-color: rgb(var(--chip) / 0.26);
+  }
+  .tint-card:hover { border-color: rgb(var(--chip) / 0.65); }
+
+  .chip-soft {
+    background: rgb(var(--chip) / 0.12);
+    color: rgb(var(--chip));
+    border: 1px solid rgb(var(--chip) / 0.3);
+  }
+  .soft .chip-soft { background: rgb(var(--chip) / 0.1); }
+
+  /* Vivid CTA - a flat brand fill reads corporate, a moving gradient reads young. */
+  .btn-vivid {
+    background-image: linear-gradient(100deg, rgb(var(--accent-sky)), rgb(var(--accent-violet)) 52%, rgb(var(--accent-rose)));
+    background-size: 190% auto;
+    background-position: left center;
+    color: #fffdf8 !important;
+    border: none;
+    box-shadow: 0 10px 26px -10px rgb(var(--accent-violet) / 0.65);
+    transition: background-position 0.6s ease, box-shadow 0.25s ease, transform 0.14s ease;
+  }
+  .btn-vivid:hover {
+    background-position: right center;
+    box-shadow: 0 14px 32px -10px rgb(var(--accent-violet) / 0.8);
+  }
+
+  /* Light mode needs real elevation or white-on-white cards read flat. */
+  .soft .shadow-lift { box-shadow: 0 1px 2px rgb(var(--shadow-color) / 0.06), 0 8px 24px -12px rgb(var(--shadow-color) / 0.18); }
+  .soft .card-interactive:hover { box-shadow: 0 12px 30px -12px rgb(var(--shadow-color) / 0.28); }
+
+  /* Frosted panel used by headers, popovers and the landing navbar. */
+  .glass-panel {
+    background: rgb(var(--glass) / var(--glass-alpha));
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgb(var(--outline-variant) / 0.6);
+  }
+
+  /* Blueprint grid backdrop for hero / auth sections. */
+  .bg-grid {
+    background-image:
+      linear-gradient(rgb(var(--grid-line) / 0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--grid-line) / 0.055) 1px, transparent 1px);
+    background-size: 38px 38px;
+  }
+
+  .text-gradient {
+    background-image: linear-gradient(100deg, rgb(var(--primary)), rgb(var(--secondary)) 55%, rgb(var(--primary)));
+    background-size: 220% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: gradient-pan 7s ease infinite;
+  }
+
+  /* Cards that respond to the pointer - the main "this app is alive" cue. */
+  .card-interactive {
+    transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.22s ease, box-shadow 0.22s ease;
+  }
+  .card-interactive:hover {
+    transform: translateY(-3px);
+    border-color: rgb(var(--primary) / 0.45);
+    box-shadow: 0 14px 34px -18px rgb(var(--shadow-color) / 0.75), 0 0 0 1px rgb(var(--primary) / 0.18);
+  }
+
+  .press {
+    transition: transform 0.14s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+  .press:active { transform: scale(0.97); }
+
+  /* Sweeping highlight for primary CTAs. */
+  .sheen { position: relative; overflow: hidden; isolation: isolate; }
+  .sheen::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 34%;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.32), transparent);
+    transform: translateX(-120%) skewX(-18deg);
+    pointer-events: none;
+  }
+  .sheen:hover::after { animation: sheen-sweep 1.1s ease-out; }
+
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background: rgb(var(--surface-container-high));
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgb(var(--on-surface) / 0.07), transparent);
+    animation: shimmer 1.6s infinite;
+  }
+
+  /* Terminal caret used in hero code blocks. */
+  .caret::after {
+    content: "▋";
+    margin-left: 2px;
+    color: rgb(var(--primary));
+    animation: blink 1.1s step-end infinite;
+  }
+}
+
+@layer utilities {
+  /* Entrance stagger: add `.stagger-N` next to an animation utility. */
+  .stagger-1 { animation-delay: 60ms; }
+  .stagger-2 { animation-delay: 120ms; }
+  .stagger-3 { animation-delay: 180ms; }
+  .stagger-4 { animation-delay: 240ms; }
+  .stagger-5 { animation-delay: 300ms; }
+  .stagger-6 { animation-delay: 360ms; }
+  .stagger-7 { animation-delay: 420ms; }
+  .stagger-8 { animation-delay: 480ms; }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   FX levels. `data-fx` is set on <html> by ThemeContext.
+   "minimal" keeps entrances and feedback but stops the decorative loops;
+   "off" freezes everything except genuine progress indicators (spinners).
+   --------------------------------------------------------------------------- */
+[data-fx='minimal'] .animate-float,
+[data-fx='minimal'] .animate-glow-pulse,
+[data-fx='minimal'] .animate-flame-flicker,
+[data-fx='minimal'] .animate-gradient-pan,
+[data-fx='minimal'] .text-gradient,
+[data-fx='off'] .animate-float,
+[data-fx='off'] .animate-glow-pulse,
+[data-fx='off'] .animate-flame-flicker,
+[data-fx='off'] .animate-gradient-pan,
+[data-fx='off'] .text-gradient {
+  animation: none !important;
+}
+
+[data-fx='off'] .sheen::after { display: none; }
+[data-fx='off'] .card-interactive:hover { transform: none; }
+
+[data-fx='off'] .animate-fade-up,
+[data-fx='off'] .animate-fade-in,
+[data-fx='off'] .animate-scale-in,
+[data-fx='off'] .animate-slide-in,
+[data-fx='off'] .animate-pop {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* Scanline sheet for the "terminal" feel - pure CSS, no repaint cost. */
+.fx-scanlines::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgb(var(--grid-line) / 0.035) 0px,
+    rgb(var(--grid-line) / 0.035) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+[data-fx='off'] .fx-scanlines::before { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

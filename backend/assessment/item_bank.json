@@ -1,0 +1,1054 @@
+{
+  "pre": [
+    {
+      "id": "pre_c_code_01",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Pre-Test C Task 1: Sum of First N Natural Numbers",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ১ থেকে N পর্যন্ত সমস্ত ধনাত্মক পূর্ণসংখ্যার যোগফল লুপের মাধ্যমে নির্ণয় করে প্রিন্ট করবে। (Write a C program to calculate the sum of numbers from 1 to N using a loop).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int n, sum = 0;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 142)"
+    },
+    {
+      "id": "pre_c_code_02",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Pre-Test C Task 2: Even or Odd Number Verification",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা প্রদত্ত সংখ্যাটি জোড় (Even) নাকি বিজোড় (Odd) তা মডুলাস (%) অপারেটর দিয়ে পরীক্ষা করবে। (Check if a given number is even or odd).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int num;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 138)"
+    },
+    {
+      "id": "pre_c_code_03",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Pre-Test C Task 3: Factorial of a Positive Integer",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ব্যবহারকারীর প্রদত্ত ধনাত্মক সংখ্যা N-এর ফ্যাক্টোরিয়াল (N!) নির্ণয় করবে। (Calculate factorial N!).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int n;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 145)"
+    },
+    {
+      "id": "pre_c_code_04",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Pre-Test C Task 4: Maximum of Three Numbers",
+      "question": "তিনটি সংখ্যার মধ্যে বৃহত্তম সংখ্যাটি নির্ণয় করার জন্য একটি সি (C) প্রোগ্রাম লিখুন। (Find maximum of three numbers).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int a, b, c;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 140)"
+    },
+    {
+      "id": "pre_c_code_05",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Pre-Test C Task 5: Prime Number Verification",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা কোনো প্রদত্ত পূর্ণসংখ্যা মৌলিক সংখ্যা (Prime Number) কিনা তা পরীক্ষা করে দেখাবে। (Verify prime number).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int n;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 152)"
+    },
+    {
+      "id": "pre_html_code_01",
+      "type": "html_coding",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Pre-Test HTML Task 1: Student Marks Table Structure",
+      "question": "একটি এইচটিএমএল (HTML) কোড লিখুন যা ২ সারি ও ২ কলামের একটি টেবিল তৈরি করবে (Roll ও Marks হেডারসহ)। (Create a 2x2 table for Roll and Marks).",
+      "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write 2x2 table for Roll and Marks here -->\n\n</body>\n</html>",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 98)"
+    },
+    {
+      "id": "pre_html_code_02",
+      "type": "html_coding",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Pre-Test HTML Task 2: Clickable Image Hyperlink",
+      "question": "এমন একটি HTML কোড লিখুন যেখানে \"college.jpg\" ছবিটিতে ক্লিক করলে \"https://nctb.gov.bd\" ওয়েবসাইটটি ওপেন হবে। (Clickable image hyperlink).",
+      "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write clickable image hyperlink code here -->\n\n</body>\n</html>",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 105)"
+    },
+    {
+      "id": "pre_html_code_03",
+      "type": "html_coding",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Pre-Test HTML Task 3: Formatted Ordered List",
+      "question": "এইচটিএমএল (HTML) ব্যবহার করে ১, ২, ৩ ক্রমিক নম্বরযুক্ত একটি Ordered List (<ol>) তৈরি করুন যেখানে বিষয়গুলোর নাম বোল্ড (<b>) হবে। (Formatted ordered list).",
+      "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write formatted ordered list here -->\n\n</body>\n</html>",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 92)"
+    },
+    {
+      "id": "pre_mcq_chap4_01",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Pre-Test MCQ 1: HTML Hyperlink Anchor Tag",
+      "question": "এইচটিএমএল (HTML) ডকুমেন্টে অন্য কোনো ওয়েব পেজ হাইপারলিংক করার জন্য কোন ট্যাগটি ব্যবহৃত হয়? (Which tag creates a hyperlink in HTML?)",
+      "options": [
+        {
+          "id": "a",
+          "text": "<link>"
+        },
+        {
+          "id": "b",
+          "text": "<a href=\"...\">"
+        },
+        {
+          "id": "c",
+          "text": "<url>"
+        },
+        {
+          "id": "d",
+          "text": "<anchor>"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 86)"
+    },
+    {
+      "id": "pre_mcq_chap4_02",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Pre-Test MCQ 2: Secure Web Protocol & Default Port",
+      "question": "নিরাপদ ওয়েব ডেটা আদান-প্রদানের জন্য কোন প্রোটোকল এবং পোর্ট নম্বর ব্যবহৃত হয়? (Secure protocol & port).",
+      "options": [
+        {
+          "id": "a",
+          "text": "HTTP (Port 80)"
+        },
+        {
+          "id": "b",
+          "text": "HTTPS (Port 443)"
+        },
+        {
+          "id": "c",
+          "text": "FTP (Port 21)"
+        },
+        {
+          "id": "d",
+          "text": "SMTP (Port 25)"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 78)"
+    },
+    {
+      "id": "pre_mcq_chap4_03",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Pre-Test MCQ 3: HTML Root Structure Tags",
+      "question": "একটি সঠিক ওয়েব পেজের মৌলিক এইচটিএমএল ডকুমেন্টের রুট এলিমেন্ট কোনটি? (HTML document root element).",
+      "options": [
+        {
+          "id": "a",
+          "text": "<head>"
+        },
+        {
+          "id": "b",
+          "text": "<html>"
+        },
+        {
+          "id": "c",
+          "text": "<body>"
+        },
+        {
+          "id": "d",
+          "text": "<title>"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 82)"
+    },
+    {
+      "id": "pre_mcq_chap4_04",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Pre-Test MCQ 4: HTML Table Column Spanning Attribute",
+      "question": "এইচটিএমএল (HTML) টেবিলে একাধিক কলামকে একসাথে যুক্ত করার জন্য কোন অ্যাট্রিবিউট ব্যবহৃত হয়? (Attribute to span multiple columns).",
+      "options": [
+        {
+          "id": "a",
+          "text": "rowspan"
+        },
+        {
+          "id": "b",
+          "text": "colspan"
+        },
+        {
+          "id": "c",
+          "text": "cellspacing"
+        },
+        {
+          "id": "d",
+          "text": "cellpadding"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 100)"
+    },
+    {
+      "id": "pre_mcq_chap4_05",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Pre-Test MCQ 5: Image Source Attribute",
+      "question": "ওয়েব পেজে ছবি প্রদর্শনের জন্য <img> ট্যাগের সাথে অপরিহার্য কোন অ্যাট্রিবিউটটি ফাইলের পথ নির্দেশ করে? (Image source attribute).",
+      "options": [
+        {
+          "id": "a",
+          "text": "href"
+        },
+        {
+          "id": "b",
+          "text": "src"
+        },
+        {
+          "id": "c",
+          "text": "alt"
+        },
+        {
+          "id": "d",
+          "text": "link"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 104)"
+    },
+    {
+      "id": "pre_mcq_chap6_01",
+      "type": "concept_mcq",
+      "chapter": "Chapter 6 — Database Management System",
+      "title": "Pre-Test MCQ 6: Primary Key Characteristic",
+      "question": "ডাটাবেজ ম্যানেজমেন্ট সিস্টেমে (DBMS) প্রাইমারি কি (Primary Key)-এর প্রধান বৈশিষ্ট্য কোনটি? (Primary key characteristic).",
+      "options": [
+        {
+          "id": "a",
+          "text": "একই কলামে একাধিক রেকর্ডে ডুপ্লিকেট (Duplicate) মান থাকতে পারে"
+        },
+        {
+          "id": "b",
+          "text": "প্রতিটি রেকর্ডকে এককভাবে (Uniquely) সনাক্ত করে এবং এর মান কখনো Null হতে পারে না"
+        },
+        {
+          "id": "c",
+          "text": "এটি শুধুমাত্র টেক্সট (Text) ডেটার ক্ষেত্রে ব্যবহৃত হয়"
+        },
+        {
+          "id": "d",
+          "text": "একটি টেবিলের সব রেকর্ডে এর মান ফাঁকা (Null) রাখা যায়"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 6 (Page 180)"
+    },
+    {
+      "id": "pre_mcq_chap6_02",
+      "type": "concept_mcq",
+      "chapter": "Chapter 6 — Database Management System",
+      "title": "Pre-Test MCQ 7: SQL Data Retrieval Command",
+      "question": "এসকিউএল (SQL)-এ ডাটাবেজ টেবিল থেকে নির্দিষ্ট ডেটা খুঁজে বের করার বা প্রদর্শনের জন্য কোন কমান্ডটি ব্যবহৃত হয়? (SQL command for data retrieval).",
+      "options": [
+        {
+          "id": "a",
+          "text": "EXTRACT"
+        },
+        {
+          "id": "b",
+          "text": "SELECT"
+        },
+        {
+          "id": "c",
+          "text": "OPEN"
+        },
+        {
+          "id": "d",
+          "text": "GET"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 6 (Page 195)"
+    }
+  ],
+  "post": [
+    {
+      "id": "post_c_code_01",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Post-Test C Task 1: Product of First N Integers",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ১ থেকে N পর্যন্ত সমস্ত সংখ্যার গুণফল লুপ ব্যবহার করে নির্ণয় করবে। (Write a C program to calculate the product of numbers 1 to N).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int n;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 143)"
+    },
+    {
+      "id": "post_c_code_02",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Post-Test C Task 2: Positive or Negative Checker",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা প্রদত্ত সংখ্যাটি ধনাত্মক (Positive) নাকি ঋণাত্মক (Negative) তা if-else দিয়ে পরীক্ষা করবে। (Check positive or negative number).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int num;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 139)"
+    },
+    {
+      "id": "post_c_code_03",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Post-Test C Task 3: Fibonacci Series Term Calculation",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ফিবোনাক্কি সিরিজের N-তম পদ নির্ণয় করে প্রদর্শন করবে (F0=0, F1=1)। (Calculate Nth Fibonacci number).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int n;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 148)"
+    },
+    {
+      "id": "post_c_code_04",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Post-Test C Task 4: Minimum of Three Numbers",
+      "question": "তিনটি পূর্ণসংখ্যার মধ্যে ক্ষুদ্রতম সংখ্যাটি (Minimum) নির্ণয় করার জন্য একটি সি (C) প্রোগ্রাম লিখুন। (Find minimum of three numbers).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int a, b, c;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 141)"
+    },
+    {
+      "id": "post_c_code_05",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Post-Test C Task 5: Count Divisors of an Integer",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা কোনো প্রদত্ত পূর্ণসংখ্যার মোট ভাজক সংখ্যা (Count of Divisors) নির্ণয় করবে। (Count number of divisors of an integer).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int n;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 150)"
+    },
+    {
+      "id": "post_html_code_01",
+      "type": "html_coding",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Post-Test HTML Task 1: Employee Table with Rowspan",
+      "question": "একটি HTML টেবিল তৈরি করুন যেখানে \"Department\" সেলটি ২ টি সারি জুড়ে সম্প্রসারিত (rowspan=\"2\") থাকবে। (Create HTML table with rowspan=\"2\").",
+      "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write table with rowspan=\"2\" here -->\n\n</body>\n</html>",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 101)"
+    },
+    {
+      "id": "post_html_code_02",
+      "type": "html_coding",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Post-Test HTML Task 2: Internal Section Bookmark Link",
+      "question": "একই ওয়েব পেজের `#contact` আইডি বিশিষ্ট সেকশনে নেভিগেট করার জন্য একটি এইচটিএমএল হাইপারলিংক লিখুন। (Internal section bookmark hyperlink).",
+      "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write internal section bookmark hyperlink code here -->\n\n</body>\n</html>",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 88)"
+    },
+    {
+      "id": "post_html_code_03",
+      "type": "html_coding",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Post-Test HTML Task 3: Unordered Bullet List",
+      "question": "এইচটিএমএল (HTML) ব্যবহার করে ডিস্ক (disc) স্টাইলের বুলেটযুক্ত একটি Unordered List (<ul>) তৈরি করুন। (Create unordered bullet list).",
+      "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write unordered list with disc bullets here -->\n\n</body>\n</html>",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 94)"
+    },
+    {
+      "id": "post_mcq_chap4_01",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Post-Test MCQ 1: HTML Line Break Tag",
+      "question": "এইচটিএমএল (HTML) ডকুমেন্টে নতুন লাইন বা লাইন ব্রেক তৈরি করার জন্য কোন ট্যাগটি ব্যবহৃত হয়? (Line break tag in HTML).",
+      "options": [
+        {
+          "id": "a",
+          "text": "<p>"
+        },
+        {
+          "id": "b",
+          "text": "<br>"
+        },
+        {
+          "id": "c",
+          "text": "<hr>"
+        },
+        {
+          "id": "d",
+          "text": "<break>"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 84)"
+    },
+    {
+      "id": "post_mcq_chap4_02",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Post-Test MCQ 2: Domain Name System (DNS) Role",
+      "question": "ডোমেইন নেম সিস্টেম (DNS)-এর প্রধান কাজ কোনটি? (Primary role of Domain Name System DNS).",
+      "options": [
+        {
+          "id": "a",
+          "text": "এইচটিএমএল কোড লিখে ওয়েব পেজ তৈরি করা (Editing HTML code)"
+        },
+        {
+          "id": "b",
+          "text": "ডোমেইন নামকে আইপি (IP) অ্যাড্রেসে রূপান্তর করা (Domain name to IP address translation)"
+        },
+        {
+          "id": "c",
+          "text": "সার্ভারে ফাইল আপলোড ও ডাউনলোড করা (File transfer to the server)"
+        },
+        {
+          "id": "d",
+          "text": "ডাটাবেজের সঙ্গে ওয়েব পেজের সংযোগ স্থাপন করা (Connecting a web page to a database)"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 76)"
+    },
+    {
+      "id": "post_mcq_chap4_03",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Post-Test MCQ 3: Character Encoding Meta Tag",
+      "question": "বাংলা ভাষা ও আন্তর্জাতিক অক্ষরের সঠিক রূপায়নের জন্য এইচটিএমএল-এ কোন চারসেট মেটা ট্যাগ যুক্ত করা হয়? (Character encoding meta tag for Bengali UTF-8).",
+      "options": [
+        {
+          "id": "a",
+          "text": "<meta charset=\"ASCII\">"
+        },
+        {
+          "id": "b",
+          "text": "<meta charset=\"UTF-8\">"
+        },
+        {
+          "id": "c",
+          "text": "<meta encoding=\"ANSI\">"
+        },
+        {
+          "id": "d",
+          "text": "<meta type=\"UNICODE\">"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 83)"
+    },
+    {
+      "id": "post_mcq_chap4_04",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Post-Test MCQ 4: Table Header Cell Tag",
+      "question": "এইচটিএমএল টেবিলে কলামের শিরোনাম বা হেডার তৈরির জন্য কোন ট্যাগ ব্যবহৃত হয়? (Table header element tag).",
+      "options": [
+        {
+          "id": "a",
+          "text": "<td>"
+        },
+        {
+          "id": "b",
+          "text": "<th>"
+        },
+        {
+          "id": "c",
+          "text": "<tr >"
+        },
+        {
+          "id": "d",
+          "text": "<header>"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 96)"
+    },
+    {
+      "id": "post_mcq_chap4_05",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Post-Test MCQ 5: Anchor Target Attribute",
+      "question": "হাইপারলিংকে ক্লিক করলে লিংকটি নতুন ব্রাউজার ট্যাবে খুলতে কোন target অ্যাট্রিবিউট ব্যবহার করা হয়? (Target attribute for new tab).",
+      "options": [
+        {
+          "id": "a",
+          "text": "target=\"_self\""
+        },
+        {
+          "id": "b",
+          "text": "target=\"_blank\""
+        },
+        {
+          "id": "c",
+          "text": "target=\"_new\""
+        },
+        {
+          "id": "d",
+          "text": "target=\"_parent\""
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 87)"
+    },
+    {
+      "id": "post_mcq_chap6_01",
+      "type": "concept_mcq",
+      "chapter": "Chapter 6 — Database Management System",
+      "title": "Post-Test MCQ 6: Foreign Key Relationship",
+      "question": "দুইটি ডাটাবেজ টেবিলের মধ্যে সম্পর্ক (Relational Binding) স্থাপন করতে কোন কি (Key) ব্যবহৃত হয়? (Foreign key for relational binding).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Super Key"
+        },
+        {
+          "id": "b",
+          "text": "Foreign Key"
+        },
+        {
+          "id": "c",
+          "text": "Composite Key"
+        },
+        {
+          "id": "d",
+          "text": "Candidate Key"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 6 (Page 182)"
+    },
+    {
+      "id": "post_mcq_chap6_02",
+      "type": "concept_mcq",
+      "chapter": "Chapter 6 — Database Management System",
+      "title": "Post-Test MCQ 7: SQL Conditional WHERE Clause",
+      "question": "এসকিউএল (SQL) কোয়েরিতে নির্দিষ্ট শর্ত আরোপ করে ডেটা ফিল্টার করতে কোন ক্লজ ব্যবহার করা হয়? (Conditional WHERE clause in SQL).",
+      "options": [
+        {
+          "id": "a",
+          "text": "HAVING"
+        },
+        {
+          "id": "b",
+          "text": "WHERE"
+        },
+        {
+          "id": "c",
+          "text": "GROUP BY"
+        },
+        {
+          "id": "d",
+          "text": "ORDER BY"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 6 (Page 196)"
+    }
+  ],
+  "transfer": [
+    {
+      "id": "trans_c_code_01",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Transfer Task 1: Sum of Squares of First N Numbers",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ১^২ + ২^২ + ... + N^২ গাণিতিক ধারার যোগফল নির্ণয় করে প্রিন্ট করবে। (Calculate sum of series 1^2 + 2^2 + ... + N^2).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int n;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 146)"
+    },
+    {
+      "id": "trans_c_code_02",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Transfer Task 2: Leap Year Verification Algorithm",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা কোনো নির্দিষ্ট বছর লিপ ইয়ার (Leap Year) কিনা তা শর্ত সাপেক্ষে যাচাই করে দেখাবে। (Leap year verification algorithm).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int year;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 137)"
+    },
+    {
+      "id": "trans_c_code_03",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Transfer Task 3: Reverse of an Integer Digits",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা কোনো প্রদত্ত পূর্ণসংখ্যার অংকগুলো বিপরীতক্রমে (Reversed Order) সাজিয়ে প্রদর্শন করবে। (Reverse digits of an integer).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int num;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 154)"
+    },
+    {
+      "id": "trans_c_code_04",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Transfer Task 4: Average of Three Float Numbers",
+      "question": "তিনটি দশমিক সংখ্যার (Float Numbers) গড় (Average) নির্ণয় করার জন্য একটি সি (C) প্রোগ্রাম লিখুন। (Calculate average of 3 float numbers).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    float a, b, c;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 134)"
+    },
+    {
+      "id": "trans_c_code_05",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Transfer Task 5: Armstrong Number Verification",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ৩ অংকের সংখ্যা আর্মস্ট্রং সংখ্যা (Armstrong Number: 153 = 1^3+5^3+3^3) কিনা তা পরীক্ষা করবে। (Check Armstrong number).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int num;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 156)"
+    },
+    {
+      "id": "trans_html_code_01",
+      "type": "html_coding",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Transfer HTML Task 1: Student Registration Form",
+      "question": "নাম ইনপুট টেক্সট বক্স এবং সাবমিট বাটনসহ একটি এইচটিএমএল ফর্ম (<form>) তৈরি করার কোড লিখুন। (Student registration HTML form).",
+      "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write registration form code here -->\n\n</body>\n</html>",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 108)"
+    },
+    {
+      "id": "trans_html_code_02",
+      "type": "html_coding",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Transfer HTML Task 2: Embedded Video Player",
+      "question": "একটি ভিডিও ফাইল প্লে করার জন্য এইচটিএমএল৫ (<video>) কন্ট্রোলসহ কোড স্ট্রাকচার লিখুন। (Embedded HTML5 video player).",
+      "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write video element code here -->\n\n</body>\n</html>",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 110)"
+    },
+    {
+      "id": "trans_html_code_03",
+      "type": "html_coding",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Transfer HTML Task 3: Nested Navigation List",
+      "question": "প্রধান বিষয় এবং তার অধীনে সাব-টপিক প্রদর্শন করার জন্য একটি নেস্টেড তালিকা (Nested List) তৈরি করুন। (Multi-level nested list).",
+      "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write nested list code here -->\n\n</body>\n</html>",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 95)"
+    },
+    {
+      "id": "trans_mcq_chap4_01",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Transfer MCQ 1: External CSS Linking Tag",
+      "question": "এইচটিএমএল ডকুমেন্টের সাথে বাহ্যিক সিএসএস (External CSS) ফাইল যুক্ত করার জন্য কোন ট্যাগটি সঠিক? (External CSS linking tag).",
+      "options": [
+        {
+          "id": "a",
+          "text": "<script src=\"style.css\">"
+        },
+        {
+          "id": "b",
+          "text": "<link rel=\"stylesheet\" href=\"style.css\">"
+        },
+        {
+          "id": "c",
+          "text": "<style src=\"style.css\">"
+        },
+        {
+          "id": "d",
+          "text": "<css href=\"style.css\">"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 112)"
+    },
+    {
+      "id": "trans_mcq_chap4_02",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Transfer MCQ 2: Dynamic Website Characteristic",
+      "question": "ডাইনামিক ওয়েবসাইটের (Dynamic Website) প্রধান বৈশিষ্ট্য কোনটি? (Dynamic website characteristics).",
+      "options": [
+        {
+          "id": "a",
+          "text": "কনটেন্ট কখনো পরিবর্তন হয় না"
+        },
+        {
+          "id": "b",
+          "text": "ডাটাবেজ সংযুক্ত থাকে এবং ব্যবহারকারীর ইনপুট অনুযায়ী বিষয়বস্তু পরিবর্তিত হয়"
+        },
+        {
+          "id": "c",
+          "text": "শুধুমাত্র এইচটিএমএল (HTML) দিয়ে তৈরি হয়"
+        },
+        {
+          "id": "d",
+          "text": "সার্ভার সাইড স্ক্রিপ্টিং (Server-side Scripting) সাপোর্ট করে না"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 74)"
+    },
+    {
+      "id": "trans_mcq_chap4_03",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Transfer MCQ 3: Form Radio Button vs Checkbox",
+      "question": "ফর্মে একাধিক অপশন থেকে যেকোনো একটি মাত্র নির্বাচন করার জন্য কোন ইনপুট টাইপ ব্যবহার করা হয়? (Radio button vs checkbox).",
+      "options": [
+        {
+          "id": "a",
+          "text": "type=\"checkbox\""
+        },
+        {
+          "id": "b",
+          "text": "type=\"radio\""
+        },
+        {
+          "id": "c",
+          "text": "type=\"select\""
+        },
+        {
+          "id": "d",
+          "text": "type=\"button\""
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 107)"
+    },
+    {
+      "id": "trans_mcq_chap4_04",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Transfer MCQ 4: Title Tag Purpose",
+      "question": "এইচটিএমএল ডকুমেন্টের <title> ট্যাগের কনটেন্ট কোথায় প্রদর্শিত হয়? (Title tag location in browser).",
+      "options": [
+        {
+          "id": "a",
+          "text": "ওয়েব পেজের বডি (body) অংশের শুরুতে"
+        },
+        {
+          "id": "b",
+          "text": "ব্রাউজারের টাইটেল বার বা ট্যাবে"
+        },
+        {
+          "id": "c",
+          "text": "ওয়েব পেজের ফুটার (footer) অংশে"
+        },
+        {
+          "id": "d",
+          "text": "সার্চ ইঞ্জিনের টুল বারে"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 81)"
+    },
+    {
+      "id": "trans_mcq_chap4_05",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Transfer MCQ 5: Text Formatting Emphasis Tag",
+      "question": "এইচটিএমএল-এ টেক্সটকে গুরুত্বপূর্ণ জোর (Emphasis) দেওয়ার জন্য কোন ট্যাগটি ব্যবহৃত হয়? (Emphasis tag <em>).",
+      "options": [
+        {
+          "id": "a",
+          "text": "<i>"
+        },
+        {
+          "id": "b",
+          "text": "<em>"
+        },
+        {
+          "id": "c",
+          "text": "<bold>"
+        },
+        {
+          "id": "d",
+          "text": "<mark>"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 90)"
+    },
+    {
+      "id": "trans_mcq_chap6_01",
+      "type": "concept_mcq",
+      "chapter": "Chapter 6 — Database Management System",
+      "title": "Transfer MCQ 6: Relational Cardinalities",
+      "question": "একজন শিক্ষকের অধীনে একাধিক শিক্ষার্থী থাকার সম্পর্ককে কোন রিলেশনশিপ বলা হয়? (One-to-Many cardinality).",
+      "options": [
+        {
+          "id": "a",
+          "text": "One-to-One"
+        },
+        {
+          "id": "b",
+          "text": "One-to-Many"
+        },
+        {
+          "id": "c",
+          "text": "Many-to-Many"
+        },
+        {
+          "id": "d",
+          "text": "Self Relationship"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 6 (Page 186)"
+    },
+    {
+      "id": "trans_mcq_chap6_02",
+      "type": "concept_mcq",
+      "chapter": "Chapter 6 — Database Management System",
+      "title": "Transfer MCQ 7: SQL UPDATE Command",
+      "question": "ডাটাবেজ টেবিলের বিদ্যমান ডেটা সংশোধন করার জন্য কোন এসকিউএল (SQL) কমান্ড ব্যবহৃত হয়? (SQL UPDATE command).",
+      "options": [
+        {
+          "id": "a",
+          "text": "MODIFY"
+        },
+        {
+          "id": "b",
+          "text": "UPDATE"
+        },
+        {
+          "id": "c",
+          "text": "CHANGE"
+        },
+        {
+          "id": "d",
+          "text": "ALTER"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 6 (Page 198)"
+    }
+  ],
+  "withdrawal": [
+    {
+      "id": "with_c_code_01",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Withdrawal C Task 1: Sum of Odd Numbers 1 to N",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা ১ থেকে N পর্যন্ত সমস্ত বিজোড় পূর্ণসংখ্যার যোগফল লুপের মাধ্যমে নির্ণয় করবে। (Sum of odd numbers from 1 to N).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int n;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 144)"
+    },
+    {
+      "id": "with_c_code_02",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Withdrawal C Task 2: Grade Point Average (GPA) Evaluator",
+      "question": "পরীক্ষার নম্বর ইনপুট নিয়ে GPA গ্রেড (৮০ বা তার বেশি হলে A+, ৭০-৭৯ হলে A) প্রদর্শনের একটি C প্রোগ্রাম লিখুন। (GPA grade evaluator).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int marks;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 136)"
+    },
+    {
+      "id": "with_c_code_03",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Withdrawal C Task 3: Power Calculation (X^Y)",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা কোনো ভিত্তি সংখ্যা X এবং পাওয়ার Y গ্রহণ করে X^Y মান নির্ণয় করবে। (Calculate power X^Y).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int base, exp;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 147)"
+    },
+    {
+      "id": "with_c_code_04",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Withdrawal C Task 4: Swap Two Numbers Using Variable",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা একটি অস্থায়ী চলক (Temporary Variable) ব্যবহার করে ২টির ইন্টারচেঞ্জ বা সোয়াপ (Swap) করবে। (Swap two variables).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int a, b;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 133)"
+    },
+    {
+      "id": "with_c_code_05",
+      "type": "c_programming",
+      "chapter": "Chapter 5 — Programming Language (C)",
+      "title": "Withdrawal C Task 5: Palindrome Number Verification",
+      "question": "একটি সি (C) প্রোগ্রাম লিখুন যা কোনো প্রদত্ত পূর্ণসংখ্যা প্যালিনড্রোম (Palindrome: যেমন 121) কিনা তা পরীক্ষা করে দেখাবে। (Verify palindrome number).",
+      "code_snippet": "#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    int n;\n    \n    return 0;\n}",
+      "curriculum_ref": "NCTB ICT Chapter 5 (Page 155)"
+    },
+    {
+      "id": "with_html_code_01",
+      "type": "html_coding",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Withdrawal HTML Task 1: Class Routine Timetable",
+      "question": "হেডার কলামে colspan=\"2\" ব্যবহার করে ক্লাসের রুটিনের একটি সমন্বিত এইচটিএমএল টেবিল তৈরি করুন। (Class routine table with colspan).",
+      "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write class routine timetable here -->\n\n</body>\n</html>",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 102)"
+    },
+    {
+      "id": "with_html_code_02",
+      "type": "html_coding",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Withdrawal HTML Task 2: Image Gallery Grid with Alt Text",
+      "question": "এইচটিএমএল (HTML) ব্যবহার করে বিকল্প টেক্সটসহ (alt=\"Book Cover\") ২ টি বইয়ের ছবির গ্রিড তৈরি করুন। (Image grid with alt text).",
+      "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write image grid with alt text here -->\n\n</body>\n</html>",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 106)"
+    },
+    {
+      "id": "with_html_code_03",
+      "type": "html_coding",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Withdrawal HTML Task 3: Multi-level Navigation Bar",
+      "question": "এইচটিএমএল নেভিগেশন বারের (<nav>) আওতায় ৩টি লিংকের আন-অর্ডারড তালিকা (Home, Courses, Contact) তৈরি করুন। (Navigation bar with list).",
+      "code_snippet": "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Write navigation bar code here -->\n\n</body>\n</html>",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 97)"
+    },
+    {
+      "id": "with_mcq_chap4_01",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Withdrawal MCQ 1: Web Server vs Browser Roles",
+      "question": "ওয়েব পেজ প্রদর্শনকারী ক্লায়েন্ট-সাইড সফটওয়্যার কোনটি? (Client-side web browser).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Apache Server"
+        },
+        {
+          "id": "b",
+          "text": "Web Browser (e.g. Chrome)"
+        },
+        {
+          "id": "c",
+          "text": "MySQL Database"
+        },
+        {
+          "id": "d",
+          "text": "PHP Engine"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 75)"
+    },
+    {
+      "id": "with_mcq_chap4_02",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Withdrawal MCQ 2: Absolute vs Relative URL Syntax",
+      "question": "সম্পূর্ণ প্রোটোকল ও ডোমেইন সহ ওয়েবসাইট ঠিকানা (যেমন: https://site.com/page.html) কে কি বলা হয়? (Absolute URL vs Relative URL).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Relative URL"
+        },
+        {
+          "id": "b",
+          "text": "Absolute URL"
+        },
+        {
+          "id": "c",
+          "text": "Static IP"
+        },
+        {
+          "id": "d",
+          "text": "Local Host"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 79)"
+    },
+    {
+      "id": "with_mcq_chap4_03",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Withdrawal MCQ 3: HTML Comment Syntax",
+      "question": "এইচটিএমএল সোর্স কোডে কমেন্ট (Comment) বা মন্তব্য লেখার সঠিক সিনট্যাক্স কোনটি? (HTML comment syntax <!-- -->).",
+      "options": [
+        {
+          "id": "a",
+          "text": "// This is a comment"
+        },
+        {
+          "id": "b",
+          "text": "<!-- This is a comment -->"
+        },
+        {
+          "id": "c",
+          "text": "/* This is a comment */"
+        },
+        {
+          "id": "d",
+          "text": "# This is a comment"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 85)"
+    },
+    {
+      "id": "with_mcq_chap4_04",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Withdrawal MCQ 4: Table Cellpadding Attribute",
+      "question": "টেবিল সেলের বর্ডার এবং কনটেন্টের মধ্যকার দূরত্ব নিয়ন্ত্রণ করতে কোন অ্যাট্রিবিউট ব্যবহৃত হয়? (Table cellpadding attribute).",
+      "options": [
+        {
+          "id": "a",
+          "text": "cellspacing"
+        },
+        {
+          "id": "b",
+          "text": "cellpadding"
+        },
+        {
+          "id": "c",
+          "text": "border"
+        },
+        {
+          "id": "d",
+          "text": "margin"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 99)"
+    },
+    {
+      "id": "with_mcq_chap4_05",
+      "type": "concept_mcq",
+      "chapter": "Chapter 4 — Web Design and HTML",
+      "title": "Withdrawal MCQ 5: Target Attribute Default Value",
+      "question": "লিংক ট্যাগে target অ্যাট্রিবিউট না দিলে ডিফল্টভাবে লিংকটি কোথায় ওপেন হয়? (Default target attribute value _self).",
+      "options": [
+        {
+          "id": "a",
+          "text": "নতুন উইন্ডোতে (_blank)"
+        },
+        {
+          "id": "b",
+          "text": "বর্তমান উইন্ডোতে (_self)"
+        },
+        {
+          "id": "c",
+          "text": "ব্যাকগ্রাউন্ড ট্যাবে (Background tab)"
+        },
+        {
+          "id": "d",
+          "text": "পপ-আপ বক্সে (Pop-up box)"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 4 (Page 87)"
+    },
+    {
+      "id": "with_mcq_chap6_01",
+      "type": "concept_mcq",
+      "chapter": "Chapter 6 — Database Management System",
+      "title": "Withdrawal MCQ 6: Database Indexing Purpose",
+      "question": "ডাটাবেজ টেবিলে ইনডেক্সিং (Indexing) ব্যবহারের মূল উদ্দেশ্য কোনটি? (Database indexing purpose).",
+      "options": [
+        {
+          "id": "a",
+          "text": "মেমোরি সেভ করা (Saving memory)"
+        },
+        {
+          "id": "b",
+          "text": "ডেটা অনুসন্ধানের (Search) গতি বৃদ্ধি করা"
+        },
+        {
+          "id": "c",
+          "text": "টেবিল ডিলিট করা (Deleting a table)"
+        },
+        {
+          "id": "d",
+          "text": "পাসওয়ার্ড সুরক্ষা দেওয়া (Password protection)"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 6 (Page 190)"
+    },
+    {
+      "id": "with_mcq_chap6_02",
+      "type": "concept_mcq",
+      "chapter": "Chapter 6 — Database Management System",
+      "title": "Withdrawal MCQ 7: SQL DELETE vs DROP Distinction",
+      "question": "ডাটাবেজ টেবিল স্ট্রাকচার অপরিবর্তিত রেখে শুধুমাত্র ভিতরের সমস্ত রেকর্ড মুছে ফেলতে কোন SQL কমান্ড ব্যবহৃত হয়? (SQL DELETE vs DROP).",
+      "options": [
+        {
+          "id": "a",
+          "text": "DROP TABLE"
+        },
+        {
+          "id": "b",
+          "text": "DELETE FROM"
+        },
+        {
+          "id": "c",
+          "text": "REMOVE"
+        },
+        {
+          "id": "d",
+          "text": "CLEAR"
+        }
+      ],
+      "keyed_answer": "b",
+      "curriculum_ref": "NCTB ICT Chapter 6 (Page 200)"
+    }
+  ]
+}

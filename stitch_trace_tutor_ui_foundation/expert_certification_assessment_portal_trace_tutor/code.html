@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-variant": "#2d3449", "surface-container": "#171f33", "surface-container-high": "#222a3d", "primary-container": "#06b6d4", "tertiary-fixed": "#d8e3fb", "on-tertiary": "#263143", "outline": "#869397", "inverse-surface": "#dae2fd", "on-background": "#dae2fd", "surface-container-lowest": "#060e20", "on-secondary": "#1000a9", "on-tertiary-container": "#313c4f", "on-primary-container": "#00424f", "on-secondary-container": "#b0b2ff", "on-primary": "#003640", "on-primary-fixed-variant": "#004e5c", "tertiary": "#bcc7de", "surface": "#0b1326", "on-error-container": "#ffdad6", "inverse-on-surface": "#283044", "error": "#ffb4ab", "on-tertiary-fixed-variant": "#3c475a", "secondary": "#c0c1ff", "secondary-container": "#3131c0", "on-secondary-fixed": "#07006c", "secondary-fixed-dim": "#c0c1ff", "error-container": "#93000a", "on-primary-fixed": "#001f26", "on-secondary-fixed-variant": "#2f2ebe", "primary-fixed-dim": "#4cd7f6", "on-surface-variant": "#bcc9cd", "on-tertiary-fixed": "#111c2d", "primary-fixed": "#acedff", "surface-container-low": "#131b2e", "surface-tint": "#4cd7f6", "surface-bright": "#31394d", "inverse-primary": "#00687a", "outline-variant": "#3d494c", "surface-dim": "#0b1326", "secondary-fixed": "#e1e0ff", "tertiary-fixed-dim": "#bcc7de", "on-surface": "#dae2fd", "on-error": "#690005", "primary": "#4cd7f6", "tertiary-container": "#9ca7be", "surface-container-highest": "#2d3449", "background": "#0b1326" }, borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" }, spacing: { "space-sm": "0.5rem", "space-lg": "1.5rem", gutter: "1rem", "space-xl": "2rem", "space-xs": "0.25rem", margin: "1.5rem", "space-md": "1rem" }, fontFamily: { "body-lg": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "body-md": ["Inter"], "code-md": ["JetBrains Mono"], "code-sm": ["JetBrains Mono"], "body-sm": ["Inter"], "headline-md": ["Inter"], "headline-lg": ["Inter"] }, fontSize: { "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" }], "headline-xl": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "code-md": ["13px", { lineHeight: "20px", fontWeight: "400" }], "code-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "body-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }], "headline-md": ["18px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "500" }], "headline-lg": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }] } } } }</script></head><body class="bg-surface font-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-50 flex flex-col pt-6 pb-8"><div class="px-6 mb-8 flex items-center gap-3"><img alt="TRACE Tutor Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfM_7kNhwwQNVBovRwEsMxKDQadqvyAcEq5dXSTbuAtthafX8CleaZMMmVKWjaLuLYQXIDTuud81KQeL2akevwHcIqNoyIZ0fewFY18ZMtTreK4EkscGzlBUdGJBnSHcnUZEtOtyJQPo6Fub1Vb8vXPr94iG92fseArQ21q6Hbk03pPrFvm4twF7toUIM6nP4f3vonU4EyjQX4LtT8SXMIJ1rUsusVOi7nJSs8y51yxD2sheayfC0"/><span class="text-headline-md font-bold text-on-surface tracking-tight">TRACE Tutor</span></div><div class="px-4 mb-6"><div class="bg-surface-container p-2 rounded-xl flex items-center justify-between"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[20px]">school</span><span class="text-label-md text-on-surface font-medium">Student Mode</span></div><span class="material-symbols-outlined text-on-surface-variant text-[18px] cursor-pointer">unfold_more</span></div></div><nav class="flex-1 px-4 space-y-1 overflow-y-auto" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="dashboard" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">dashboard</span>Dashboard</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="workspace" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">code</span>Workspace</a><a aria-current="page" class="flex items-center px-4 py-2.5 rounded-xl transition-all bg-primary-container text-on-primary-container font-semibold" data-path="tutor" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">smart_toy</span>AI Tutor</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="assessments" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">assignment</span>Assessments</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="progress" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">trending_up</span>Progress</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="expert" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">psychology</span>Expert</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="research" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">science</span>Research</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">settings</span>Settings</a></nav></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 flex items-center justify-between px-8 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center flex-1 max-w-md bg-surface-container rounded-xl px-4 py-2"><span class="material-symbols-outlined text-on-surface-variant mr-3 text-[20px]">search</span><input class="bg-transparent border-none outline-none text-on-surface text-body-md w-full placeholder:text-outline" placeholder="Search code, diagnostics, or concepts..." type="text"/></div><div class="flex items-center gap-4"><div class="relative cursor-pointer"><span class="material-symbols-outlined text-on-surface-variant hover:text-on-surface transition-colors">notifications</span><span class="absolute top-0 right-0 w-2 h-2 rounded-full bg-primary"></span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full text-on-surface bg-surface min-h-screen pb-24">
+<!-- Top Header Section -->
+<div class="px-8 pt-8 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div>
+<div class="flex items-center gap-3 mb-1">
+<span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-md uppercase tracking-wider">Expert Track</span>
+<span class="text-on-surface-variant font-code-sm">ID: TRACE-CERT-8842X</span>
+</div>
+<h1 class="font-headline-xl text-on-surface tracking-tight">Expert Certification &amp; Assessment Portal</h1>
+<p class="text-body-md text-on-surface-variant mt-1">Complete validation training and demonstrate rigorous assessment expertise for academic programming modules.</p>
+</div>
+<div class="flex items-center gap-3 bg-surface-container p-3 rounded-xl">
+<div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">verified</span>
+</div>
+<div>
+<div class="text-label-md text-on-surface-variant uppercase">Certification Status</div>
+<div class="text-headline-md font-semibold text-primary flex items-center gap-2">
+          Certified Expert
+          <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+</div>
+</div>
+</div>
+</div>
+<!-- Expert Overview Cards (Bento style grid) -->
+<div class="px-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+<div class="bg-surface-container p-5 rounded-xl flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-4">
+<span class="text-body-sm font-medium">Certification Progress</span>
+<span class="material-symbols-outlined text-[20px] text-primary">task_alt</span>
+</div>
+<div>
+<div class="flex items-baseline justify-between mb-2">
+<span class="font-headline-lg text-on-surface">100%</span>
+<span class="text-body-sm text-primary">Completed</span>
+</div>
+<div class="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-full rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container p-5 rounded-xl flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-4">
+<span class="text-body-sm font-medium">Reviews Completed</span>
+<span class="material-symbols-outlined text-[20px] text-tertiary">rate_review</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="font-headline-lg text-on-surface">148</span>
+<span class="text-body-sm text-on-surface-variant">Validated items</span>
+</div>
+</div>
+<div class="bg-surface-container p-5 rounded-xl flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-4">
+<span class="text-body-sm font-medium">Average Validation Score</span>
+<span class="material-symbols-outlined text-[20px] text-primary">analytics</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="font-headline-lg text-on-surface">4.92</span>
+<span class="text-body-sm text-primary font-medium">/ 5.00 Target</span>
+</div>
+</div>
+<div class="bg-surface-container p-5 rounded-xl flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-4">
+<span class="text-body-sm font-medium">Pending Reviews</span>
+<span class="material-symbols-outlined text-[20px] text-error">pending_actions</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="font-headline-lg text-on-surface">3</span>
+<span class="text-body-sm text-error">Due in 2 days</span>
+</div>
+</div>
+</div>
+<!-- Main Content Layout (Split Pane Grid) -->
+<div class="px-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Certification Steps & Training Modules -->
+<div class="lg:col-span-5 space-y-8">
+<!-- Certification Workflow -->
+<div class="bg-surface-container p-6 rounded-xl">
+<h2 class="font-headline-md text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">account_tree</span>
+          Certification Workflow
+        </h2>
+<div class="space-y-4 relative before:absolute before:inset-y-2 before:left-3 before:w-0.5 before:bg-surface-variant">
+<div class="relative flex items-start gap-4 pl-8">
+<div class="absolute left-1.5 -translate-x-1/2 w-4 h-4 rounded-full bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[12px] font-bold">check</span>
+</div>
+<div>
+<div class="text-label-md text-primary font-semibold uppercase">Completed</div>
+<h3 class="font-body-lg text-on-surface font-medium">Expert Profile &amp; Credentialing</h3>
+<p class="text-body-sm text-on-surface-variant">Verified university affiliation and CS background.</p>
+</div>
+</div>
+<div class="relative flex items-start gap-4 pl-8">
+<div class="absolute left-1.5 -translate-x-1/2 w-4 h-4 rounded-full bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[12px] font-bold">check</span>
+</div>
+<div>
+<div class="text-label-md text-primary font-semibold uppercase">Completed</div>
+<h3 class="font-body-lg text-on-surface font-medium">Training Module Calibration</h3>
+<p class="text-body-sm text-on-surface-variant">Standardized rubrics and difficulty scaling.</p>
+</div>
+</div>
+<div class="relative flex items-start gap-4 pl-8">
+<div class="absolute left-1.5 -translate-x-1/2 w-4 h-4 rounded-full bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[12px] font-bold">check</span>
+</div>
+<div>
+<div class="text-label-md text-primary font-semibold uppercase">Completed</div>
+<h3 class="font-body-lg text-on-surface font-medium">Practice Validation Sample</h3>
+<p class="text-body-sm text-on-surface-variant">Scored 98% concordance with senior review board.</p>
+</div>
+</div>
+<div class="relative flex items-start gap-4 pl-8">
+<div class="absolute left-1.5 -translate-x-1/2 w-4 h-4 rounded-full bg-surface-container-high border-2 border-primary flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+</div>
+<div>
+<div class="text-label-md text-primary font-semibold uppercase">Current Step</div>
+<h3 class="font-body-lg text-on-surface font-medium">Certification Assessment</h3>
+<p class="text-body-sm text-on-surface-variant">Live evaluation of complex algorithmic assignments.</p>
+</div>
+</div>
+<div class="relative flex items-start gap-4 pl-8 opacity-60">
+<div class="absolute left-1.5 -translate-x-1/2 w-4 h-4 rounded-full bg-surface-variant flex items-center justify-center text-outline">
+<span class="material-symbols-outlined text-[10px]">lock</span>
+</div>
+<div>
+<div class="text-label-md text-outline uppercase">Locked</div>
+<h3 class="font-body-lg text-on-surface font-medium">Advanced Expert Reviewer</h3>
+<p class="text-body-sm text-on-surface-variant">Unlocks peer-review arbitration privileges.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Training Modules -->
+<div class="bg-surface-container p-6 rounded-xl">
+<h2 class="font-headline-md text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">school</span>
+          Training Modules
+        </h2>
+<div class="space-y-3">
+<div class="bg-surface p-4 rounded-xl flex items-center justify-between">
+<div>
+<div class="font-body-md font-medium text-on-surface">Curriculum Alignment</div>
+<div class="text-body-sm text-on-surface-variant">Est. 15 min • 100% complete</div>
+</div>
+<span class="material-symbols-outlined text-primary">check_circle</span>
+</div>
+<div class="bg-surface p-4 rounded-xl flex items-center justify-between">
+<div>
+<div class="font-body-md font-medium text-on-surface">Technical Accuracy</div>
+<div class="text-body-sm text-on-surface-variant">Est. 20 min • 100% complete</div>
+</div>
+<span class="material-symbols-outlined text-primary">check_circle</span>
+</div>
+<div class="bg-surface p-4 rounded-xl flex items-center justify-between">
+<div>
+<div class="font-body-md font-medium text-on-surface">Difficulty Assessment</div>
+<div class="text-body-sm text-on-surface-variant">Est. 15 min • 100% complete</div>
+</div>
+<span class="material-symbols-outlined text-primary">check_circle</span>
+</div>
+<div class="bg-surface p-4 rounded-xl flex items-center justify-between">
+<div>
+<div class="font-body-md font-medium text-on-surface">Language Clarity</div>
+<div class="text-body-sm text-on-surface-variant">Est. 10 min • In Progress</div>
+</div>
+<button class="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-label-md hover:bg-primary-fixed-dim transition-colors">Continue</button>
+</div>
+</div>
+</div>
+<!-- Expert Guidance Panel -->
+<div class="bg-surface-container p-6 rounded-xl">
+<h2 class="font-headline-md text-on-surface mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">lightbulb</span>
+          Expert Evaluation Principles
+        </h2>
+<p class="text-body-sm text-on-surface-variant mb-4">Maintain rigorous academic standards when assessing student programming assignments:</p>
+<ul class="space-y-2 text-body-sm text-on-surface-variant list-disc pl-4">
+<li>Verify time and space complexity constraints match university-level data structures syllabi.</li>
+<li>Ensure edge cases (empty inputs, integer overflow, boundary limits) are explicitly addressed in test suites.</li>
+<li>Confirm prompt phrasing avoids ambiguous syntactic traps unless explicitly testing language parsing edge cases.</li>
+</ul>
+</div>
+</div>
+<!-- Right Column: Certification Assessment Workspace -->
+<div class="lg:col-span-7 space-y-8">
+<div class="bg-surface-container p-6 rounded-xl">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-surface-variant font-code-sm text-on-surface">CS-204</span>
+<span class="text-label-md text-on-surface-variant uppercase">Sample Assessment Item #4</span>
+</div>
+<span class="text-code-sm text-primary">Validation Target: Strict Rubric</span>
+</div>
+<h3 class="font-headline-lg text-on-surface mb-3">Graph Cycle Detection in Directed Acyclic Networks</h3>
+<div class="bg-surface p-4 rounded-xl font-code-md text-on-surface-variant mb-6 border-l-2 border-primary">
+<p class="text-on-surface mb-2 font-medium">Problem Prompt:</p>
+          Implement an efficient algorithm in Python to detect cycles in a directed graph using Depth First Search (DFS) coloring (white, grey, black states). Return a boolean indicating presence of a back-edge.
+        </div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+<div class="bg-surface p-4 rounded-xl">
+<div class="text-label-md text-on-surface-variant uppercase mb-1">Curriculum Evidence</div>
+<p class="text-body-sm text-on-surface">Aligned with Advanced Algorithms (Week 6: Graph Traversal &amp; Topological Sort).</p>
+</div>
+<div class="bg-surface p-4 rounded-xl">
+<div class="text-label-md text-on-surface-variant uppercase mb-1">Expected Solution Complexity</div>
+<p class="text-body-sm text-on-surface font-code-sm">Time: O(V + E) | Space: O(V)</p>
+</div>
+</div>
+<!-- Rubric Evaluation Form -->
+<div class="space-y-6 pt-4">
+<h4 class="font-headline-md text-on-surface">Validation Rubric (1-5 Scale)</h4>
+<!-- Item 1 -->
+<div class="space-y-2">
+<div class="flex justify-between text-body-md">
+<span class="text-on-surface font-medium">1. Curriculum Alignment</span>
+<span class="text-primary font-code-md">Rating: 5/5</span>
+</div>
+<p class="text-body-sm text-on-surface-variant">Matches standard university curriculum expectations for undergraduate data structures courses.</p>
+<div class="flex gap-2">
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">1</button>
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">2</button>
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">3</button>
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">4</button>
+<button class="flex-1 py-1.5 rounded bg-primary text-on-primary font-medium text-body-sm">5</button>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="space-y-2">
+<div class="flex justify-between text-body-md">
+<span class="text-on-surface font-medium">2. Technical Accuracy</span>
+<span class="text-primary font-code-md">Rating: 5/5</span>
+</div>
+<p class="text-body-sm text-on-surface-variant">Graph coloring logic is algorithmically sound and free of race conditions or recursion depth pitfalls.</p>
+<div class="flex gap-2">
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">1</button>
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">2</button>
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">3</button>
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">4</button>
+<button class="flex-1 py-1.5 rounded bg-primary text-on-primary font-medium text-body-sm">5</button>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="space-y-2">
+<div class="flex justify-between text-body-md">
+<span class="text-on-surface font-medium">3. Language Clarity</span>
+<span class="text-primary font-code-md">Rating: 4/5</span>
+</div>
+<p class="text-body-sm text-on-surface-variant">Terminology is precise, though minor clarification on directed vs undirected definitions could be added.</p>
+<div class="flex gap-2">
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">1</button>
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">2</button>
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">3</button>
+<button class="flex-1 py-1.5 rounded bg-primary text-on-primary font-medium text-body-sm">4</button>
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">5</button>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="space-y-2">
+<div class="flex justify-between text-body-md">
+<span class="text-on-surface font-medium">4. Difficulty Appropriateness</span>
+<span class="text-primary font-code-md">Rating: 5/5</span>
+</div>
+<p class="text-body-sm text-on-surface-variant">Appropriate intermediate challenge level for 200-level university students.</p>
+<div class="flex gap-2">
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">1</button>
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">2</button>
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">3</button>
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">4</button>
+<button class="flex-1 py-1.5 rounded bg-primary text-on-primary font-medium text-body-sm">5</button>
+</div>
+</div>
+<!-- Item 5 -->
+<div class="space-y-2">
+<div class="flex justify-between text-body-md">
+<span class="text-on-surface font-medium">5. Answerability</span>
+<span class="text-primary font-code-md">Rating: 5/5</span>
+</div>
+<p class="text-body-sm text-on-surface-variant">Ample test fixtures and clear constraints permit deterministic automated verification.</p>
+<div class="flex gap-2">
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">1</button>
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">2</button>
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">3</button>
+<button class="flex-1 py-1.5 rounded bg-surface text-on-surface-variant hover:bg-surface-container-high text-body-sm">4</button>
+<button class="flex-1 py-1.5 rounded bg-primary text-on-primary font-medium text-body-sm">5</button>
+</div>
+</div>
+<div class="pt-4 flex items-center justify-between border-t border-surface-variant">
+<div>
+<span class="text-label-md text-on-surface-variant uppercase block">Overall Validation Score</span>
+<span class="font-headline-lg text-primary">4.80 / 5.00</span>
+</div>
+<button class="px-6 py-2.5 rounded-xl bg-primary text-on-primary font-semibold hover:bg-primary-fixed-dim transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">send</span>
+              Submit Evaluation
+            </button>
+</div>
+</div>
+</div>
+<!-- Certification Result Summary Card -->
+<div class="bg-surface-container p-6 rounded-xl flex flex-col md:flex-row items-center justify-between gap-6">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="px-2 py-0.5 rounded bg-primary/20 text-primary font-code-sm uppercase">Passed</span>
+<span class="text-on-surface-variant font-code-sm">Verified on Oct 14, 2023</span>
+</div>
+<h4 class="font-headline-md text-on-surface">Certification Complete</h4>
+<p class="text-body-sm text-on-surface-variant mt-1">All 5 criteria met with high academic fidelity. Active reviewer credentials established.</p>
+</div>
+<div class="flex gap-3 w-full md:w-auto">
+<button class="flex-1 md:flex-initial px-4 py-2 rounded-xl bg-surface hover:bg-surface-container-high text-on-surface font-body-sm transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">download</span>
+            Download Certificate
+          </button>
+</div>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

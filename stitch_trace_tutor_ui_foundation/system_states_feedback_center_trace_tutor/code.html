@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-variant": "#2d3449", "surface-container": "#171f33", "surface-container-high": "#222a3d", "primary-container": "#06b6d4", "tertiary-fixed": "#d8e3fb", "on-tertiary": "#263143", "outline": "#869397", "inverse-surface": "#dae2fd", "on-background": "#dae2fd", "surface-container-lowest": "#060e20", "on-secondary": "#1000a9", "on-tertiary-container": "#313c4f", "on-primary-container": "#00424f", "on-secondary-container": "#b0b2ff", "on-primary": "#003640", "on-primary-fixed-variant": "#004e5c", "tertiary": "#bcc7de", "surface": "#0b1326", "on-error-container": "#ffdad6", "inverse-on-surface": "#283044", "error": "#ffb4ab", "on-tertiary-fixed-variant": "#3c475a", "secondary": "#c0c1ff", "secondary-container": "#3131c0", "on-secondary-fixed": "#07006c", "secondary-fixed-dim": "#c0c1ff", "error-container": "#93000a", "on-primary-fixed": "#001f26", "on-secondary-fixed-variant": "#2f2ebe", "primary-fixed-dim": "#4cd7f6", "on-surface-variant": "#bcc9cd", "on-tertiary-fixed": "#111c2d", "primary-fixed": "#acedff", "surface-container-low": "#131b2e", "surface-tint": "#4cd7f6", "surface-bright": "#31394d", "inverse-primary": "#00687a", "outline-variant": "#3d494c", "surface-dim": "#0b1326", "secondary-fixed": "#e1e0ff", "tertiary-fixed-dim": "#bcc7de", "on-surface": "#dae2fd", "on-error": "#690005", "primary": "#4cd7f6", "tertiary-container": "#9ca7be", "surface-container-highest": "#2d3449", "background": "#0b1326" }, borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" }, spacing: { "space-sm": "0.5rem", "space-lg": "1.5rem", gutter: "1rem", "space-xl": "2rem", "space-xs": "0.25rem", margin: "1.5rem", "space-md": "1rem" }, fontFamily: { "body-lg": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "body-md": ["Inter"], "code-md": ["JetBrains Mono"], "code-sm": ["JetBrains Mono"], "body-sm": ["Inter"], "headline-md": ["Inter"], "headline-lg": ["Inter"] }, fontSize: { "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" }], "headline-xl": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "code-md": ["13px", { lineHeight: "20px", fontWeight: "400" }], "code-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "body-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }], "headline-md": ["18px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "500" }], "headline-lg": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }] } } } }</script></head><body class="bg-surface font-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-50 flex flex-col pt-6 pb-8"><div class="px-6 mb-8 flex items-center gap-3"><img alt="TRACE Tutor Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfM_7kNhwwQNVBovRwEsMxKDQadqvyAcEq5dXSTbuAtthafX8CleaZMMmVKWjaLuLYQXIDTuud81KQeL2akevwHcIqNoyIZ0fewFY18ZMtTreK4EkscGzlBUdGJBnSHcnUZEtOtyJQPo6Fub1Vb8vXPr94iG92fseArQ21q6Hbk03pPrFvm4twF7toUIM6nP4f3vonU4EyjQX4LtT8SXMIJ1rUsusVOi7nJSs8y51yxD2sheayfC0"/><span class="text-headline-md font-bold text-on-surface tracking-tight">TRACE Tutor</span></div><div class="px-4 mb-6"><div class="bg-surface-container p-2 rounded-xl flex items-center justify-between"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[20px]">school</span><span class="text-label-md text-on-surface font-medium">Student Mode</span></div><span class="material-symbols-outlined text-on-surface-variant text-[18px] cursor-pointer">unfold_more</span></div></div><nav class="flex-1 px-4 space-y-1 overflow-y-auto" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="dashboard" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">dashboard</span>Dashboard</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="workspace" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">code</span>Workspace</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="tutor" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">smart_toy</span>AI Tutor</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="assessments" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">assignment</span>Assessments</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="progress" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">trending_up</span>Progress</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="expert" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">psychology</span>Expert</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="research" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">science</span>Research</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="data-export" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">download</span>Data Export &amp; Reporting</a><a class="flex items-center px-4 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined mr-3 text-[20px]">settings</span>Settings</a></nav></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 flex items-center justify-between px-8 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center flex-1 max-w-md bg-surface-container rounded-xl px-4 py-2"><span class="material-symbols-outlined text-on-surface-variant mr-3 text-[20px]">search</span><input class="bg-transparent border-none outline-none text-on-surface text-body-md w-full placeholder:text-outline" placeholder="Search code, diagnostics, or concepts..." type="text"/></div><div class="flex items-center gap-4"><div class="relative cursor-pointer"><span class="material-symbols-outlined text-on-surface-variant hover:text-on-surface transition-colors">notifications</span><span class="absolute top-0 right-0 w-2 h-2 rounded-full bg-primary"></span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full min-h-screen pb-24 text-on-surface">
+<!-- Header & State Controller Bar -->
+<div class="px-8 pt-8 pb-6 bg-surface-container-low flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-label-md font-medium tracking-wide uppercase">System Diagnostics</span>
+<span class="text-outline text-body-sm">•</span>
+<span class="text-on-surface-variant text-body-sm font-code-md">TRACE-CORE-v4.2</span>
+</div>
+<h1 class="text-headline-xl text-on-surface tracking-tight">System States &amp; Feedback Center</h1>
+<p class="text-on-surface-variant text-body-md mt-1 max-w-2xl">
+        Comprehensive repository of interface states, skeleton loaders, empty conditions, error handlers, and interactive system notifications for validation and design consistency.
+      </p>
+</div>
+<!-- Quick State Simulation Toggles -->
+<div class="flex flex-wrap items-center gap-2 bg-surface p-1.5 rounded-xl">
+<span class="text-label-md text-on-surface-variant px-3 font-medium">Simulator:</span>
+<button class="px-3 py-1.5 rounded-lg text-label-md bg-primary-container text-on-primary-container font-semibold transition-all" onclick="toggleGlobalState('normal')">Normal</button>
+<button class="px-3 py-1.5 rounded-lg text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" onclick="toggleGlobalState('loading')">Loading</button>
+<button class="px-3 py-1.5 rounded-lg text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" onclick="toggleGlobalState('error')">Error</button>
+<button class="px-3 py-1.5 rounded-lg text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" onclick="toggleGlobalState('offline')">Offline</button>
+</div>
+</div>
+<!-- Main Content Layout -->
+<div class="px-8 mt-8 space-y-16">
+<!-- Section 1: Offline Notification Banner Simulation -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="text-headline-lg text-on-surface font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">wifi_off</span>
+          Network &amp; Connectivity Banners
+        </h2>
+<span class="text-code-sm text-outline font-code-md">Component: NetworkBanner.tsx</span>
+</div>
+<div class="space-y-3">
+<!-- Offline Banner -->
+<div class="w-full bg-surface-container-high text-on-surface px-4 py-3 rounded-xl flex items-center justify-between shadow-lg">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-error animate-pulse">cloud_off</span>
+<div>
+<p class="text-body-md font-medium text-on-surface">You appear to be offline. Some features may be unavailable.</p>
+<p class="text-body-sm text-on-surface-variant">Changes will be synced automatically when connection is restored.</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface text-label-md hover:bg-surface transition-colors">Dismiss</button>
+<button class="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-label-md font-medium hover:bg-primary/90 transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">refresh</span> Retry Now
+            </button>
+</div>
+</div>
+<!-- Low Confidence Grounding Banner -->
+<div class="w-full bg-surface-container-high text-on-surface px-4 py-3 rounded-xl flex items-center justify-between shadow-lg">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-warning text-amber-400">warning</span>
+<div>
+<p class="text-body-md font-medium text-on-surface">Low-confidence grounding detected in RAG retriever.</p>
+<p class="text-body-sm text-on-surface-variant">AI Tutor responses are relying on parametric memory rather than verified course slides.</p>
+</div>
+</div>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface text-label-md hover:bg-surface transition-colors">View Diagnostics</button>
+</div>
+</div>
+</section>
+<!-- Section 2: Loading States Grid -->
+<section class="space-y-6">
+<div class="flex items-center justify-between">
+<h2 class="text-headline-lg text-on-surface font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">hourglass_top</span>
+          Loading States &amp; Skeletons
+        </h2>
+<span class="text-code-sm text-outline font-code-md">Component: Skeletons &amp; Spinners</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Skeleton Card -->
+<div class="bg-surface-container p-6 rounded-xl space-y-4 shadow-sm animate-pulse">
+<div class="flex items-center justify-between">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high"></div>
+<div class="w-16 h-5 rounded-full bg-surface-container-high"></div>
+</div>
+<div class="space-y-2">
+<div class="w-3/4 h-5 rounded bg-surface-container-high"></div>
+<div class="w-full h-4 rounded bg-surface-container-high"></div>
+<div class="w-5/6 h-4 rounded bg-surface-container-high"></div>
+</div>
+<div class="pt-4 flex items-center justify-between">
+<div class="w-24 h-4 rounded bg-surface-container-high"></div>
+<div class="w-20 h-8 rounded-lg bg-surface-container-high"></div>
+</div>
+</div>
+<!-- Skeleton Data Table -->
+<div class="bg-surface-container p-6 rounded-xl space-y-4 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<div class="w-28 h-4 rounded bg-surface-container-high animate-pulse"></div>
+<div class="w-16 h-6 rounded bg-surface-container-high animate-pulse"></div>
+</div>
+<div class="space-y-3">
+<div class="flex items-center gap-3 p-2 rounded-lg bg-surface-container-low">
+<div class="w-8 h-8 rounded-full bg-surface-container-high animate-pulse"></div>
+<div class="flex-1 space-y-1">
+<div class="w-2/3 h-3 rounded bg-surface-container-high animate-pulse"></div>
+<div class="w-1/2 h-2 rounded bg-surface-container-high animate-pulse"></div>
+</div>
+</div>
+<div class="flex items-center gap-3 p-2 rounded-lg bg-surface-container-low">
+<div class="w-8 h-8 rounded-full bg-surface-container-high animate-pulse"></div>
+<div class="flex-1 space-y-1">
+<div class="w-3/4 h-3 rounded bg-surface-container-high animate-pulse"></div>
+<div class="w-1/3 h-2 rounded bg-surface-container-high animate-pulse"></div>
+</div>
+</div>
+<div class="flex items-center gap-3 p-2 rounded-lg bg-surface-container-low">
+<div class="w-8 h-8 rounded-full bg-surface-container-high animate-pulse"></div>
+<div class="flex-1 space-y-1">
+<div class="w-1/2 h-3 rounded bg-surface-container-high animate-pulse"></div>
+<div class="w-2/3 h-2 rounded bg-surface-container-high animate-pulse"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- AI Stream & RAG Loading State -->
+<div class="bg-surface-container p-6 rounded-xl flex flex-col justify-between shadow-sm">
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<span class="text-label-md font-medium text-primary flex items-center gap-1.5">
+<span class="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+                AI Response Stream
+              </span>
+<span class="text-code-sm text-outline font-code-md">Token 142/512</span>
+</div>
+<div class="p-3 rounded-lg bg-surface-container-low font-code-md text-code-md text-on-surface-variant space-y-2">
+<p class="flex items-center gap-2">
+<span class="text-primary">&gt;</span> Querying vector database for CS201 sorting algorithms...
+              </p>
+<p class="flex items-center gap-2 animate-pulse text-on-surface">
+<span class="text-primary">&gt;</span> Synthesizing pedagogical hint using Socratic engine...
+              </p>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-surface-container-high flex items-center justify-between text-body-sm text-outline">
+<span>RAG Retrieval Latency: 124ms</span>
+<span class="text-primary">Streaming...</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 3: Empty States Gallery -->
+<section class="space-y-6">
+<div class="flex items-center justify-between">
+<h2 class="text-headline-lg text-on-surface font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">inbox</span>
+          Empty States Gallery (9 Standardized States)
+        </h2>
+<span class="text-code-sm text-outline font-code-md">Component: EmptyState.tsx</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- 1. No Courses -->
+<div class="bg-surface-container p-8 rounded-xl text-center flex flex-col items-center justify-center space-y-4">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[32px]">menu_book</span>
+</div>
+<div>
+<h3 class="text-headline-md font-medium text-on-surface">No Courses Found</h3>
+<p class="text-body-sm text-on-surface-variant mt-1">You are not currently enrolled or assigned to any active university programming courses.</p>
+</div>
+<button class="px-4 py-2 rounded-xl bg-primary text-on-primary font-medium text-body-md hover:bg-primary/90 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span> Enroll in Course
+          </button>
+</div>
+<!-- 2. No Practice Problems -->
+<div class="bg-surface-container p-8 rounded-xl text-center flex flex-col items-center justify-center space-y-4">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[32px]">code</span>
+</div>
+<div>
+<h3 class="text-headline-md font-medium text-on-surface">No Practice Problems</h3>
+<p class="text-body-sm text-on-surface-variant mt-1">All problems in this module have been completed or filters are currently restricting results.</p>
+</div>
+<button class="px-4 py-2 rounded-xl bg-surface-container-high text-on-surface font-medium text-body-md hover:bg-surface transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">filter_alt_off</span> Reset Filters
+          </button>
+</div>
+<!-- 3. No Assessments -->
+<div class="bg-surface-container p-8 rounded-xl text-center flex flex-col items-center justify-center space-y-4">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[32px]">assignment</span>
+</div>
+<div>
+<h3 class="text-headline-md font-medium text-on-surface">No Assessments Scheduled</h3>
+<p class="text-body-sm text-on-surface-variant mt-1">There are no pending lab quizzes, midterm exams, or practical evaluations at this time.</p>
+</div>
+<button class="px-4 py-2 rounded-xl bg-surface-container-high text-on-surface font-medium text-body-md hover:bg-surface transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">history</span> View Past Exams
+          </button>
+</div>
+<!-- 4. No Tutor Conversations -->
+<div class="bg-surface-container p-8 rounded-xl text-center flex flex-col items-center justify-center space-y-4">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[32px]">smart_toy</span>
+</div>
+<div>
+<h3 class="text-headline-md font-medium text-on-surface">No Active Sessions</h3>
+<p class="text-body-sm text-on-surface-variant mt-1">Start a conversation with TRACE AI Tutor to get real-time hints and code diagnostics.</p>
+</div>
+<button class="px-4 py-2 rounded-xl bg-primary text-on-primary font-medium text-body-md hover:bg-primary/90 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">chat</span> New Tutor Chat
+          </button>
+</div>
+<!-- 5. No Submissions -->
+<div class="bg-surface-container p-8 rounded-xl text-center flex flex-col items-center justify-center space-y-4">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[32px]">cloud_upload</span>
+</div>
+<div>
+<h3 class="text-headline-md font-medium text-on-surface">No Submissions Recorded</h3>
+<p class="text-body-sm text-on-surface-variant mt-1">You haven't submitted any code solutions for grading yet. Run tests and submit when ready.</p>
+</div>
+<button class="px-4 py-2 rounded-xl bg-surface-container-high text-on-surface font-medium text-body-md hover:bg-surface transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span> Open Workspace
+          </button>
+</div>
+<!-- 6. No Notifications -->
+<div class="bg-surface-container p-8 rounded-xl text-center flex flex-col items-center justify-center space-y-4">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[32px]">notifications_off</span>
+</div>
+<div>
+<h3 class="text-headline-md font-medium text-on-surface">All Caught Up!</h3>
+<p class="text-body-sm text-on-surface-variant mt-1">You have no unread notifications or feedback alerts from instructors.</p>
+</div>
+<button class="px-4 py-2 rounded-xl bg-surface-container-high text-on-surface font-medium text-body-md hover:bg-surface transition-colors">
+            Notification Settings
+          </button>
+</div>
+<!-- 7. No Participants -->
+<div class="bg-surface-container p-8 rounded-xl text-center flex flex-col items-center justify-center space-y-4">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[32px]">group</span>
+</div>
+<div>
+<h3 class="text-headline-md font-medium text-on-surface">No Study Group Members</h3>
+<p class="text-body-sm text-on-surface-variant mt-1">Collaborative peer sessions are empty. Invite classmates to join your study room.</p>
+</div>
+<button class="px-4 py-2 rounded-xl bg-primary text-on-primary font-medium text-body-md hover:bg-primary/90 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">person_add</span> Invite Peers
+          </button>
+</div>
+<!-- 8. No Telemetry -->
+<div class="bg-surface-container p-8 rounded-xl text-center flex flex-col items-center justify-center space-y-4">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[32px]">analytics</span>
+</div>
+<div>
+<h3 class="text-headline-md font-medium text-on-surface">No Telemetry Data</h3>
+<p class="text-body-sm text-on-surface-variant mt-1">Diagnostic telemetry logs are empty for the selected time window.</p>
+</div>
+<button class="px-4 py-2 rounded-xl bg-surface-container-high text-on-surface font-medium text-body-md hover:bg-surface transition-colors">
+            Expand Date Range
+          </button>
+</div>
+<!-- 9. No RAG Data -->
+<div class="bg-surface-container p-8 rounded-xl text-center flex flex-col items-center justify-center space-y-4">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[32px]">database</span>
+</div>
+<div>
+<h3 class="text-headline-md font-medium text-on-surface">No Vector Embeddings</h3>
+<p class="text-body-sm text-on-surface-variant mt-1">Course syllabus and lecture notes have not been indexed by the embedding pipeline.</p>
+</div>
+<button class="px-4 py-2 rounded-xl bg-primary text-on-primary font-medium text-body-md hover:bg-primary/90 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">sync</span> Trigger Indexing
+          </button>
+</div>
+</div>
+</section>
+<!-- Section 4: Error & Permission States -->
+<section class="space-y-6">
+<div class="flex items-center justify-between">
+<h2 class="text-headline-lg text-on-surface font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-[#ffb4ab]">error</span>
+          Error &amp; Permission States
+        </h2>
+<span class="text-code-sm text-outline font-code-md">Component: ErrorCard.tsx</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Network Error -->
+<div class="bg-surface-container p-6 rounded-xl flex flex-col justify-between border-l-4 border-error">
+<div class="space-y-3">
+<div class="w-10 h-10 rounded-lg bg-error-container text-on-error-container flex items-center justify-center">
+<span class="material-symbols-outlined">wifi_off</span>
+</div>
+<h3 class="text-headline-md font-medium text-on-surface">Network Connection Lost</h3>
+<p class="text-body-sm text-on-surface-variant">Unable to reach TRACE backend servers. Please check your internet connection.</p>
+</div>
+<div class="mt-6 pt-4 border-t border-surface-container-high flex items-center gap-2">
+<button class="flex-1 py-2 rounded-lg bg-primary text-on-primary text-label-md font-medium hover:bg-primary/90 transition-colors">Retry Connection</button>
+</div>
+</div>
+<!-- Permission Denied -->
+<div class="bg-surface-container p-6 rounded-xl flex flex-col justify-between border-l-4 border-error">
+<div class="space-y-3">
+<div class="w-10 h-10 rounded-lg bg-error-container text-on-error-container flex items-center justify-center">
+<span class="material-symbols-outlined">lock</span>
+</div>
+<h3 class="text-headline-md font-medium text-on-surface">Access Denied</h3>
+<p class="text-body-sm text-on-surface-variant">You don't have permission to access this resource. Instructor privileges required.</p>
+</div>
+<div class="mt-6 pt-4 border-t border-surface-container-high flex items-center gap-2">
+<button class="flex-1 py-2 rounded-lg bg-surface-container-high text-on-surface text-label-md font-medium hover:bg-surface transition-colors">Go Back</button>
+</div>
+</div>
+<!-- AI Tutor Error -->
+<div class="bg-surface-container p-6 rounded-xl flex flex-col justify-between border-l-4 border-error">
+<div class="space-y-3">
+<div class="w-10 h-10 rounded-lg bg-error-container text-on-error-container flex items-center justify-center">
+<span class="material-symbols-outlined">smart_toy</span>
+</div>
+<h3 class="text-headline-md font-medium text-on-surface">AI Tutor Overloaded</h3>
+<p class="text-body-sm text-on-surface-variant">Model inference request timed out. High concurrency detected on cluster node 3.</p>
+</div>
+<div class="mt-6 pt-4 border-t border-surface-container-high flex items-center gap-2">
+<button class="flex-1 py-2 rounded-lg bg-primary text-on-primary text-label-md font-medium hover:bg-primary/90 transition-colors">Regenerate Response</button>
+</div>
+</div>
+<!-- Code Execution Failure -->
+<div class="bg-surface-container p-6 rounded-xl flex flex-col justify-between border-l-4 border-error">
+<div class="space-y-3">
+<div class="w-10 h-10 rounded-lg bg-error-container text-on-error-container flex items-center justify-center">
+<span class="material-symbols-outlined">terminal</span>
+</div>
+<h3 class="text-headline-md font-medium text-on-surface">Sandbox Crash</h3>
+<p class="text-body-sm text-on-surface-variant">Docker container exited with code 137 (Out Of Memory / Infinite recursion detected).</p>
+</div>
+<div class="mt-6 pt-4 border-t border-surface-container-high flex items-center gap-2">
+<button class="flex-1 py-2 rounded-lg bg-surface-container-high text-on-surface text-label-md font-medium hover:bg-surface transition-colors">Reset Sandbox</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 5: Confirmation Modals & Toast Success Feedback -->
+<section class="space-y-6">
+<div class="flex items-center justify-between">
+<h2 class="text-headline-lg text-on-surface font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+          Confirmation Dialogs &amp; Toast Notifications
+        </h2>
+<span class="text-code-sm text-outline font-code-md">Component: Modal &amp; Toast System</span>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<!-- Destructive Action Modal Preview -->
+<div class="bg-surface-container p-6 rounded-xl space-y-6 relative overflow-hidden">
+<div class="absolute top-0 right-0 px-3 py-1 bg-error/10 text-error text-label-md rounded-bl-xl font-medium">Destructive Action Modal</div>
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-xl bg-error-container text-on-error-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[24px]">warning</span>
+</div>
+<div class="space-y-1">
+<h3 class="text-headline-md font-semibold text-on-surface">Delete Assessment Submission?</h3>
+<p class="text-body-sm text-on-surface-variant">
+                This action is irreversible. All test suite results, code snapshots, and AI interaction transcripts for <span class="text-on-surface font-mono">Assignment #3: Dijkstra's Algorithm</span> will be permanently purged from the database.
+              </p>
+</div>
+</div>
+<div class="bg-surface p-4 rounded-xl space-y-2 border border-surface-container-high">
+<div class="flex items-center justify-between text-body-sm">
+<span class="text-on-surface-variant">Attempt ID:</span>
+<span class="font-code-md text-on-surface">SUB-9942-XF</span>
+</div>
+<div class="flex items-center justify-between text-body-sm">
+<span class="text-on-surface-variant">Final Grade Score:</span>
+<span class="text-primary font-medium">88 / 100</span>
+</div>
+</div>
+<div class="flex items-center justify-end gap-3 pt-2">
+<button class="px-4 py-2 rounded-xl bg-surface-container-high text-on-surface text-body-md font-medium hover:bg-surface transition-colors">Cancel</button>
+<button class="px-4 py-2 rounded-xl bg-error text-on-error text-body-md font-medium hover:bg-error/90 transition-colors">Yes, Delete Submission</button>
+</div>
+</div>
+<!-- Success Toast Notifications Stack -->
+<div class="bg-surface-container p-6 rounded-xl space-y-4 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-label-md text-on-surface-variant font-medium">Stacked Toast Feedback Gallery</span>
+<span class="text-code-sm text-outline font-code-md">Auto-dismiss: 4s</span>
+</div>
+<div class="space-y-3">
+<!-- Toast 1 -->
+<div class="bg-surface-container-high p-4 rounded-xl flex items-center justify-between shadow-lg border-l-4 border-primary">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<div>
+<p class="text-body-md font-medium text-on-surface">Changes saved successfully</p>
+<p class="text-code-sm text-on-surface-variant">Workspace auto-saved at 14:22:05 UTC</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px] cursor-pointer hover:text-on-surface">close</span>
+</div>
+<!-- Toast 2 -->
+<div class="bg-surface-container-high p-4 rounded-xl flex items-center justify-between shadow-lg border-l-4 border-emerald-400">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-emerald-400">task_alt</span>
+<div>
+<p class="text-body-md font-medium text-on-surface">Assessment submitted &amp; graded</p>
+<p class="text-code-sm text-on-surface-variant">All 12 unit test assertions passed cleanly</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px] cursor-pointer hover:text-on-surface">close</span>
+</div>
+<!-- Toast 3 -->
+<div class="bg-surface-container-high p-4 rounded-xl flex items-center justify-between shadow-lg border-l-4 border-indigo-400">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-indigo-400">download</span>
+<div>
+<p class="text-body-md font-medium text-on-surface">Telemetry Export Ready</p>
+<p class="text-code-sm text-on-surface-variant">CSV package generated (2.4 MB)</p>
+</div>
+</div>
+<button class="px-3 py-1 bg-primary text-on-primary text-label-md rounded-lg font-medium">Download</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+<script>
+  function toggleGlobalState(mode) {
+    const buttons = document.querySelectorAll('button[onclick^="toggleGlobalState"]');
+    buttons.forEach(btn => {
+      if(btn.textContent.toLowerCase().includes(mode)) {
+        btn.className = "px-3 py-1.5 rounded-lg text-label-md bg-primary-container text-on-primary-container font-semibold transition-all";
+      } else {
+        btn.className = "px-3 py-1.5 rounded-lg text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all";
+      }
+    });
+    console.log("System state switched to:", mode);
+  }
+</script></main></div></body></html>
