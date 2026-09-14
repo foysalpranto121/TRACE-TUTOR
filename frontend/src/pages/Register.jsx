@@ -166,7 +166,7 @@ export const Register = () => {
                     const active = form.role === r.id;
                     return (
                       <button key={r.id} type="button" onClick={() => set('role')(r.id)} className={`text-left p-3 rounded-xl border transition-all ${active ? 'bg-primary/10 border-primary shadow-sm' : 'bg-surface-container-high border-outline-variant/40 hover:border-outline'}`}>
-                        <Icon className={`w-4 h-4 mb-1.5 ${active ? 'text-primary' : 'text-on-surface-variant'}`} />
+                        <Icon className={`w-4 h-4 mb-2.5 ${active ? 'text-primary' : 'text-on-surface-variant'}`} />
                         <div className="text-xs font-extrabold text-on-surface leading-tight">{r.title}</div>
                         <div className="text-[10px] text-on-surface-variant mt-0.5 leading-snug">{r.desc}</div>
                       </button>

@@ -53,6 +53,13 @@ export default {
         "accent-pink": token("accent-pink"),
         "accent-teal": token("accent-teal"),
       },
+      lineHeight: {
+        // Hind Siliguri carries the matra above the baseline and vowel signs above that, so
+        // Tailwind's stock 1.25/1.375 let Bangla render outside its line box and collide with
+        // whatever sits above it. These are the same utilities, given enough headroom.
+        tight: "1.45",
+        snug: "1.55",
+      },
       fontFamily: {
         sans: ["Hind Siliguri", "Inter", "Noto Sans Bengali", "system-ui", "sans-serif"],
         display: ["Space Grotesk", "Hind Siliguri", "Inter", "sans-serif"],

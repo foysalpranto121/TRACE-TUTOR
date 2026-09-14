@@ -117,7 +117,10 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Teachers and researchers must present this code at registration; students never see it.
-STAFF_ACCESS_CODE = os.environ.get('STAFF_ACCESS_CODE', 'TRACE-STAFF-2026')
+# No default: a committed fallback is public the moment the repository is, and this code is
+# what stands between a stranger and every exam paper plus all participant data. Unset means
+# staff registration is refused outright (see accounts/views.py), never "any code will do".
+STAFF_ACCESS_CODE = os.environ.get('STAFF_ACCESS_CODE', '')
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Dhaka'

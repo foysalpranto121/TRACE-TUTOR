@@ -125,6 +125,9 @@ def register_view(request):
         errors['full_name'] = 'Full name is required.'
     if role not in VALID_ROLES:
         errors['role'] = 'Unknown role.'
+    elif role in STAFF_ROLES and not settings.STAFF_ACCESS_CODE:
+        # Without a configured code an empty submission would compare equal and let anyone in.
+        errors['access_code'] = 'Staff registration is disabled: no access code is configured on this server.'
     elif role in STAFF_ROLES and (data.get('access_code') or '').strip() != settings.STAFF_ACCESS_CODE:
         errors['access_code'] = 'Invalid staff access code. Ask the research coordinator for the code.'
     if role == 'STUDENT' and not consent:
