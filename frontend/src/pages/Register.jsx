@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { useResetOnChange } from '../hooks/useResetOnChange';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, Check, User, Brain, ShieldCheck, School, AlertTriangle, Loader2, Mail, KeyRound } from 'lucide-react';
-import { useAuth, roleHome } from '../context/AuthContext';
+import { useAuth, roleHome } from '../context/useAuth';
 import { AuthLayout } from '../components/Layout/AuthLayout';
 import { TextField, PasswordField, SelectField, ChipGroup, StrengthMeter, Label, FieldError } from '../components/Form/fields';
 import {
@@ -46,10 +47,9 @@ export const Register = () => {
     if (ready && user && !submitted.current) navigate(roleHome(user.role), { replace: true });
   }, [ready]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Keep the tutor-language default in sync with the UI language toggle until the user picks one explicitly.
-  useEffect(() => {
-    setForm((f) => ({ ...f, preferred_language: language }));
-  }, [language]);
+  // Keep the tutor-language default in sync with the UI language toggle until the user
+  // picks one explicitly.
+  useResetOnChange(language, () => setForm((f) => ({ ...f, preferred_language: language })));
 
   const isStudent = form.role === 'STUDENT';
   const set = (field) => (e) => {

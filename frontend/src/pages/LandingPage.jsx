@@ -4,8 +4,9 @@ import {
   ArrowRight, Brain, Code2, Sun, Moon, Sparkles, Play, Terminal, ShieldCheck, Flame, Trophy, Zap,
   BookOpen, CheckCircle2, Bot, Languages, Target, Rocket, Layers, GraduationCap, Menu, X,
 } from 'lucide-react';
-import { useAuth, roleHome } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
+import { useAuth, roleHome } from '../context/useAuth';
+import { useTheme } from '../context/useTheme';
+import { prefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { Button, Badge, Reveal, CountUp } from '../components/ui';
 import { CodeRain } from '../components/ui/CodeRain';
 
@@ -72,13 +73,17 @@ const TOPICS = [
 ];
 
 const useTypewriter = (lines, speed = 22) => {
-  const [count, setCount] = useState(0);
+  const [typedCount, setTypedCount] = useState(0);
   const full = lines.map((l) => l.text).join('\n');
+  // Reduced motion shows the finished text straight away, derived rather than set
+  // from an effect - otherwise the first paint is empty and then snaps to full.
+  const reduced = prefersReducedMotion();
+  const count = reduced ? full.length : typedCount;
   useEffect(() => {
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { setCount(full.length); return undefined; }
-    const id = setInterval(() => setCount((c) => (c >= full.length ? c : c + 1)), speed);
+    if (reduced) return undefined;
+    const id = setInterval(() => setTypedCount((c) => (c >= full.length ? c : c + 1)), speed);
     return () => clearInterval(id);
-  }, [full, speed]);
+  }, [full, speed, reduced]);
   const shown = full.slice(0, count).split('\n');
   return lines.map((l, i) => ({ ...l, shown: shown[i] ?? '', active: shown.length - 1 === i && count < full.length }));
 };

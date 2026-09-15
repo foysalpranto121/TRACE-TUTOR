@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Lock, User, AlertTriangle, Loader2, HelpCircle } from 'lucide-react';
-import { useAuth, roleHome } from '../context/AuthContext';
+import { useAuth, roleHome } from '../context/useAuth';
 import { AuthLayout } from '../components/Layout/AuthLayout';
 import { TextField, PasswordField } from '../components/Form/fields';
 

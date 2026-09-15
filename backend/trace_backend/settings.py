@@ -256,6 +256,36 @@ DASHBOARD_CACHE_SECONDS = 60
 RAG_STATUS_CACHE_SECONDS = 15
 
 # ---------------------------------------------------------------------------
+# Code execution sandbox (tutor/sandbox.py).
+#
+# POST /api/code/run/ executes participant-written programs. CODE_SANDBOX picks the
+# containment backend: 'auto' (best available), 'docker' (full isolation), 'rlimit'
+# (POSIX resource caps only) or 'none'.
+#
+# CODE_SANDBOX_REQUIRED defaults to "on whenever DEBUG is off": with no sandbox
+# available the endpoint refuses to run anything rather than executing unprotected.
+# Build the image first:
+#   docker build -f backend/tutor/sandbox.Dockerfile -t trace-tutor-runner:1 backend/tutor
+# ---------------------------------------------------------------------------
+CODE_SANDBOX = os.environ.get('CODE_SANDBOX', 'auto').strip().lower()
+CODE_SANDBOX_REQUIRED = env_flag('CODE_SANDBOX_REQUIRED', default=not DEBUG)
+CODE_SANDBOX_IMAGE = os.environ.get('CODE_SANDBOX_IMAGE', 'trace-tutor-runner:1')
+CODE_SANDBOX_CPUS = os.environ.get('CODE_SANDBOX_CPUS', '1.0')
+CODE_SANDBOX_STARTUP_GRACE = int(os.environ.get('CODE_SANDBOX_STARTUP_GRACE', '15'))
+
+# Caps applied to the student's program.
+CODE_RUN_MEMORY_MB = int(os.environ.get('CODE_RUN_MEMORY_MB', '256'))
+CODE_RUN_CPU_SECONDS = int(os.environ.get('CODE_RUN_CPU_SECONDS', '5'))
+CODE_RUN_MAX_PROCESSES = int(os.environ.get('CODE_RUN_MAX_PROCESSES', '64'))
+CODE_RUN_MAX_FILE_MB = int(os.environ.get('CODE_RUN_MAX_FILE_MB', '4'))
+
+# Compiling is legitimately heavier than running, so it gets its own, larger caps.
+CODE_COMPILE_MEMORY_MB = int(os.environ.get('CODE_COMPILE_MEMORY_MB', '1024'))
+CODE_COMPILE_CPU_SECONDS = int(os.environ.get('CODE_COMPILE_CPU_SECONDS', '60'))
+CODE_COMPILE_MAX_PROCESSES = int(os.environ.get('CODE_COMPILE_MAX_PROCESSES', '128'))
+CODE_COMPILE_MAX_FILE_MB = int(os.environ.get('CODE_COMPILE_MAX_FILE_MB', '64'))
+
+# ---------------------------------------------------------------------------
 # Sessions & cookies. API clients authenticate with DRF tokens; Django sessions (admin) are
 # written through to the database with the memory cache in front (cached_db).
 # ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../context/useTheme';
 
 // Sparse falling code glyphs behind hero/auth sections. Canvas keeps it off the
 // layout/paint path; it throttles to ~20fps, pauses when the tab or section is

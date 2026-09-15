@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
+import { useResetOnChange } from '../hooks/useResetOnChange';
 import {
   Brain, BookOpen, CheckCircle2, Sliders, AlertTriangle, BarChart2, UserCheck, Award, FileCode,
   CheckSquare, ClipboardList, Users, RefreshCw, ChevronLeft, ChevronRight,
@@ -99,12 +100,14 @@ export const ExpertPortal = () => {
   const [gradeError, setGradeError] = useState(null);
   const [gradeSaved, setGradeSaved] = useState(null);
 
-  const loadQueue = async () => {
-    setQueueLoading(true);
-    setQueueError(null);
+  // Two entry points each. `fetch*` touches state only after an await, so the mount
+  // effect can call it; `load*` adds the synchronous spinner flip and is what event
+  // handlers (submit a rating, save a grade) call to refresh afterwards.
+  const fetchQueue = async () => {
     try {
       const data = await apiService.getExpertQueue();
       setReviewData(data);
+      setQueueError(null);
       return data;
     } catch (err) {
       setQueueError(err.message);
@@ -114,14 +117,18 @@ export const ExpertPortal = () => {
     }
   };
 
-  const loadSubmissions = async () => {
-    setSubsLoading(true);
-    setSubsError(null);
+  const loadQueue = () => {
+    setQueueLoading(true);
+    return fetchQueue();
+  };
+
+  const fetchSubmissions = async () => {
     try {
       const data = await apiService.getStudentSubmissions();
       const rows = data.submissions || [];
       setSubmissions(rows);
       setSelectedSubId((prev) => (rows.some((s) => s.id === prev) ? prev : rows[0]?.id ?? null));
+      setSubsError(null);
     } catch (err) {
       setSubsError(err.message);
     } finally {
@@ -129,9 +136,14 @@ export const ExpertPortal = () => {
     }
   };
 
+  const loadSubmissions = () => {
+    setSubsLoading(true);
+    return fetchSubmissions();
+  };
+
   useEffect(() => {
-    loadQueue();
-    loadSubmissions();
+    // Wrapped so both fetches write state after an await rather than during the effect.
+    (async () => { await Promise.all([fetchQueue(), fetchSubmissions()]); })();
   }, []);
 
   const items = reviewData?.items_to_review || [];
@@ -139,21 +151,23 @@ export const ExpertPortal = () => {
   const activeItem = items[activeItemIndex];
   const activeSub = submissions.find((s) => s.id === selectedSubId) || null;
 
-  // Re-rating edits this expert's stored row, so open the form on what they already submitted.
-  useEffect(() => {
+  // Re-rating edits this expert's stored row, so open the form on what they already
+  // submitted. Done during render: an effect would briefly show the previous item's scores.
+  useResetOnChange(activeItem?.id, () => {
     const mine = activeItem?.my_rating;
     setRatings(mine ? Object.fromEntries(CRITERIA.map(({ key }) => [key, mine[key] ?? null])) : BLANK_RATINGS);
     setCviFeedback(mine?.feedback || '');
     setRatingError(null);
-  }, [activeItem?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  });
 
-  // An ungraded submission starts empty - a pre-filled mark would anchor the grader.
-  useEffect(() => {
+  // An ungraded submission starts empty - a pre-filled mark would anchor the grader,
+  // and showing the previous student's mark for a frame would anchor them worse.
+  useResetOnChange(selectedSubId, () => {
     setAssignedMarks(activeSub?.assigned_marks ?? '');
     setTeacherFeedback(activeSub?.feedback || '');
     setGradeError(null);
     setGradeSaved(null);
-  }, [selectedSubId]); // eslint-disable-line react-hooks/exhaustive-deps
+  });
 
   const ratingsComplete = CRITERIA.every(({ key }) => ratings[key]);
 

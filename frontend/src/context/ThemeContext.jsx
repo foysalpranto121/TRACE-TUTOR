@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { ThemeContext } from './useTheme';
 
-const ThemeContext = createContext();
 const THEME_KEY = 'trace_theme';
 const FX_KEY = 'trace_fx';
 
@@ -8,11 +8,6 @@ const FX_KEY = 'trace_fx';
 // full    - code rain, ambient glow, celebrations
 // minimal - keep entrances and feedback, drop the decorative loops
 // off     - static UI (also forced when the OS asks for reduced motion)
-export const FX_LEVELS = [
-  { id: 'full', bn: 'পূর্ণ', en: 'Full', desc_bn: 'কোড রেইন, গ্লো ও সেলিব্রেশন অ্যানিমেশন', desc_en: 'Code rain, ambient glow and celebrations' },
-  { id: 'minimal', bn: 'সংক্ষিপ্ত', en: 'Minimal', desc_bn: 'শুধু প্রয়োজনীয় ট্রানজিশন', desc_en: 'Only essential transitions' },
-  { id: 'off', bn: 'বন্ধ', en: 'Off', desc_bn: 'কোনো অ্যানিমেশন নেই (ধীর ডিভাইসের জন্য)', desc_en: 'No animation - best on slow devices' },
-];
 
 const read = (key, fallback) => {
   try { return localStorage.getItem(key) || fallback; } catch (_) { return fallback; }
@@ -70,4 +65,3 @@ export const ThemeProvider = ({ children }) => {
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
 
-export const useTheme = () => useContext(ThemeContext);

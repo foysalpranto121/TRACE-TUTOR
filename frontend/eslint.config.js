@@ -39,20 +39,14 @@ export default [
         ignoreRestSiblings: true,
       }],
 
-      // ---------------------------------------------------------------------
-      // Deferred, not dismissed. These two flag widespread existing patterns that
-      // need a real refactor rather than a mechanical fix; leaving them as errors
-      // would mean `npm run lint` never passes and so never gets run. Turn one back
-      // on when you are ready to do the corresponding cleanup.
-      // ---------------------------------------------------------------------
+      // Derive state during render rather than writing it from an effect; see
+      // hooks/useResetOnChange.js for the pattern this codebase uses.
+      'react-hooks/set-state-in-effect': 'error',
 
-      // ~14 sites. Effects that call setState to derive state from props. The fix is
-      // to compute during render or key the component, per the React docs.
-      'react-hooks/set-state-in-effect': 'off',
-
-      // ~7 sites. Context files export both a provider component and its hook, which
-      // costs fast-refresh granularity in development only.
-      'react-refresh/only-export-components': 'off',
+      // Keep component modules exporting only components, so Fast Refresh can hot-swap
+      // them. Hooks and plain helpers live in their own files (context/useAuth.js,
+      // context/useTheme.js, components/Form/formHelpers.js).
+      'react-refresh/only-export-components': ['error', { allowConstantExport: true }],
     },
   },
 ];

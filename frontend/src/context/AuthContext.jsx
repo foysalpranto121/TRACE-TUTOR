@@ -1,15 +1,20 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { AuthContext } from './useAuth';
 import { apiService } from '../services/api';
 import { loadSession, saveSession, updateSessionUser, updateSessionToken, clearSession, getToken, readCookie } from '../services/session';
 
-const AuthContext = createContext();
 const GUEST_LANG_KEY = 'trace_lang';
 
-export const roleHome = (role) => (role === 'EXPERT_TEACHER' ? '/expert' : role === 'RESEARCHER_ADMIN' ? '/admin' : '/dashboard');
-
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => loadSession().user);
-  const [ready, setReady] = useState(false);
+  // Read the stored session once. A session is only worth validating if it has both a
+  // user and a token; anything else is stale and the app is ready immediately.
+  const [stored] = useState(() => ({ user: loadSession().user, token: getToken() }));
+  const validatable = Boolean(stored.user && stored.token);
+
+  const [user, setUser] = useState(validatable ? stored.user : null);
+  // Starting from the derived value means the "nothing to validate" path needs no
+  // synchronous setState inside the effect below.
+  const [ready, setReady] = useState(!validatable);
   // Before login / after logout: the language cookie the server set on the last login wins, then
   // whatever the visitor picked as a guest, then Bangla.
   const [guestLanguage, setGuestLanguage] = useState(() => {
@@ -18,17 +23,21 @@ export const AuthProvider = ({ children }) => {
     try { return localStorage.getItem(GUEST_LANG_KEY) || 'bn'; } catch (_) { return 'bn'; }
   });
 
-  // Validate the stored session against the server once on load; stale/legacy sessions are dropped.
+  // Validate the stored session against the server once on load; stale or legacy
+  // sessions are dropped rather than trusted.
   useEffect(() => {
+    if (!validatable) {
+      // A user without a token cannot authenticate, so clear the leftovers.
+      if (stored.user) clearSession();
+      return undefined;
+    }
     let cancelled = false;
-    const saved = loadSession().user;
-    if (!saved) { setReady(true); return undefined; }
-    if (!getToken()) { clearSession(); setUser(null); setReady(true); return undefined; }
     apiService.me()
       .then((fresh) => { if (!cancelled) { updateSessionUser(fresh); setUser(fresh); } })
       .catch((err) => { if (!cancelled && err.status === 401) { clearSession(); setUser(null); } })
       .finally(() => { if (!cancelled) setReady(true); });
     return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -149,4 +158,3 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);

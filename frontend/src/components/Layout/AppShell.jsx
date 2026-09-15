@@ -4,9 +4,10 @@ import {
   Code, LayoutDashboard, FileCheck, Brain, Database, Sliders, Search, Bell, User, Languages, LogOut,
   Sun, Moon, Zap, Flame, ChevronRight, Menu, Sparkles, Repeat, Lock,
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/useAuth';
+import { useTheme } from '../../context/useTheme';
 import { apiService } from '../../services/api';
+import { useResetOnChange } from '../../hooks/useResetOnChange';
 import { computeXp, levelInfo } from '../../data/gamification';
 import { armLabel } from '../../data/profileOptions';
 import { ProgressBar, Avatar } from '../ui';
@@ -54,7 +55,8 @@ export const AppShell = ({ children }) => {
     return () => { alive = false; clearInterval(id); };
   }, [isStudent, location.pathname]);
 
-  useEffect(() => { setMobileNav(false); }, [location.pathname]);
+  // Navigating closes the mobile drawer before paint, not a frame later.
+  useResetOnChange(location.pathname, () => setMobileNav(false));
 
   const level = progress ? levelInfo(computeXp(progress.stats, progress.assessments)) : null;
   const streak = progress?.stats?.streak_days || 0;

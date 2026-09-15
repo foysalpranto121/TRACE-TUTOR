@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import { Users, Download, TrendingUp, Sliders, RefreshCw, ShieldCheck, CheckCircle2, AlertTriangle, Database, Info } from 'lucide-react';
@@ -101,27 +101,38 @@ export const AdminDashboard = () => {
   const [isIngesting, setIsIngesting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
-  const load = useCallback(async () => {
+  // Bumping this re-runs the fetch. Refresh is an event handler so it may flip `loading`
+  // synchronously; the effect below writes state only after an await, and a response
+  // that lands after the page is closed is dropped rather than applied.
+  const [reloadToken, setReloadToken] = useState(0);
+
+  const reload = () => {
     setLoading(true);
-    setError(null);
-    try {
-      const [statsData, ragData] = await Promise.all([
-        apiService.getAdminStats(),
-        apiService.getRagStatus().catch(() => null),
-      ]);
-      setStats(statsData);
-      setRag(ragData);
-    } catch (err) {
-      setError(err.message || 'Could not load study statistics.');
-      setStats(null);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    setReloadToken((n) => n + 1);
+  };
 
   useEffect(() => {
-    load();
-  }, [load]);
+    let alive = true;
+    (async () => {
+      try {
+        const [statsData, ragData] = await Promise.all([
+          apiService.getAdminStats(),
+          apiService.getRagStatus().catch(() => null),
+        ]);
+        if (!alive) return;
+        setStats(statsData);
+        setRag(ragData);
+        setError(null);
+      } catch (err) {
+        if (!alive) return;
+        setError(err.message || 'Could not load study statistics.');
+        setStats(null);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [reloadToken]);
 
   const handleReindexRAG = async () => {
     setIsIngesting(true);
@@ -187,7 +198,7 @@ export const AdminDashboard = () => {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={load}
+            onClick={reload}
             disabled={loading}
             className="px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-bold text-xs border border-outline-variant/30 flex items-center gap-2 transition-all disabled:opacity-50"
           >

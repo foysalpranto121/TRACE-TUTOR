@@ -6,8 +6,8 @@ import {
   Database, Sparkles, RefreshCw, AlertTriangle, Code2, Trophy, Activity, LogIn, Users, Brain, ShieldCheck,
   Zap, Target, Crown, Repeat, Lock, Rocket, Award, Clock,
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/useAuth';
+import { useTheme } from '../context/useTheme';
 import { apiService } from '../services/api';
 import { NCTB_PROBLEMS, PROBLEM_BY_ID, SKILLS } from '../data/problems';
 import { computeXp, levelInfo, evaluateBadges, DAILY_GOAL_RUNS } from '../data/gamification';
@@ -76,22 +76,38 @@ export const Dashboard = () => {
   const [rag, setRag] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Bumping this re-runs the fetch effect. The Refresh button is an event handler, so
+  // it may set `loading` synchronously; the effect itself must not.
+  const [reloadToken, setReloadToken] = useState(0);
 
-  const load = async () => {
+  const reload = () => {
     setLoading(true);
-    setError(null);
-    try {
-      const [d, r] = await Promise.all([apiService.getDashboard(), apiService.getRagStatus().catch(() => null)]);
-      setData(d);
-      setRag(r);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    setReloadToken((n) => n + 1);
   };
 
-  useEffect(() => { load(); }, [user?.id]);
+  // The fetch lives in the effect so nothing is written to state before the first
+  // await, and `alive` drops a response that arrives after the participant navigates
+  // away instead of setting state on an unmounted component.
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const [d, r] = await Promise.all([
+          apiService.getDashboard(),
+          apiService.getRagStatus().catch(() => null),
+        ]);
+        if (!alive) return;
+        setData(d);
+        setRag(r);
+        setError(null);
+      } catch (err) {
+        if (alive) setError(err.message);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [user?.id, reloadToken]);
 
   const derived = useMemo(() => {
     const progressById = Object.fromEntries((data?.problems || []).map((p) => [p.problem_id, p]));
@@ -237,7 +253,7 @@ export const Dashboard = () => {
             )}
             <Button as={Link} to="/workspace" variant="surface" size="md"><Code2 className="w-3.5 h-3.5 text-primary" /> Workspace</Button>
             {!isStaff && <Button as={Link} to="/assessment" variant="surface" size="md"><FileCheck className="w-3.5 h-3.5 text-primary" /> পরীক্ষা</Button>}
-            <button onClick={load} className="p-2.5 rounded-xl bg-surface-container-high border border-outline-variant/40 text-on-surface-variant press hover:text-primary ml-auto" title="Refresh">
+            <button onClick={reload} className="p-2.5 rounded-xl bg-surface-container-high border border-outline-variant/40 text-on-surface-variant press hover:text-primary ml-auto" title="Refresh">
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
           </div>

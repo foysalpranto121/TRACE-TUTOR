@@ -18,8 +18,9 @@ import {
   Info,
 } from 'lucide-react';
 import { apiService } from '../../services/api';
-import { useTheme } from '../../context/ThemeContext';
-import { useAuth } from '../../context/AuthContext';
+import { useResetOnChange } from '../../hooks/useResetOnChange';
+import { useTheme } from '../../context/useTheme';
+import { useAuth } from '../../context/useAuth';
 
 const MONACO_LANG = { c: 'c', cpp: 'cpp', python: 'python', html: 'html' };
 
@@ -134,10 +135,12 @@ export const CodeEditor = ({
 
   useEffect(() => () => runTimers.current.forEach(clearTimeout), []);
 
-  useEffect(() => {
+  // Follow the task's language during render, so the editor never paints one frame
+  // with the previous problem's language still selected.
+  useResetOnChange(language, () => {
     setSelectedLang(language);
     setActiveTab('problems');
-  }, [language]);
+  });
 
   useEffect(() => {
     apiService.getCodeStatus().then(setCompilerInfo).catch(() => setCompilerInfo({ ready: false, hint: 'Backend not reachable' }));

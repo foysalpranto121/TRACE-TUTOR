@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import { useResetOnChange } from '../hooks/useResetOnChange';
 import { User, School, BookOpen, ShieldCheck, KeyRound, Save, Loader2, CheckCircle2, AlertTriangle, Fingerprint, Calendar, Mail, Brain, Bot, Check, Palette, Sun, Moon, Sparkles, Camera, Trash2, Upload } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useTheme, FX_LEVELS } from '../context/ThemeContext';
+import { useAuth } from '../context/useAuth';
+import { useTheme, FX_LEVELS } from '../context/useTheme';
 import { TextField, PasswordField, SelectField, ChipGroup, StrengthMeter } from '../components/Form/fields';
 import { Avatar } from '../components/ui';
 import {
@@ -107,7 +108,8 @@ export const Profile = () => {
     }
   };
 
-  useEffect(() => { setForm(fromUser(user)); }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Load the signed-in participant's own values into the form during render.
+  useResetOnChange(user?.id, () => setForm(fromUser(user)));
 
   const set = (field) => (e) => {
     const value = e && e.target ? e.target.value : e;

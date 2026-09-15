@@ -9,6 +9,7 @@ export const RAGInspector = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState(null);
   const [statusError, setStatusError] = useState(null);
+  const [searchError, setSearchError] = useState(null);
   const [ingestMessage, setIngestMessage] = useState(null);
   const pollRef = useRef(null);
 
@@ -24,25 +25,35 @@ export const RAGInspector = () => {
     }
   };
 
+  // searchCurriculum is strict, so a failed retrieval rejects. Without this catch the
+  // rejection was unhandled and the spinner stayed up for good.
   const handleSearch = async (e) => {
     if (e) e.preventDefault();
     if (!searchQuery.trim()) return;
     setIsLoading(true);
-    const langParam = selectedLang === 'all' ? null : selectedLang;
-    const res = await apiService.searchCurriculum(searchQuery, langParam);
-    setSearchResults(res);
-    setIsLoading(false);
+    try {
+      const langParam = selectedLang === 'all' ? null : selectedLang;
+      setSearchResults(await apiService.searchCurriculum(searchQuery, langParam));
+      setSearchError(null);
+    } catch (err) {
+      setSearchError(err.message);
+      setSearchResults(null);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    refreshStatus();
-    handleSearch();
+    // Wrapped so state is written after an await rather than during the effect.
+    (async () => { await Promise.all([refreshStatus(), handleSearch()]); })();
     return () => clearInterval(pollRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    handleSearch();
+    // searchQuery is deliberately not a dependency: typing must not fire a request,
+    // only submitting the form or changing the language filter does.
+    (async () => { await handleSearch(); })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedLang]);
 
@@ -211,11 +222,17 @@ export const RAGInspector = () => {
 
         {isLoading && <div className="py-12 text-center text-xs text-primary font-mono animate-pulse">Embedding query and searching the vector store...</div>}
 
-        {!isLoading && searchResults?.passages?.length === 0 && (
+        {!isLoading && searchError && (
+          <div className="bg-rose-500/10 border border-rose-500/30 p-4 rounded-xl text-xs text-rose-400 font-mono flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 shrink-0" /> Search failed: {searchError}
+          </div>
+        )}
+
+        {!isLoading && !searchError && searchResults?.passages?.length === 0 && (
           <div className="text-xs text-on-surface-variant italic">No passages matched. If the index is empty, run the OCR + Index button above.</div>
         )}
 
-        {!isLoading && searchResults?.passages?.map((item) => (
+        {!isLoading && !searchError && searchResults?.passages?.map((item) => (
           <div key={item.id} className="bg-surface-container p-6 rounded-2xl border border-outline-variant/30 hover:border-primary/40 transition-colors space-y-3 shadow-md">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">

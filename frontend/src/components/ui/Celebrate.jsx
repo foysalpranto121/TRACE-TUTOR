@@ -1,9 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CelebrateContext } from './useCelebrate';
 import { Zap, Trophy, Award, CheckCircle2, AlertTriangle, X, Sparkles } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
-
-const CelebrateContext = createContext({ toast: () => {}, levelUp: () => {} });
-export const useCelebrate = () => useContext(CelebrateContext);
+import { useTheme } from '../../context/useTheme';
 
 const TONE = {
   xp: { icon: Zap, cls: 'border-xp/40 bg-xp/10 text-xp' },

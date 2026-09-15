@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { prefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 
 // ---------------------------------------------------------------- primitives
 const VARIANTS = {
@@ -86,20 +87,24 @@ export const ProgressRing = ({ value = 0, size = 72, stroke = 7, tone = 'rgb(var
 
 // Counts up when it first scrolls into view - makes numbers feel earned.
 export const CountUp = ({ value = 0, duration = 900, className = '' }) => {
-  const [shown, setShown] = useState(0);
+  const [animated, setAnimated] = useState(0);
   const target = Number(value) || 0;
+  // Derived, not stored: a viewer who asked for reduced motion sees the final number
+  // immediately instead of one animated frame followed by a correction.
+  const reduced = prefersReducedMotion();
+  const shown = reduced ? target : animated;
   useEffect(() => {
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { setShown(target); return undefined; }
+    if (reduced) return undefined;
     let raf;
     const start = performance.now();
     const tick = (now) => {
       const t = Math.min(1, (now - start) / duration);
-      setShown(Math.round(target * (1 - Math.pow(1 - t, 3))));
+      setAnimated(Math.round(target * (1 - Math.pow(1 - t, 3))));
       if (t < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [target, duration]);
+  }, [target, duration, reduced]);
   return <span className={className}>{shown.toLocaleString()}</span>;
 };
 

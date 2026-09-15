@@ -157,6 +157,17 @@ Copy `backend/.env.example` to `backend/.env` and fill it in. **Never commit `.e
 
 > **For experimental runs, set `GEMINI_FALLBACK_MODELS=`** (empty). The fallback chain protects availability, but a participant served by a different model is a confound.
 
+### Code sandbox
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `CODE_SANDBOX` | `auto` | `auto`, `docker`, `rlimit` or `none`. `auto` picks the strongest available. |
+| `CODE_SANDBOX_REQUIRED` | `not DEBUG` | Refuse to execute when no sandbox is available, instead of running unprotected |
+| `CODE_SANDBOX_IMAGE` | `trace-tutor-runner:1` | Image built from `backend/tutor/sandbox.Dockerfile` |
+| `CODE_RUN_MEMORY_MB` | `256` | Memory cap on the student's program |
+| `CODE_RUN_MAX_PROCESSES` | `64` | Process cap — this is what stops a fork bomb |
+| `CODE_COMPILE_MEMORY_MB` | `1024` | Compiling legitimately needs more room than running |
+
 ### Rate limits
 
 The expensive endpoints are throttled per user (`backend/trace_backend/throttles.py`): the tutor
@@ -267,7 +278,13 @@ are researcher-only.
 
 This platform is built for **local, single-site, proctored use**. Read this before exposing it on a network.
 
-- **The code runner still executes untrusted code without a sandbox.** `POST /api/code/run/` compiles and runs submitted C, C++ and Python as the server user. It now requires authentication and is rate limited, but authentication is not containment: a participant who can log in can run arbitrary code on the server. **Put it in a container with no network and a memory cap before any internet-facing deployment.**
+- **The code runner is sandboxed** (`backend/tutor/sandbox.py`). Compilation and execution both happen inside a throwaway container with no network, a memory cap, a process cap, a read-only root and all capabilities dropped. Build the image once:
+
+  ```bash
+  docker build -f backend/tutor/sandbox.Dockerfile -t trace-tutor-runner:1 backend/tutor
+  ```
+
+  Where Docker is not available the runner degrades to POSIX `setrlimit` caps, and on a host with neither it refuses to execute at all — `CODE_SANDBOX_REQUIRED` defaults to on whenever `DEBUG=0`. `GET /api/code/status/` reports which tier is active. Set `CODE_SANDBOX_REQUIRED=0` only on a closed, proctored network where you accept the risk.
 - **Every endpoint requires authentication** except register and login, and DRF's default permission is `IsAuthenticated`, so a new view is private unless it opts out. Role gates (`backend/accounts/permissions.py`) fail closed.
 - **`DEBUG` defaults to off** and is read from the environment. With `DEBUG=0` the server refuses to start without a real `SECRET_KEY`, pins `ALLOWED_HOSTS` and CORS, and marks cookies `Secure` unless you set `HTTPS_ONLY=0`.
 - **Participant data.** `backend/media/` (uploaded images) and `backend/.env` (keys and passwords) are excluded from version control. The CSV export identifies people only by `participant_code`; no name, email or school reaches it. Keep the database on institutional hardware if your ethics approval says so.
@@ -299,8 +316,8 @@ Active research software, not a finished product.
 | Expert portal | Rating interface working; CVI computation in progress |
 | Researcher dashboard | Working — real aggregates, Welch's *t* and Cohen's *d* computed from the data |
 | Dataset export | Working — `GET /api/admin/export/` streams one pseudonymous row per participant |
-| Access control and rate limiting | Working; 184 backend tests cover the gates |
-| Code-runner sandboxing | **Not started** — see [Security and deployment](#security-and-deployment) |
+| Access control and rate limiting | Working; 214 backend tests cover the gates |
+| Code-runner sandboxing | Working — container tier with rlimit fallback, and refuses to run unprotected |
 
 ---
 

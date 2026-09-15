@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { CodeEditor } from '../components/Editor/CodeEditor';
 import { ReasoningTracePanel } from '../components/TutorPanel/ReasoningTracePanel';
 import { AnswerOnlyPanel } from '../components/TutorPanel/AnswerOnlyPanel';
 import { apiService } from '../services/api';
+import { useResetOnChange } from '../hooks/useResetOnChange';
 import { NCTB_PROBLEMS } from '../data/problems';
 import { useSearchParams } from 'react-router-dom';
-import { useCelebrate } from '../components/ui/Celebrate';
+import { useCelebrate } from '../components/ui/useCelebrate';
 import { computeXp, levelInfo, evaluateBadges, BADGES } from '../data/gamification';
 import { BookOpen, CheckCircle2, PanelLeftClose, PanelLeft } from 'lucide-react';
 
@@ -42,10 +43,11 @@ export const Workspace = () => {
     error: null,
   });
 
-  useEffect(() => {
+  // Switching problems swaps the editor contents during render, not after paint.
+  useResetOnChange(activeProblem?.id, () => {
     setCurrentCode(activeProblem.starterCode);
     setLastCompile(null);
-  }, [activeProblem]);
+  });
 
   useEffect(() => {
     apiService.getCodeStatus().then(setCompilerInfo).catch(() => setCompilerInfo({ ready: false }));

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Sun, Moon, Languages, Brain, Code2, BookOpen, ShieldCheck } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
-import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/useTheme';
+import { useAuth } from '../../context/useAuth';
 import { CodeRain } from '../ui/CodeRain';
 
 const FEATURES = [

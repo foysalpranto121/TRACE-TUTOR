@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { AuthProvider, useAuth, roleHome } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
+import { useAuth, roleHome } from './context/useAuth';
 import { ThemeProvider } from './context/ThemeContext';
 import { CelebrateProvider } from './components/ui/Celebrate';
 import { AppShell } from './components/Layout/AppShell';
