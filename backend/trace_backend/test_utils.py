@@ -1,8 +1,12 @@
 """Shared base class for API tests."""
 from django.core.cache import caches
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 
+# Grade inside the request during tests: the background threads would otherwise race the
+# test transaction, and a test that submits an exam wants the score in the same response.
+# The asynchronous path has its own coverage in assessment/tests/test_grading.py.
+@override_settings(GRADING_INLINE=True)
 class ApiTestCase(TestCase):
     """Django's TestCase, with the caches emptied before each test.
 

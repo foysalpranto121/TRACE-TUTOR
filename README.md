@@ -171,6 +171,37 @@ Copy `backend/.env.example` to `backend/.env` and fill it in. **Never commit `.e
 | `CODE_RUN_MAX_PROCESSES` | `64` | Process cap — this is what stops a fork bomb |
 | `CODE_COMPILE_MEMORY_MB` | `1024` | Compiling legitimately needs more room than running |
 
+### Exam grading and a whole cohort submitting at once
+
+A submission is persisted the instant it arrives, with no score, and graded afterwards -
+grading a form compiles five C programs, and a lab session ends with everyone pressing
+Submit inside the same minute. The client polls `GET /api/assessment/submissions/<id>/`
+until `grading_status` is `graded` (or `failed`, which keeps the answers and shows the
+error to staff). Nothing a participant submits can be lost to a slow or failing compiler.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `GRADING_MODE` | `thread` | `thread`: grade on background threads in the web process. `worker`: the web process only queues; run `python manage.py grade_submissions` to compile. |
+| `GRADING_CONCURRENCY` | CPU count | Submissions graded side by side |
+
+Measured on a 16-CPU Windows laptop against PostgreSQL, with every participant submitting
+in the same instant (`TRACE_LOAD_TEST=<n> python manage.py test assessment.tests.test_load`):
+
+| Cohort | Saved | Graded | Submit request p95 | Everyone has marks by |
+| --- | --- | --- | --- | --- |
+| 30 | 30/30 | 30/30 | 3.5 s | 41 s |
+| 60 | 60/60 | 60/60 | 5.7 s | 76 s |
+
+The Submit latency there is the *test harness* - Django's single-process development
+server serving 60 simultaneous requests; a do-nothing endpoint costs the same 4.6 s
+under that burst. Two deployment rules follow:
+
+- **Run a live cohort on PostgreSQL, not the SQLite fallback.** SQLite is fine for
+  development; under 30 concurrent submissions it lost rows.
+- **Serve with several web workers** (e.g. `gunicorn -w 4`, or `waitress --threads=8` on
+  Windows) and, on a shared server, `GRADING_MODE=worker` with the grading command in its
+  own process so compiles never contend with requests.
+
 ### Rate limits
 
 The expensive endpoints are throttled per user (`backend/trace_backend/throttles.py`): the tutor

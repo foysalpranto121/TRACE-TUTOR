@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from accounts.models import ParticipantProfile, STAFF_ROLES
 from accounts.permissions import IsResearcher, IsStaffRole
 
-from . import analytics, psychometrics, scoring
+from . import analytics, grading, psychometrics, scoring
 from .models import ExpertRating, ExamSubmission, ExpertGrade
 
 
@@ -125,30 +125,37 @@ def submit_exam(request):
     if exam_type not in _accessible_exam_types(student, _is_staff_role(student)):
         return Response({'error': 'That paper is not open to you yet.'}, status=403)
 
-    try:
-        # The client never decides the score - any 'score' in the body is ignored.
-        score_pct, correct, total, results = scoring.grade_submission(exam_type, answers, code_answers)
-    except scoring.ItemBankError as exc:
-        return Response({'error': str(exc)}, status=500)
-
+    # Persist first, grade after. The row exists before any compiler runs, so a slow
+    # or failed grading pass can never lose the exam. The client never decides the
+    # score: nothing from the body reaches score_pct, and grading.py computes it.
     submission = ExamSubmission.objects.create(
         student=student,
         exam_type=exam_type,
-        score_pct=score_pct,
-        answers={'answers': answers, 'code_answers': code_answers, 'chapter': chapter,
-                 'device_id': getattr(request, 'device_id', None), 'results': results},
+        score_pct=None,
+        grading_status=ExamSubmission.PENDING,
+        answers={'answers': answers if isinstance(answers, dict) else {},
+                 'code_answers': code_answers if isinstance(code_answers, dict) else {},
+                 'chapter': chapter,
+                 'device_id': getattr(request, 'device_id', None)},
     )
+    graded_now = grading.enqueue(submission.pk)
+    submission.refresh_from_db()
+    payload = grading.representation(submission)
+    payload['status'] = 'success'
+    return Response(payload, status=200 if graded_now and submission.is_graded else 202)
 
-    return Response({
-        'status': 'success',
-        'submission_id': submission.id,
-        'exam_type': exam_type,
-        'chapter': chapter,
-        'score_pct': score_pct,
-        'correct': correct,
-        'total': total,
-        'results': results,
-    })
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_submission(request, pk):
+    """Poll a submission's grading state. Owner or staff only - a submission id is
+    sequential, so without this check any participant could read anyone's results."""
+    submission = ExamSubmission.objects.filter(pk=pk).first()
+    if submission is None:
+        return Response({'error': 'No such submission.'}, status=404)
+    if submission.student_id != request.user.id and not _is_staff_role(request.user):
+        return Response({'error': 'No such submission.'}, status=404)
+    return Response(grading.representation(submission))
 
 
 @api_view(['GET'])
@@ -280,7 +287,9 @@ def get_student_submissions(request):
             'exam_type': sub.exam_type,
             'chapter': stored.get('chapter'),
             'submitted_at': sub.submitted_at.isoformat(),
-            'score_pct': sub.score_pct,
+            'grading_status': sub.grading_status,
+            'grading_error': sub.grading_error or None,
+            'score_pct': sub.score_pct if sub.is_graded else None,
             'correct': sum(1 for r in results if r.get('correct')) if results else None,
             'total': len(results) or None,
             'code_answers': code_blocks,

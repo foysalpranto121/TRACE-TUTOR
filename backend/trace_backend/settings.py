@@ -256,6 +256,25 @@ DASHBOARD_CACHE_SECONDS = 60
 RAG_STATUS_CACHE_SECONDS = 15
 
 # ---------------------------------------------------------------------------
+# Exam grading (assessment/grading.py).
+#
+# A submission is persisted immediately and graded afterwards on background threads
+# (or by `manage.py grade_submissions`), because grading compiles five C programs and a
+# whole cohort submits inside the same minute. GRADING_CONCURRENCY caps how many
+# submissions the web process grades at once. GRADING_INLINE=1 grades inside the
+# request instead - only for tests or a single-user setup.
+# ---------------------------------------------------------------------------
+# One submission per CPU by default. Each submission fans its C items out over three
+# compile workers, and compiles are dominated by process-spawn latency rather than by
+# raw CPU, so a cap of 2 left most of the machine idle and made a cohort of 30 wait 65 s
+# for marks. Lower it on a small shared server if the web requests start to lag.
+GRADING_CONCURRENCY = int(os.environ.get('GRADING_CONCURRENCY', str(max(2, os.cpu_count() or 2))))
+GRADING_INLINE = env_flag('GRADING_INLINE', default=False)
+# 'thread' grades inside the web process; 'worker' leaves every compile to a separate
+# `manage.py grade_submissions` process, which keeps Submit fast for a whole cohort.
+GRADING_MODE = os.environ.get('GRADING_MODE', 'thread').strip().lower()
+
+# ---------------------------------------------------------------------------
 # Code execution sandbox (tutor/sandbox.py).
 #
 # POST /api/code/run/ executes participant-written programs. CODE_SANDBOX picks the

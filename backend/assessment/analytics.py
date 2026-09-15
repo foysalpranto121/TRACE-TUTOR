@@ -173,8 +173,11 @@ def _first_submissions():
     are counted in `attempts` so anomalies stay visible instead of being averaged in.
     """
     by_student = defaultdict(dict)
+    # Only graded rows carry a score; a submission still in the grading queue is not
+    # yet an observation.
     rows = (ExamSubmission.objects
-            .filter(student__isnull=False, exam_type__in=EXAM_TYPES)
+            .filter(student__isnull=False, exam_type__in=EXAM_TYPES,
+                    grading_status=ExamSubmission.GRADED)
             .order_by('student_id', 'exam_type', 'submitted_at')
             .values_list('student_id', 'exam_type', 'score_pct', 'submitted_at'))
     for student_id, exam_type, score, submitted_at in rows:

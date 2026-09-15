@@ -38,6 +38,7 @@ urlpatterns = [
     # Assessment Suite & Expert CVI Ratings
     path('api/assessment/items/', assessment_views.get_items, name='get_items'),
     path('api/assessment/submit/', assessment_views.submit_exam, name='submit_exam'),
+    path('api/assessment/submissions/<int:pk>/', assessment_views.get_submission, name='get_submission'),
     path('api/expert/reviews/', assessment_views.get_expert_reviews, name='get_expert_reviews'),
     path('api/expert/rating/', assessment_views.submit_expert_rating, name='submit_expert_rating'),
     

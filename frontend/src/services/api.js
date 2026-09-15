@@ -135,8 +135,11 @@ export const apiService = {
     fetchApi('/telemetry/log/', { method: 'POST', body: JSON.stringify({ event_type: eventType, event_data: eventData || {} }) })
       .catch(() => ({ status: 'skipped', logged: false })),
   getAssessmentItems: (type) => fetchApi(`/assessment/items/?type=${type}`),
-  // The server grades the submission and returns { score_pct, correct, total, results }.
+  // The server persists the answers at once and grades in the background: the response
+  // carries grading_status ('pending' | 'grading' | 'graded' | 'failed') and, once
+  // graded, { score_pct, correct, total, results }. Poll getSubmission until it settles.
   submitExam: (examData) => fetchApi('/assessment/submit/', { method: 'POST', body: JSON.stringify(examData) }),
+  getSubmission: (id) => fetchApi(`/assessment/submissions/${id}/`),
   getExpertQueue: () => fetchApi('/expert/reviews/'),
   submitExpertRating: (itemId, ratings, feedback) => fetchApi('/expert/rating/', { method: 'POST', body: JSON.stringify({ item_id: itemId, ratings, feedback }) }),
   getAdminStats: () => fetchApi('/admin/stats/'),

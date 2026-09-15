@@ -167,7 +167,10 @@ def _build_dashboard(user):
 
     assessments = {}
     if user:
-        for s in ExamSubmission.objects.filter(student=user).order_by('submitted_at'):
+        # Graded rows only: a submission still in the grading queue has no score yet.
+        for s in (ExamSubmission.objects
+                  .filter(student=user, grading_status=ExamSubmission.GRADED)
+                  .order_by('submitted_at')):
             a = assessments.setdefault(s.exam_type, {'exam_type': s.exam_type, 'attempts': 0, 'latest_score': None, 'best_score': 0, 'last_at': None})
             a['attempts'] += 1
             a['latest_score'] = s.score_pct

@@ -28,6 +28,12 @@ import {
 } from 'lucide-react';
 import { Button, Badge } from '../components/ui';
 
+// Grading runs on the server after the answers are saved; poll at this cadence, and give
+// up waiting (never resubmit - the answers are already stored) after this long.
+const GRADING_POLL_MS = 1500;
+const GRADING_POLL_MAX_MS = 6000;
+const GRADING_WAIT_LIMIT_MS = 3 * 60 * 1000;
+
 const CHAPTER_FILTERS = {
   CHAP4: 'Chapter 4',
   CHAP5: 'Chapter 5',
@@ -81,6 +87,8 @@ export const AssessmentPage = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [scoreResult, setScoreResult] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Server-side grading state of the submitted form: null | 'pending' | 'grading' | 'graded' | 'failed'.
+  const [gradingState, setGradingState] = useState(null);
   const [submitError, setSubmitError] = useState(null);
   const [confirmUnanswered, setConfirmUnanswered] = useState(false);
   const [runResults, setRunResults] = useState({}); // item_id -> compiler output of the student's own trial run
@@ -225,21 +233,43 @@ export const AssessmentPage = () => {
     setSubmitError(null);
 
     try {
-      const res = await apiService.submitExam({
+      // The answers are saved the moment this returns; grading of the code items runs on
+      // the server afterwards, so poll until the row settles instead of holding the
+      // request open through five compiles.
+      let res = await apiService.submitExam({
         exam_type: examType,
         chapter: selectedChapter,
         answers: selectedAnswers,
         code_answers: userCodeAnswers,
       });
+      setIsSubmitted(true);
+      setGradingState(res.grading_status);
+
+      const started = Date.now();
+      let delay = GRADING_POLL_MS;
+      while (res.grading_status === 'pending' || res.grading_status === 'grading') {
+        if (Date.now() - started > GRADING_WAIT_LIMIT_MS) {
+          throw new Error('Your answers are saved, but marking is taking longer than expected. Please tell the invigilator; you do not need to resubmit.');
+        }
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        // Back off: sixty browsers polling every 1.5 s is 40 requests a second aimed at
+        // the same server that is trying to mark their papers.
+        delay = Math.min(Math.round(delay * 1.5), GRADING_POLL_MAX_MS);
+        res = await apiService.getSubmission(res.submission_id);
+        setGradingState(res.grading_status);
+      }
+
+      if (res.grading_status === 'failed') {
+        throw new Error(`Your answers are saved, but marking failed (${res.error || 'unknown error'}). Please tell the invigilator; you do not need to resubmit.`);
+      }
 
       setScoreResult({
         pct: res.score_pct ?? 0,
         correct: res.correct ?? 0,
-        total: res.total ?? filteredItems.length,
+        total: res.total ?? allItems.length,
         results: res.results || [],
         submissionId: res.submission_id,
       });
-      setIsSubmitted(true);
 
       apiService.logTelemetry('SUBMIT_ASSESSMENT', {
         exam_type: examType,
@@ -801,7 +831,9 @@ export const AssessmentPage = () => {
                   className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:pointer-events-none text-on-surface font-bold text-xs shadow-lg shadow-emerald-500/20 flex items-center gap-1.5 transition-all"
                 >
                   {isSubmitting
-                    ? <>গ্রেড হচ্ছে... (Grading) <Loader2 className="w-4 h-4 animate-spin" /></>
+                    ? (gradingState === 'pending' || gradingState === 'grading'
+                      ? <>উত্তর সংরক্ষিত — মার্কিং চলছে (Saved — marking…) <Loader2 className="w-4 h-4 animate-spin" /></>
+                      : <>জমা হচ্ছে... (Submitting) <Loader2 className="w-4 h-4 animate-spin" /></>)
                     : confirmUnanswered
                       ? <>{unansweredCount}টি বাদ রেখে জমা দিন (Submit anyway) <CheckCircle2 className="w-4 h-4" /></>
                       : <>Submit Assessment <CheckCircle2 className="w-4 h-4" /></>}

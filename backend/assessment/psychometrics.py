@@ -124,7 +124,8 @@ def response_matrix(exam_type):
     students = set(ParticipantProfile.objects.filter(role='STUDENT').values_list('user_id', flat=True))
     seen, rows = set(), []
     submissions = (ExamSubmission.objects
-                   .filter(exam_type=exam_type, student__isnull=False)
+                   .filter(exam_type=exam_type, student__isnull=False,
+                           grading_status=ExamSubmission.GRADED)
                    .order_by('student_id', 'submitted_at')
                    .values_list('student_id', 'answers'))
     for student_id, answers in submissions:

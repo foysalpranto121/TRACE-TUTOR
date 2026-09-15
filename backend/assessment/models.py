@@ -56,11 +56,28 @@ class ExpertRating(models.Model):
 
 
 class ExamSubmission(models.Model):
+    """One sitting of one form.
+
+    The row is written the instant the participant presses Submit, with the raw answers
+    and no score; grading happens afterwards (assessment/grading.py) and fills in the
+    score and per-item results. That ordering is deliberate: grading compiles five C
+    programs and is the slowest thing the platform does, and a whole cohort submits
+    inside the same minute. Persisting first means a slow or failed grading run can
+    never lose a participant's exam.
+    """
+    PENDING, GRADING, GRADED, FAILED = 'pending', 'grading', 'graded', 'failed'
+    GRADING_STATES = [(PENDING, 'Pending'), (GRADING, 'Grading'), (GRADED, 'Graded'), (FAILED, 'Failed')]
+
     student = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     exam_type = models.CharField(max_length=20)
-    score_pct = models.IntegerField()
+    # Null until graded. Rows created directly (tests, imports) default to already-graded,
+    # so a score given at creation is honoured; the submit endpoint creates them pending.
+    score_pct = models.IntegerField(null=True, blank=True)
     answers = models.JSONField(default=dict)
     submitted_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    grading_status = models.CharField(max_length=10, choices=GRADING_STATES, default=GRADED, db_index=True)
+    graded_at = models.DateTimeField(null=True, blank=True)
+    grading_error = models.TextField(blank=True, default='')
 
     class Meta:
         ordering = ['-submitted_at']
@@ -70,6 +87,10 @@ class ExamSubmission(models.Model):
             models.Index(fields=['student', 'exam_type', 'submitted_at'],
                          name='submission_student_exam_idx'),
         ]
+
+    @property
+    def is_graded(self):
+        return self.grading_status == self.GRADED
 
 
 class ExpertGrade(models.Model):
