@@ -47,8 +47,15 @@ def _strip_code_fence(text):
 
 
 def model_chain():
-    """Primary model followed by fallbacks used when a model is quota-exhausted (429) or unavailable (404/503)."""
-    fallbacks = os.environ.get('GEMINI_FALLBACK_MODELS', 'gemini-3.5-flash,gemini-3.1-flash-lite')
+    """Primary model, followed by any configured fallbacks.
+
+    Fallbacks are tried when a model is quota-exhausted (429) or unavailable (404/503).
+    They default to EMPTY: a participant served by a different model than the rest of the
+    cohort is a confound, and a confound that only appears under load is one nobody
+    notices until analysis. Opt into availability explicitly with GEMINI_FALLBACK_MODELS
+    if you would rather the tutor degrade than fail.
+    """
+    fallbacks = os.environ.get('GEMINI_FALLBACK_MODELS', '')
     chain = [model_name()] + [m.strip() for m in fallbacks.split(',') if m.strip()]
     seen, out = set(), []
     for m in chain:
@@ -86,12 +93,26 @@ def generate_content(contents, config, retries_per_model=2):
     raise RuntimeError(f'All Gemini models exhausted or unavailable: {str(last)[:300]}')
 
 
-def generate_json(system_instruction, contents, temperature=0.4):
+def generation_temperature():
+    """Sampling temperature for tutor turns.
+
+    Zero by default. The tutor is the experimental manipulation, so two participants
+    asking the same question about the same code should receive the same explanation;
+    at 0.4 they did not, and the variation was invisible in the logs. Raise it only if
+    you can argue the variability is part of what you are studying.
+    """
+    try:
+        return float(os.environ.get('GEMINI_TEMPERATURE', '0'))
+    except ValueError:
+        return 0.0
+
+
+def generate_json(system_instruction, contents, temperature=None):
     """Returns (parsed_json, model_used)."""
     response, model = generate_content(contents, {
         'system_instruction': system_instruction,
         'response_mime_type': 'application/json',
-        'temperature': temperature,
+        'temperature': generation_temperature() if temperature is None else temperature,
     })
     text = _strip_code_fence(response.text)
     if not text:

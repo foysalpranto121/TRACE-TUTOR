@@ -4,6 +4,7 @@ run_code() compiles and executes on the server, so the tests here exercise the p
 decision functions plus the permission boundary. Actual compilation is covered by a
 single opt-in test that skips when no toolchain is installed.
 """
+import os
 import shutil
 import unittest
 
@@ -15,6 +16,7 @@ from rest_framework.test import APIClient
 from trace_backend.test_utils import ApiTestCase
 
 from accounts.models import ParticipantProfile
+from trace_backend import gemini
 from tutor import runner
 
 
@@ -189,3 +191,48 @@ class CodeEndpointPermissionTests(ApiTestCase):
     def test_the_tutor_requires_a_prompt(self):
         response = self.client_.post('/api/tutor/query/', {'prompt': '   '}, format='json')
         self.assertEqual(response.status_code, 400)
+
+
+class ModelConfigTests(SimpleTestCase):
+    """The tutor is the manipulation, so its generation settings are study-critical."""
+
+    def setUp(self):
+        super().setUp()
+        self._saved = {k: os.environ.get(k) for k in
+                       ('GEMINI_FALLBACK_MODELS', 'GEMINI_TEMPERATURE', 'GEMINI_MODEL')}
+        self.addCleanup(self._restore)
+
+    def _restore(self):
+        for key, value in self._saved.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+
+    def test_no_fallback_models_by_default(self):
+        """A participant served by a different model than the cohort is a confound."""
+        os.environ.pop('GEMINI_FALLBACK_MODELS', None)
+        os.environ['GEMINI_MODEL'] = 'pinned-model'
+        self.assertEqual(gemini.model_chain(), ['pinned-model'])
+
+    def test_fallbacks_are_opt_in(self):
+        os.environ['GEMINI_MODEL'] = 'pinned-model'
+        os.environ['GEMINI_FALLBACK_MODELS'] = 'backup-a, backup-b'
+        self.assertEqual(gemini.model_chain(), ['pinned-model', 'backup-a', 'backup-b'])
+
+    def test_a_model_is_never_listed_twice(self):
+        os.environ['GEMINI_MODEL'] = 'pinned-model'
+        os.environ['GEMINI_FALLBACK_MODELS'] = 'pinned-model,backup-a'
+        self.assertEqual(gemini.model_chain(), ['pinned-model', 'backup-a'])
+
+    def test_generation_is_deterministic_by_default(self):
+        os.environ.pop('GEMINI_TEMPERATURE', None)
+        self.assertEqual(gemini.generation_temperature(), 0.0)
+
+    def test_temperature_is_configurable_but_must_be_deliberate(self):
+        os.environ['GEMINI_TEMPERATURE'] = '0.7'
+        self.assertEqual(gemini.generation_temperature(), 0.7)
+
+    def test_an_unparseable_temperature_falls_back_to_zero(self):
+        os.environ['GEMINI_TEMPERATURE'] = 'warm'
+        self.assertEqual(gemini.generation_temperature(), 0.0)

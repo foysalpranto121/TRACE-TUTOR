@@ -43,6 +43,31 @@ const EXAM_TABS = [
   { type: 'withdrawal', label: 'Withdrawal Task (No AI)', activeClass: 'bg-amber-500 text-on-surface' },
 ];
 
+const PHASE_LABEL = {
+  post: 'Post-Test',
+  transfer: 'Transfer Test',
+};
+
+/**
+ * The opening message in the tutor panel.
+ *
+ * Plain text only, and deliberately so. This used to ship a hardcoded `rag_answer` -
+ * an invented textbook rule with an invented "NCTB Board Textbook - Chapter 5"
+ * citation - rendered in the same panel as genuine retrieved answers, in the arm where
+ * tutor access is the manipulation. Every participant saw the same fabricated citation
+ * regardless of the chapter they were working in. Nothing in this panel may claim a
+ * curriculum source that retrieval did not actually return.
+ */
+const welcomeMessage = (examType, cleared = false) => ({
+  sender: 'ai',
+  text: cleared
+    ? 'Chat history cleared. Ask a question about this task and I will answer from the NCTB textbook passages I retrieve, alongside my own reasoning.'
+    : `TRACE Tutor is available during the ${PHASE_LABEL[examType] || 'assessment'}. `
+      + 'Ask about a concept, an error or your code. Each answer shows the NCTB textbook '
+      + 'passage it is grounded in, with its page citation, next to independent reasoning.',
+  time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+});
+
 export const AssessmentPage = () => {
   const { language } = useAuth();
   const [examType, setExamType] = useState('pre'); // 'pre', 'post', 'transfer', 'withdrawal'
@@ -75,30 +100,7 @@ export const AssessmentPage = () => {
   useEffect(() => {
     // Reset AI Assistant Chat when the exam phase changes. Deliberately NOT keyed on the current
     // question - navigating between questions must not wipe the conversation.
-    setChatMessages([
-      {
-        sender: 'ai',
-        text: `👋 Hello! I am your TRACE Tutor AI Assistant (NCTB ICT Specialist). You are in the ${
-          examType === 'post' ? 'Post-Test' : examType === 'transfer' ? 'Transfer Test' : 'Assessment'
-        } phase where AI assistance is fully active. I provide dual-mode guidance: both NCTB Textbook RAG answers and Independent AI logic explanations!`,
-        rag_answer: {
-          textbook_rule: 'NCTB HSC ICT Chapter 5 Standard C Programming Syntax & Control Logic',
-          curriculum_citation: 'NCTB Board Textbook - Chapter 5',
-          textbook_explanation: 'All C programs must have a valid main() function, explicit variable declarations, and properly terminated control statements.'
-        },
-        independent_ai_answer: {
-          concept_applied: 'TRACE Dual AI Interactive Guidance',
-          problem_breakdown: [
-            '1. State your specific coding difficulty or question in the input box.',
-            '2. Compare NCTB textbook rules with independent AI logic breakdowns.',
-            '3. Use the Dual View, RAG Textbook, or Independent AI tabs to study concepts.'
-          ],
-          pedagogical_justification: 'Dual view reinforces textbook mastery while developing independent algorithmic problem solving.',
-          code_solution: ''
-        },
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      },
-    ]);
+    setChatMessages([welcomeMessage(examType)]);
   }, [examType]);
 
   useEffect(() => {
@@ -118,28 +120,7 @@ export const AssessmentPage = () => {
   }, [currentIndex]);
 
   const handleClearChat = () => {
-    setChatMessages([
-      {
-        sender: 'ai',
-        text: `👋 Chat history cleared. How can I help you understand this concept or question?`,
-        rag_answer: {
-          textbook_rule: 'NCTB HSC ICT Chapter 5 Programming Standard',
-          curriculum_citation: 'NCTB Board Textbook - Chapter 5',
-          textbook_explanation: 'All C programs must have a valid main() function, explicit variable declarations, and properly terminated control statements.'
-        },
-        independent_ai_answer: {
-          concept_applied: 'TRACE AI Tutor Assistance',
-          problem_breakdown: [
-            '1. Type your question or request a hint below.',
-            '2. Toggle between Dual View, RAG Book, or Independent AI tabs.',
-            '3. Practice writing and understanding your code.'
-          ],
-          pedagogical_justification: 'Clear view provides a fresh start for analyzing new concepts.',
-          code_solution: ''
-        },
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      },
-    ]);
+    setChatMessages([welcomeMessage(examType, true)]);
   };
 
   const loadItems = useCallback(async (type) => {

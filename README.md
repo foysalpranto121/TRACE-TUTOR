@@ -149,13 +149,16 @@ Copy `backend/.env.example` to `backend/.env` and fill it in. **Never commit `.e
 | `DB_USER` / `DB_PASSWORD` | `postgres` / `postgres` | Credentials |
 | `DB_HOST` / `DB_PORT` | `localhost` / `5432` | Connection |
 | `GEMINI_MODEL` | `gemini-3.6-flash` | Generation model. Pin this for a study. |
-| `GEMINI_FALLBACK_MODELS` | `gemini-3.5-flash,gemini-3.1-flash-lite` | Tried on quota or availability errors. **Set empty for a controlled study** — see below. |
+| `GEMINI_FALLBACK_MODELS` | *(empty)* | Tried on quota or availability errors. Empty by default so no participant is silently served a different model. |
+| `GEMINI_TEMPERATURE` | `0` | Sampling temperature for tutor turns. Zero keeps the manipulation identical across participants. |
 | `GEMINI_EMBED_MODEL` | `gemini-embedding-001` | Embedding model |
 | `GEMINI_EMBED_DIMENSIONS` | `768` | Embedding size |
 | `TUTOR_ANSWER_CACHE_SECONDS` | `604800` | How long identical tutor answers are reused |
 | `C_COMPILER` | *(auto-detect)* | Override the compiler executable |
 
-> **For experimental runs, set `GEMINI_FALLBACK_MODELS=`** (empty). The fallback chain protects availability, but a participant served by a different model is a confound.
+> The model chain and the temperature both default to the values a controlled run needs:
+> one pinned model, no fallbacks, no sampling. Set `GEMINI_FALLBACK_MODELS` only if you
+> would rather the tutor degrade to another model than return its offline fallback answer.
 
 ### Code sandbox
 

@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from accounts.models import ParticipantProfile, STAFF_ROLES
 from accounts.permissions import IsResearcher, IsStaffRole
 
-from . import analytics, scoring
+from . import analytics, psychometrics, scoring
 from .models import ExpertRating, ExamSubmission, ExpertGrade
 
 
@@ -333,6 +333,21 @@ def get_admin_stats(request):
     as "not available" rather than substituting a number.
     """
     return Response(analytics.study_stats())
+
+
+@api_view(['GET'])
+@permission_classes([IsStaffRole])
+def certification_report(request):
+    """Is the item bank fit to measure anything yet?
+
+    Expert content validity (I-CVI, modified kappa, S-CVI) plus pilot item analysis
+    (difficulty, point-biserial discrimination, KR-20) and a parallel-forms comparison,
+    with an explicit list of what is still blocking certification.
+    """
+    try:
+        return Response(psychometrics.certification_report())
+    except scoring.ItemBankError as exc:
+        return Response({'error': str(exc)}, status=500)
 
 
 @api_view(['GET'])

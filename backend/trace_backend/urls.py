@@ -47,6 +47,7 @@ urlpatterns = [
 
     path('api/admin/stats/', assessment_views.get_admin_stats, name='get_admin_stats'),
     path('api/admin/export/', assessment_views.export_dataset, name='export_dataset'),
+    path('api/expert/certification/', assessment_views.certification_report, name='certification_report'),
 ]
 
 # Avatars. Django serves them itself in development, and in a single-site lab
