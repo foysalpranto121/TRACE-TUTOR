@@ -1,19 +1,24 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth, roleHome } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { CelebrateProvider } from './components/ui/Celebrate';
 import { AppShell } from './components/Layout/AppShell';
-import { LandingPage } from './pages/LandingPage';
-import { Login } from './pages/Login';
-import { Register } from './pages/Register';
-import { Workspace } from './pages/Workspace';
-import { Dashboard } from './pages/Dashboard';
-import { Profile } from './pages/Profile';
-import { AssessmentPage } from './pages/AssessmentPage';
-import { ExpertPortal } from './pages/ExpertPortal';
-import { AdminDashboard } from './pages/AdminDashboard';
-import { RAGInspector } from './pages/RAGInspector';
+import { clearSession } from './services/session';
+
+// Routes load on demand. Eagerly importing all ten pages pulled Monaco, Recharts and
+// every screen into the first download, which a student on a phone connection paid for
+// before seeing the login form. Most participants only ever open three of these.
+const LandingPage = lazy(() => import('./pages/LandingPage').then((m) => ({ default: m.LandingPage })));
+const Login = lazy(() => import('./pages/Login').then((m) => ({ default: m.Login })));
+const Register = lazy(() => import('./pages/Register').then((m) => ({ default: m.Register })));
+const Workspace = lazy(() => import('./pages/Workspace').then((m) => ({ default: m.Workspace })));
+const Dashboard = lazy(() => import('./pages/Dashboard').then((m) => ({ default: m.Dashboard })));
+const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
+const AssessmentPage = lazy(() => import('./pages/AssessmentPage').then((m) => ({ default: m.AssessmentPage })));
+const ExpertPortal = lazy(() => import('./pages/ExpertPortal').then((m) => ({ default: m.ExpertPortal })));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard').then((m) => ({ default: m.AdminDashboard })));
+const RAGInspector = lazy(() => import('./pages/RAGInspector').then((m) => ({ default: m.RAGInspector })));
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -40,8 +45,9 @@ class ErrorBoundary extends React.Component {
             </p>
             <button
               onClick={() => {
-                localStorage.clear();
-                sessionStorage.clear();
+                // Only the session, not every key the app owns: clearing all of storage
+                // also threw away the theme and the guest language choice.
+                clearSession();
                 window.location.href = '/login';
               }}
               className="px-5 py-2.5 bg-red-500 text-white font-extrabold text-xs rounded-xl hover:bg-red-600 transition-all shadow-md shadow-red-500/20"
@@ -87,22 +93,24 @@ export function App() {
         <CelebrateProvider>
         <AuthProvider>
           <Router>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/onboarding" element={<Navigate to="/register" replace />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
+            <Suspense fallback={<Splash />}>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/onboarding" element={<Navigate to="/register" replace />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
 
-              <Route path="/dashboard" element={shell(<Dashboard />)} />
-              <Route path="/workspace" element={shell(<Workspace />)} />
-              <Route path="/profile" element={shell(<Profile />)} />
-              <Route path="/assessment" element={shell(<AssessmentPage />, ['STUDENT', 'RESEARCHER_ADMIN'])} />
-              <Route path="/expert" element={shell(<ExpertPortal />, ['EXPERT_TEACHER', 'RESEARCHER_ADMIN'])} />
-              <Route path="/admin/rag" element={shell(<RAGInspector />, ['RESEARCHER_ADMIN'])} />
-              <Route path="/admin" element={shell(<AdminDashboard />, ['RESEARCHER_ADMIN'])} />
+                <Route path="/dashboard" element={shell(<Dashboard />)} />
+                <Route path="/workspace" element={shell(<Workspace />)} />
+                <Route path="/profile" element={shell(<Profile />)} />
+                <Route path="/assessment" element={shell(<AssessmentPage />, ['STUDENT', 'RESEARCHER_ADMIN'])} />
+                <Route path="/expert" element={shell(<ExpertPortal />, ['EXPERT_TEACHER', 'RESEARCHER_ADMIN'])} />
+                <Route path="/admin/rag" element={shell(<RAGInspector />, ['RESEARCHER_ADMIN'])} />
+                <Route path="/admin" element={shell(<AdminDashboard />, ['RESEARCHER_ADMIN'])} />
 
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
           </Router>
         </AuthProvider>
         </CelebrateProvider>

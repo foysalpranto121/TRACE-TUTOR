@@ -166,7 +166,7 @@ export const Profile = () => {
               {avatarBusy ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Camera className="w-5 h-5" />{bn ? 'ছবি বদলান' : 'Change'}</>}
             </span>
           </button>
-          <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => handleAvatarFile(e.target.files?.[0])} data-testid="avatar-input" />
+          <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" aria-label="Choose a profile picture" onChange={(e) => handleAvatarFile(e.target.files?.[0])} data-testid="avatar-input" />
           <div className="flex items-center gap-1">
             <button type="button" onClick={() => fileInput.current?.click()} disabled={avatarBusy} className="px-2 py-1 rounded-lg bg-surface-container-high border border-outline-variant/40 text-[10px] font-bold flex items-center gap-1 hover:border-primary/40 press disabled:opacity-50">
               <Upload className="w-3 h-3 text-primary" /> {bn ? 'আপলোড' : 'Upload'}

@@ -366,10 +366,11 @@ export const ExpertPortal = () => {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-bold text-on-surface uppercase tracking-wider block">
+                      <label htmlFor="cvi-feedback" className="text-[11px] font-bold text-on-surface uppercase tracking-wider block">
                         এক্সপার্ট মন্তব্য (Expert comments)
                       </label>
                       <textarea
+                        id="cvi-feedback"
                         rows="3"
                         value={cviFeedback}
                         onChange={(e) => setCviFeedback(e.target.value)}
@@ -550,13 +551,14 @@ export const ExpertPortal = () => {
                       )}
 
                       <div className="space-y-2">
-                        <label className="text-xs font-extrabold text-on-surface uppercase tracking-wider flex justify-between gap-2">
+                        <label htmlFor="assigned-marks" className="text-xs font-extrabold text-on-surface uppercase tracking-wider flex justify-between gap-2">
                           <span>প্রদত্ত নম্বর (Assigned marks)</span>
                           <span className="text-primary font-mono text-sm">
                             {assignedMarks === '' ? 'অনির্ধারিত' : `${assignedMarks} / ${activeSub.max_marks ?? 100}`}
                           </span>
                         </label>
                         <input
+                          id="assigned-marks"
                           type="number"
                           min="0"
                           max="100"
@@ -568,10 +570,11 @@ export const ExpertPortal = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-xs font-extrabold text-on-surface uppercase tracking-wider block">
+                        <label htmlFor="teacher-feedback" className="text-xs font-extrabold text-on-surface uppercase tracking-wider block">
                           গুণগত মতামত (Qualitative feedback)
                         </label>
                         <textarea
+                          id="teacher-feedback"
                           rows="4"
                           value={teacherFeedback}
                           onChange={(e) => setTeacherFeedback(e.target.value)}

@@ -223,7 +223,7 @@ export const AppShell = ({ children }) => {
 
           <div className="flex-1 md:flex-none md:w-72 flex items-center bg-surface-container rounded-xl px-3 py-2 border border-outline-variant/40 focus-within:border-primary/60 transition-colors">
             <Search className="w-3.5 h-3.5 text-on-surface-variant mr-2 shrink-0" />
-            <input type="text" placeholder="টপিক বা টাস্ক খুঁজুন..." className="bg-transparent border-none outline-none text-xs w-full placeholder:text-outline" />
+            <input type="text" placeholder="টপিক বা টাস্ক খুঁজুন..." aria-label="টপিক বা টাস্ক খুঁজুন (search topics or tasks)" className="bg-transparent border-none outline-none text-xs w-full placeholder:text-outline" />
           </div>
 
           <div className="flex items-center gap-2 shrink-0">

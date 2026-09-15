@@ -227,6 +227,7 @@ export const ReasoningTracePanel = ({
           value={queryText}
           onChange={(e) => setQueryText(e.target.value)}
           placeholder="Ask about your code, an error, or an NCTB concept..."
+          aria-label="Ask the tutor about your code, an error, or an NCTB concept"
           className="flex-1 bg-surface-container text-on-surface text-xs rounded-xl px-3.5 py-2 border border-outline-variant/30 outline-none focus:border-primary"
         />
         <button type="submit" disabled={!queryText.trim() || isLoading} className="px-4 py-2 rounded-xl bg-primary text-on-primary font-bold text-xs shadow-md disabled:opacity-40 transition-all shrink-0">

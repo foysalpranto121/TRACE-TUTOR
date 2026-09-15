@@ -98,13 +98,17 @@ pip install -r requirements.txt
 pip install Pillow              # required for avatar uploads
 ```
 
-Create `backend/.env` (see [Configuration](#configuration)), then:
+Create `backend/.env` from the template (see [Configuration](#configuration)), then:
 
 ```bash
+cp .env.example .env            # then fill in GEMINI_API_KEY and STAFF_ACCESS_CODE
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver 8000
 ```
+
+> `DEBUG` defaults to **off**. Set `DEBUG=1` in `backend/.env` for local development, or the
+> server will demand a real `SECRET_KEY` and mark cookies TLS-only.
 
 ### 2. Frontend
 
@@ -126,26 +130,38 @@ Students register directly. Teacher and researcher accounts require the staff ac
 
 ## Configuration
 
-Create `backend/.env`. **Never commit this file** — it is excluded by `.gitignore`.
+Copy `backend/.env.example` to `backend/.env` and fill it in. **Never commit `.env`** — it is excluded by `.gitignore`.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `SECRET_KEY` | *(insecure dev key)* | Django secret. **Set a real one before any deployment.** |
+| `GEMINI_API_KEY` | — | **Required.** Tutor, OCR and embeddings |
+| `STAFF_ACCESS_CODE` | *(empty)* | Required to register a teacher or researcher account. Empty means staff registration is **refused**, never "any code will do". |
+| `DEBUG` | `0` | `1` for local development. Drives error pages, host checking, CORS and media serving. |
+| `SECRET_KEY` | — | **Required when `DEBUG=0`** — the server refuses to start without it. Signs sessions and the research device cookie. |
+| `ALLOWED_HOSTS` | `localhost,127.0.0.1` | Comma-separated hostnames Django will answer to |
+| `HTTPS_ONLY` | `not DEBUG` | TLS-only cookies + http→https redirect. **Set `0` for a plain-http lab server** or nobody can log in. |
+| `BEHIND_TLS_PROXY` | `0` | Set when a reverse proxy terminates TLS and forwards `X-Forwarded-Proto` |
+| `SERVE_MEDIA` | `= DEBUG` | Let Django serve `backend/media/` (avatars) |
+| `CSRF_TRUSTED_ORIGINS` | `http://localhost:3000,...` | Comma-separated |
+| `CORS_ALLOWED_ORIGINS` | *(= CSRF origins)* | Ignored when `DEBUG=1`, which allows all origins |
 | `USE_POSTGRES` | `0` | `1` for PostgreSQL, `0` for the SQLite fallback |
 | `DB_NAME` | `trace_tutor_db` | Database name |
 | `DB_USER` / `DB_PASSWORD` | `postgres` / `postgres` | Credentials |
 | `DB_HOST` / `DB_PORT` | `localhost` / `5432` | Connection |
-| `GEMINI_API_KEY` | — | **Required.** Tutor, OCR and embeddings |
 | `GEMINI_MODEL` | `gemini-3.6-flash` | Generation model. Pin this for a study. |
 | `GEMINI_FALLBACK_MODELS` | `gemini-3.5-flash,gemini-3.1-flash-lite` | Tried on quota or availability errors. **Set empty for a controlled study** — see below. |
 | `GEMINI_EMBED_MODEL` | `gemini-embedding-001` | Embedding model |
 | `GEMINI_EMBED_DIMENSIONS` | `768` | Embedding size |
-| `STAFF_ACCESS_CODE` | `TRACE-STAFF-2026` | Required to register a teacher or researcher account |
 | `TUTOR_ANSWER_CACHE_SECONDS` | `604800` | How long identical tutor answers are reused |
-| `CSRF_TRUSTED_ORIGINS` | `http://localhost:3000,...` | Comma-separated |
 | `C_COMPILER` | *(auto-detect)* | Override the compiler executable |
 
 > **For experimental runs, set `GEMINI_FALLBACK_MODELS=`** (empty). The fallback chain protects availability, but a participant served by a different model is a confound.
+
+### Rate limits
+
+The expensive endpoints are throttled per user (`backend/trace_backend/throttles.py`): the tutor
+at 30/min, code execution at 60/min, and curriculum ingestion at 5/hour. Anonymous callers get
+60/min and can only reach register/login.
 
 ---
 
@@ -218,7 +234,12 @@ All endpoints are prefixed `/api/`.
 | `POST` | `curriculum/search/` · `ingest/` | Retrieval and index building |
 | `GET` | `curriculum/status/` · `passages/` | Index inspection |
 | `GET` `POST` | `expert/reviews/` · `rating/` | Content-validity survey |
-| `GET` | `admin/stats/` | Researcher aggregates |
+| `GET` | `admin/stats/` | Researcher aggregates, computed from the collected data |
+| `GET` | `admin/export/` | Streams the per-participant dataset as CSV |
+
+Everything except `accounts/register/` and `accounts/login/` requires a token. `curriculum/search/`
+and `curriculum/passages/` are staff-only; `curriculum/ingest/`, `admin/stats/` and `admin/export/`
+are researcher-only.
 
 ---
 
@@ -246,11 +267,23 @@ All endpoints are prefixed `/api/`.
 
 This platform is built for **local, single-site, proctored use**. Read this before exposing it on a network.
 
-- **The code runner executes untrusted code without a sandbox.** `POST /api/code/run/` compiles and runs submitted C, C++ and Python as the server user. On a public URL this is a remote-code-execution endpoint. Put it behind authentication and a container sandbox before any internet-facing deployment.
-- **`DEBUG` is currently hardcoded on**, which means detailed error pages, permissive hosts, and cookies without the `Secure` flag. Drive it from the environment before deploying.
-- **Several endpoints are open** so the platform runs without friction on a closed network. They need authentication before public exposure.
-- **Participant data.** `backend/media/` (uploaded images) and `backend/.env` (keys and passwords) are excluded from version control. Keep the database on institutional hardware if your ethics approval says so.
+- **The code runner still executes untrusted code without a sandbox.** `POST /api/code/run/` compiles and runs submitted C, C++ and Python as the server user. It now requires authentication and is rate limited, but authentication is not containment: a participant who can log in can run arbitrary code on the server. **Put it in a container with no network and a memory cap before any internet-facing deployment.**
+- **Every endpoint requires authentication** except register and login, and DRF's default permission is `IsAuthenticated`, so a new view is private unless it opts out. Role gates (`backend/accounts/permissions.py`) fail closed.
+- **`DEBUG` defaults to off** and is read from the environment. With `DEBUG=0` the server refuses to start without a real `SECRET_KEY`, pins `ALLOWED_HOSTS` and CORS, and marks cookies `Secure` unless you set `HTTPS_ONLY=0`.
+- **Participant data.** `backend/media/` (uploaded images) and `backend/.env` (keys and passwords) are excluded from version control. The CSV export identifies people only by `participant_code`; no name, email or school reaches it. Keep the database on institutional hardware if your ethics approval says so.
 - **Third-party processing.** Prompts, student code and retrieval queries are sent to the model provider to generate a tutor turn. Student code is *executed* locally and never sent anywhere. No participant names or research codes appear in prompts.
+
+### Study-integrity guarantees
+
+These are enforced server-side and covered by tests (`python manage.py test`):
+
+- A participant's **arm is fixed at enrolment**. The profile endpoint refuses to change it; only staff accounts, who are not participants, can switch their own tutor mode to preview both.
+- Allocation is **balanced under concurrency** — the count is read under a row lock inside the registration transaction.
+- **Papers unlock in protocol order.** A participant can open the forms they have sat plus the next one; requesting `?type=withdrawal` early returns 403. Staff see the whole bank for review.
+- **Telemetry identity is unforgeable.** The participant and the arm come from the authenticated session and the server-side profile; `user_id`, `username` and `arm` in a request body are discarded.
+- **The dashboard only ever describes the caller**, and study-wide totals are visible to staff only.
+- **Scores are computed server-side.** A `score` in a submission body is ignored.
+- **Nothing on the researcher dashboard is fabricated.** An outcome the data cannot support is returned as `null` with a note, and rendered as an em dash.
 
 ---
 
@@ -264,8 +297,10 @@ Active research software, not a finished product.
 | Assessment forms and item bank | Authored; expert certification pending |
 | Interaction telemetry | Working; time-on-task and edit-tracking in progress |
 | Expert portal | Rating interface working; CVI computation in progress |
-| Researcher dashboard | Descriptive aggregates; CSV export in progress |
-| Production hardening | Not started — see [Security and deployment](#security-and-deployment) |
+| Researcher dashboard | Working — real aggregates, Welch's *t* and Cohen's *d* computed from the data |
+| Dataset export | Working — `GET /api/admin/export/` streams one pseudonymous row per participant |
+| Access control and rate limiting | Working; 184 backend tests cover the gates |
+| Code-runner sandboxing | **Not started** — see [Security and deployment](#security-and-deployment) |
 
 ---
 

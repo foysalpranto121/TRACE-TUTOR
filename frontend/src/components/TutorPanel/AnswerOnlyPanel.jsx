@@ -114,6 +114,7 @@ export const AnswerOnlyPanel = ({
           value={queryText}
           onChange={(e) => setQueryText(e.target.value)}
           placeholder="Ask for the direct solution or fix..."
+          aria-label="Ask the tutor for the direct solution or fix"
           className="flex-1 bg-surface-container rounded-xl px-4 py-2.5 text-xs text-on-surface font-medium placeholder:text-outline border border-outline-variant/30 focus:border-amber-500 outline-none shadow-sm"
         />
         <button type="submit" disabled={!queryText.trim() || isLoading} className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-md disabled:opacity-50 transition-all">

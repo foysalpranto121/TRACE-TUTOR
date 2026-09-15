@@ -1,14 +1,32 @@
-Django>=5.0,<6.0
-djangorestframework>=3.15.0
-django-cors-headers>=4.4.0
-psycopg2-binary>=2.9.9
-google-genai>=0.1.1
-chromadb>=0.5.0
-sentence-transformers>=3.0.0
-numpy>=1.26.0
-requests>=2.31.0
-python-dotenv>=1.0.1
-pypdf>=4.0.0
-ziglang>=0.13.0
-html5lib>=1.1
-beautifulsoup4>=4.12.0
+# Exact versions, deliberately.
+#
+# This platform is the instrument for a controlled experiment: a run has to be
+# reproducible months later, and a silent minor-version bump in the model client or the
+# vector store is a confound nobody would think to look for. Bump these on purpose,
+# re-run `python manage.py test`, and note the change in the study log.
+#
+# Verified against Python 3.11-3.13.
+
+# --- web framework -----------------------------------------------------------
+Django==5.2.17
+djangorestframework==3.18.1
+django-cors-headers==4.9.0
+python-dotenv==1.2.2
+
+# --- database ----------------------------------------------------------------
+psycopg2-binary==2.9.12        # PostgreSQL driver; unused when USE_POSTGRES=0
+
+# --- model client, retrieval -------------------------------------------------
+google-genai==2.23.0           # tutor generation, OCR transcription, embeddings
+chromadb==1.5.9                # embedded vector store for the curriculum index
+
+# --- ingestion ---------------------------------------------------------------
+pypdf==5.6.1                   # splits scanned textbooks into per-page batches for OCR
+
+# --- code execution and checking ---------------------------------------------
+ziglang==0.16.0                # pip-installable clang, so lab machines need no toolchain
+html5lib==1.1                  # real HTML5 parse errors for the student HTML tasks
+beautifulsoup4==4.15.0         # CSS-selector checks against submitted HTML
+
+# --- media -------------------------------------------------------------------
+pillow==12.2.0                 # avatar upload: EXIF transpose, square crop, WebP encode

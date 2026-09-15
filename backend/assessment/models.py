@@ -60,7 +60,16 @@ class ExamSubmission(models.Model):
     exam_type = models.CharField(max_length=20)
     score_pct = models.IntegerField()
     answers = models.JSONField(default=dict)
-    submitted_at = models.DateTimeField(auto_now_add=True)
+    submitted_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-submitted_at']
+        indexes = [
+            # analytics._first_submissions() walks exactly this ordering, and the paper
+            # access gate asks "which forms has this participant already submitted?".
+            models.Index(fields=['student', 'exam_type', 'submitted_at'],
+                         name='submission_student_exam_idx'),
+        ]
 
 
 class ExpertGrade(models.Model):

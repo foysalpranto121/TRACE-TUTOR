@@ -172,6 +172,7 @@ export const RAGInspector = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search NCTB concepts in Bangla (লুপ) or English (for loop)..."
+              aria-label="Search NCTB curriculum passages"
               className="bg-transparent border-none outline-none text-sm text-on-surface w-full placeholder:text-outline"
             />
           </div>

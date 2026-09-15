@@ -3,6 +3,20 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        // Split the heavy third-party libraries out of the app chunk. Recharts in
+        // particular is only used on the two researcher screens, so it should not be
+        // part of what a student downloads to reach the workspace.
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          charts: ['recharts'],
+          editor: ['@monaco-editor/react'],
+        },
+      },
+    },
+  },
   server: {
     port: 3000,
     open: true,

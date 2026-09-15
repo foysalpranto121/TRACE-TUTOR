@@ -659,10 +659,13 @@ export const AssessmentPage = () => {
             {/* Interactive Workspace Code Editor for Coding Tasks */}
             {(currentItem.type === 'c_programming' || currentItem.type === 'html_coding') ? (
               <div className="space-y-2">
-                <label className="text-xs font-mono font-bold text-on-surface flex flex-wrap items-center justify-between gap-2">
-                  <span className="flex items-center gap-1.5">
+                {/* A row, not a <label>: the Run button is itself labelable, so wrapping
+                    both in one label attached the caption to the button instead of to
+                    the code box. The caption now points at the textarea explicitly. */}
+                <div className="text-xs font-mono font-bold text-on-surface flex flex-wrap items-center justify-between gap-2">
+                  <label htmlFor={`code-answer-${currentItem.id}`} className="flex items-center gap-1.5">
                     <Code className="w-4 h-4 text-primary" /> Write Your Code Solution ({currentItem.type === 'html_coding' ? 'HTML Markup' : 'C Language'}):
-                  </span>
+                  </label>
                   <Button
                     variant="surface"
                     size="sm"
@@ -674,8 +677,9 @@ export const AssessmentPage = () => {
                       ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> চলছে... (Running)</>
                       : <><Play className="w-3.5 h-3.5 text-primary" /> রান করুন (Run)</>}
                   </Button>
-                </label>
+                </div>
                 <textarea
+                  id={`code-answer-${currentItem.id}`}
                   rows={8}
                   value={userCodeAnswers[currentItem.id] !== undefined ? userCodeAnswers[currentItem.id] : currentItem.code_snippet}
                   onChange={(e) => handleCodeChange(currentItem.id, e.target.value)}
@@ -1049,6 +1053,7 @@ export const AssessmentPage = () => {
                   onChange={(e) => setInputQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSendAiMessage()}
                   placeholder="Ask AI Assistant for help, hints or logic..."
+                  aria-label="Ask the AI assistant for help, hints or logic"
                   className="flex-1 bg-surface-container-lowest text-on-surface text-xs rounded-xl px-3.5 py-2.5 border border-outline-variant/30 outline-none focus:border-primary"
                 />
                 <button
