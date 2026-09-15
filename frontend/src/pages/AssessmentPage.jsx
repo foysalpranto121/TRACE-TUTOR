@@ -102,10 +102,6 @@ export const AssessmentPage = () => {
   const chatContainerRef = useRef(null);
 
   useEffect(() => {
-    loadItems(examType);
-  }, [examType, loadItems]);
-
-  useEffect(() => {
     // Reset AI Assistant Chat when the exam phase changes. Deliberately NOT keyed on the current
     // question - navigating between questions must not wipe the conversation.
     setChatMessages([welcomeMessage(examType)]);
@@ -153,6 +149,13 @@ export const AssessmentPage = () => {
     }
   }, []);
 
+  // Declared after loadItems on purpose: the dependency array is evaluated during
+  // render, so placing this above the useCallback threw "Cannot access 'loadItems'
+  // before initialization" and took the whole assessment page down.
+  useEffect(() => {
+    loadItems(examType);
+  }, [examType, loadItems]);
+
   // Derived, not stored: keeping a second copy of the list in state meant every loader
   // had to remember to re-filter it, and made loadItems depend on the selected chapter.
   const filteredItems = useMemo(() => {
@@ -166,15 +169,15 @@ export const AssessmentPage = () => {
     setCurrentIndex(0);
   };
 
-  const handleSelectOption = (questionId, optionId) => {
-    handleOptionSelect(questionId, optionId);
-  };
-
   const handleOptionSelect = (questionId, optionKey) => {
     setSelectedAnswers((prev) => ({
       ...prev,
       [questionId]: optionKey,
     }));
+  };
+
+  const handleSelectOption = (questionId, optionId) => {
+    handleOptionSelect(questionId, optionId);
   };
 
   const handleCodeChange = (questionId, code) => {

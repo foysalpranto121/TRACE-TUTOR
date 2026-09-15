@@ -15,7 +15,8 @@ STRONG = 'Str0ng-Pass-2026'
 
 def enrol(username, role='STUDENT', arm='REASONING_VISIBLE'):
     user = User.objects.create_user(username=username, password=STRONG)
-    ParticipantProfile.objects.create(user=user, role=role, assigned_arm=arm, consent_given=True)
+    ParticipantProfile.objects.create(user=user, role=role, assigned_arm=arm, enrolled_arm=arm,
+                                      consent_given=True)
     return user, APIClient(HTTP_AUTHORIZATION='Token ' + Token.objects.create(user=user).key)
 
 
@@ -116,26 +117,67 @@ class ArmAllocationTests(ApiTestCase):
         self.assertIn(ParticipantProfile.balanced_arm(), ('REASONING_VISIBLE', 'ANSWER_ONLY'))
 
 
-class ArmLockTests(ApiTestCase):
-    """The arm is the experiment's independent variable; a participant must not move."""
+class ArmSwitchTests(ApiTestCase):
+    """The arm is the experiment's independent variable. Whether a participant may move
+    between conditions is a study setting (ARM_SELF_SELECT); the allocation of record
+    never changes either way, and every switch is logged with who made it."""
 
     def setUp(self):
         super().setUp()
         self.student_user, self.student = enrol('stu', arm='ANSWER_ONLY')
         self.teacher_user, self.teacher = enrol('tea', role='EXPERT_TEACHER', arm='ANSWER_ONLY')
 
-    def test_a_participant_cannot_switch_arm(self):
-        response = self.student.patch('/api/accounts/profile/',
-                                      {'assigned_arm': 'REASONING_VISIBLE'}, format='json')
+    def switch(self, client, arm):
+        return client.patch('/api/accounts/profile/', {'assigned_arm': arm}, format='json')
+
+    @override_settings(ARM_SELF_SELECT=True)
+    def test_a_participant_may_switch_when_the_study_allows_it(self):
+        response = self.switch(self.student, 'REASONING_VISIBLE')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['arm'], 'REASONING_VISIBLE')
+        self.student_user.profile.refresh_from_db()
+        self.assertEqual(self.student_user.profile.assigned_arm, 'REASONING_VISIBLE')
+
+    @override_settings(ARM_SELF_SELECT=True)
+    def test_every_switch_is_logged_with_who_made_it(self):
+        from logging_app.models import InteractionLog
+        self.switch(self.student, 'REASONING_VISIBLE')
+        event = InteractionLog.objects.get(user=self.student_user, event_type='ARM_SWITCH')
+        self.assertEqual((event.payload['from'], event.payload['to']), ('ANSWER_ONLY', 'REASONING_VISIBLE'))
+        self.assertTrue(event.payload['self_selected'])
+        self.assertEqual(event.payload['enrolled_arm'], 'ANSWER_ONLY')
+        self.assertEqual(event.arm, 'REASONING_VISIBLE', 'the event carries the arm after the switch')
+
+    @override_settings(ARM_SELF_SELECT=True)
+    def test_switching_never_changes_the_arm_of_record(self):
+        self.switch(self.student, 'REASONING_VISIBLE')
+        self.switch(self.student, 'ANSWER_ONLY')
+        self.switch(self.student, 'REASONING_VISIBLE')
+        self.student_user.profile.refresh_from_db()
+        self.assertEqual(self.student_user.profile.enrolled_arm, 'ANSWER_ONLY')
+        self.assertEqual(self.student.get('/api/accounts/me/').json()['enrolled_arm'], 'ANSWER_ONLY')
+
+    @override_settings(ARM_SELF_SELECT=False)
+    def test_a_participant_cannot_switch_when_the_study_locks_it(self):
+        response = self.switch(self.student, 'REASONING_VISIBLE')
         self.assertEqual(response.status_code, 400)
         self.assertIn('assigned_arm', response.json()['fields'])
         self.student_user.profile.refresh_from_db()
         self.assertEqual(self.student_user.profile.assigned_arm, 'ANSWER_ONLY')
 
-    def test_even_re_asserting_the_current_arm_is_refused(self):
-        response = self.student.patch('/api/accounts/profile/',
-                                      {'assigned_arm': 'ANSWER_ONLY'}, format='json')
-        self.assertEqual(response.status_code, 400)
+    @override_settings(ARM_SELF_SELECT=False)
+    def test_staff_may_switch_even_when_participants_are_locked(self):
+        response = self.switch(self.teacher, 'REASONING_VISIBLE')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['arm'], 'REASONING_VISIBLE')
+
+    def test_the_session_reports_whether_switching_is_allowed(self):
+        with override_settings(ARM_SELF_SELECT=True):
+            self.assertTrue(self.student.get('/api/accounts/me/').json()['arm_self_select'])
+        with override_settings(ARM_SELF_SELECT=False):
+            self.assertFalse(self.student.get('/api/accounts/me/').json()['arm_self_select'])
+            self.assertTrue(self.teacher.get('/api/accounts/me/').json()['arm_self_select'],
+                            'staff are not participants')
 
     def test_a_participant_can_still_edit_their_other_profile_fields(self):
         response = self.student.patch('/api/accounts/profile/',
@@ -144,16 +186,20 @@ class ArmLockTests(ApiTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['school_name'], 'Dhaka College')
 
-    def test_staff_may_switch_their_own_mode_to_preview_both(self):
-        response = self.teacher.patch('/api/accounts/profile/',
-                                      {'assigned_arm': 'REASONING_VISIBLE'}, format='json')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['arm'], 'REASONING_VISIBLE')
+    def test_an_unknown_mode_is_refused(self):
+        self.assertEqual(self.switch(self.teacher, 'MAGIC').status_code, 400)
+        with override_settings(ARM_SELF_SELECT=True):
+            self.assertEqual(self.switch(self.student, 'MAGIC').status_code, 400)
 
-    def test_an_unknown_mode_is_refused_even_for_staff(self):
-        response = self.teacher.patch('/api/accounts/profile/',
-                                      {'assigned_arm': 'MAGIC'}, format='json')
-        self.assertEqual(response.status_code, 400)
+    def test_allocation_balance_counts_enrolment_not_later_switches(self):
+        """Ten participants enrolled ANSWER_ONLY who all switch must not make the next
+        enrolment land in ANSWER_ONLY to 'rebalance' a move that never happened."""
+        with override_settings(ARM_SELF_SELECT=True):
+            for i in range(3):
+                user, client = enrol(f'mover{i}', arm='ANSWER_ONLY')
+                self.switch(client, 'REASONING_VISIBLE')
+        # Enrolled: stu + 3 movers = 4 ANSWER_ONLY, 0 REASONING_VISIBLE -> next is REASONING_VISIBLE.
+        self.assertEqual(ParticipantProfile.balanced_arm(), 'REASONING_VISIBLE')
 
 
 class ProfileTests(ApiTestCase):

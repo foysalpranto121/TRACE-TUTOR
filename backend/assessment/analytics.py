@@ -24,10 +24,13 @@ EXAM_TYPES = ('pre', 'post', 'transfer', 'withdrawal')
 ARMS = ('REASONING_VISIBLE', 'ANSWER_ONLY')
 
 # Telemetry events summarised per participant in the export.
-COUNTED_EVENTS = ('HELP_REQUEST', 'CODE_RESULT', 'COPY_PASTE')
+COUNTED_EVENTS = ('HELP_REQUEST', 'CODE_RESULT', 'COPY_PASTE', 'ARM_SWITCH')
 
+# `arm` is the arm allocated at enrolment - the intent-to-treat grouping every outcome
+# is compared by. `current_arm` and `arm_switches` are there so a per-protocol view can
+# be built from the same file.
 CSV_COLUMNS = [
-    'participant_code', 'arm', 'withdrawn', 'consent_given', 'grade', 'medium', 'area_type',
+    'participant_code', 'arm', 'current_arm', 'arm_switches', 'withdrawn', 'consent_given', 'grade', 'medium', 'area_type',
     'prior_experience', 'ai_tool_familiarity',
     'pre', 'post', 'transfer', 'withdrawal',
     'normalized_gain', 'withdrawal_drop',
@@ -235,7 +238,9 @@ def participant_rows():
 
         row = {
             'participant_code': profile.participant_code or f'unassigned-{profile.pk}',
-            'arm': profile.assigned_arm,
+            'arm': profile.enrolled_arm or profile.assigned_arm,
+            'current_arm': profile.assigned_arm,
+            'arm_switches': counts.get('ARM_SWITCH', 0),
             # A withdrawn participant stays in the export as a row of nulls so the
             # enrolment denominator is visible; everything they generated is gone.
             'withdrawn': bool(profile.withdrawn_at),
@@ -293,6 +298,9 @@ def study_stats():
     return {
         'total_participants': len(rows),
         'withdrawn_participants': sum(1 for r in rows if r['withdrawn']),
+        # Outcomes are grouped by the arm allocated at enrolment (intent-to-treat).
+        'arm_basis': 'enrolled',
+        'switched_participants': sum(1 for r in rows if r['arm_switches']),
         'consented_participants': sum(1 for r in rows if r['consent_given']),
         'staff_accounts': staff,
         'arms': arm_counts,

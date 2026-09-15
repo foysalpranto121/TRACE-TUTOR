@@ -36,6 +36,10 @@ def serialize_user(user, profile):
         'full_name': profile.full_name or user.first_name or user.username,
         'role': profile.role,
         'arm': profile.assigned_arm,
+        'enrolled_arm': profile.enrolled_arm or profile.assigned_arm,
+        # Whether this account may change its tutor mode: staff always, participants
+        # only while the study allows it. The UI shows a switch or a lock accordingly.
+        'arm_self_select': profile.role in STAFF_ROLES or bool(settings.ARM_SELF_SELECT),
         'language': profile.preferred_language,
         'participant_code': profile.participant_code,
         'consent_given': profile.consent_given,
@@ -147,11 +151,13 @@ def register_view(request):
     # profile, hence no arm) can never reach the dataset.
     with transaction.atomic():
         user = User.objects.create_user(username=username, email=email, password=password, first_name=full_name[:150])
+        arm = ParticipantProfile.balanced_arm() if role == 'STUDENT' else 'REASONING_VISIBLE'
         profile = ParticipantProfile(
             user=user,
             role=role,
             full_name=full_name[:150],
-            assigned_arm=ParticipantProfile.balanced_arm() if role == 'STUDENT' else 'REASONING_VISIBLE',
+            assigned_arm=arm,
+            enrolled_arm=arm,  # the allocation of record; assigned_arm may move later
         )
         _apply_profile_fields(profile, data)
         profile.full_name = full_name[:150]
@@ -226,16 +232,16 @@ def profile_view(request):
         if 'full_name' in data and not (data.get('full_name') or '').strip():
             errors['full_name'] = 'Full name cannot be empty.'
 
-        # The arm is the independent variable of a between-subjects experiment: it is
-        # randomly allocated at enrolment and a participant must not be able to move
-        # themselves into the other condition. Staff accounts are not participants, so
-        # they may still flip their own mode to preview both tutor experiences.
+        # The arm is the independent variable of a between-subjects experiment. Whether
+        # a participant may move between conditions is a study setting (ARM_SELF_SELECT);
+        # the allocation of record (enrolled_arm) is immutable regardless, and every
+        # switch is logged. Staff accounts are not participants and may always switch.
         arm_switch = None
         if 'assigned_arm' in data:
             arm = str(data.get('assigned_arm') or '').upper()
-            if profile.role not in STAFF_ROLES:
+            if profile.role not in STAFF_ROLES and not settings.ARM_SELF_SELECT:
                 errors['assigned_arm'] = (
-                    'Your tutor mode is assigned at enrolment and cannot be changed. '
+                    'Your tutor mode is assigned at enrolment and is fixed for this study. '
                     'Contact the research coordinator if you believe it is wrong.'
                 )
             elif arm not in VALID_ARMS:
@@ -252,7 +258,9 @@ def profile_view(request):
             InteractionLog.objects.create(
                 user=user, event_type='ARM_SWITCH', arm=arm_switch[1],
                 payload={'from': arm_switch[0], 'to': arm_switch[1], 'source': 'profile',
-                         'role': profile.role, 'device_id': getattr(request, 'device_id', None)},
+                         'role': profile.role, 'self_selected': profile.role not in STAFF_ROLES,
+                         'enrolled_arm': profile.enrolled_arm or arm_switch[0],
+                         'device_id': getattr(request, 'device_id', None)},
             )
         _apply_profile_fields(profile, data)
         if 'full_name' in data:

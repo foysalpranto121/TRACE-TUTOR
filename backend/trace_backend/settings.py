@@ -148,6 +148,12 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# May a participant switch tutor mode after enrolment? The arm they were allocated is
+# recorded permanently either way (ParticipantProfile.enrolled_arm) and the analysis
+# compares by that, intent-to-treat; every switch is logged and counted in the export.
+# Set 0 for a controlled run where participants must stay in their allocated condition.
+ARM_SELF_SELECT = env_flag('ARM_SELF_SELECT', default=True)
+
 # Teachers and researchers must present this code at registration; students never see it.
 # No default: a committed fallback is public the moment the repository is, and this code is
 # what stands between a stranger and every exam paper plus all participant data. Unset means

@@ -39,6 +39,12 @@ export default [
         ignoreRestSiblings: true,
       }],
 
+      // A `const` referenced in a hook dependency array above its declaration is a
+      // temporal-dead-zone ReferenceError at render time - lint and the build both
+      // passed while /assessment crashed on load that way. Function declarations are
+      // hoisted and exempt; callbacks that reference a later const are ordered instead.
+      'no-use-before-define': ['error', { functions: false, classes: true, variables: true, allowNamedExports: true }],
+
       // Derive state during render rather than writing it from an effect; see
       // hooks/useResetOnChange.js for the pattern this codebase uses.
       'react-hooks/set-state-in-effect': 'error',

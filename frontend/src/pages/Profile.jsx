@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useResetOnChange } from '../hooks/useResetOnChange';
 import { apiService } from '../services/api';
-import { User, School, BookOpen, ShieldCheck, KeyRound, Save, Loader2, CheckCircle2, AlertTriangle, Fingerprint, Calendar, Mail, Brain, Bot, Check, Palette, Sun, Moon, Sparkles, Camera, Trash2, Upload, Download, LogOut } from 'lucide-react';
+import { User, School, BookOpen, ShieldCheck, KeyRound, Save, Loader2, CheckCircle2, AlertTriangle, Fingerprint, Calendar, Mail, Brain, Bot, Check, Palette, Sun, Moon, Sparkles, Camera, Trash2, Upload, Download, LogOut, Lock } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { useTheme, FX_LEVELS } from '../context/useTheme';
 import { TextField, PasswordField, SelectField, ChipGroup, StrengthMeter } from '../components/Form/fields';
@@ -80,6 +80,10 @@ export const Profile = () => {
   const { theme, setTheme, fxChoice, setFx, systemReducedMotion } = useTheme();
   const bn = language === 'bn';
   const isStudent = user?.role === 'STUDENT';
+  // Participants may switch tutor mode while the study allows self-selection (the server
+  // reports arm_self_select); a controlled run locks it and the section goes read-only.
+  const armLocked = isStudent && user?.arm_self_select === false;
+  const assignedOpt = ARM_OPTIONS.find((o) => o.id === user?.arm) || ARM_OPTIONS[0];
   const [form, setForm] = useState(() => fromUser(user));
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
@@ -251,12 +255,30 @@ export const Profile = () => {
         </div>
       )}
 
-      {/* Tutor mode - switchable, and every change is written to the research log */}
+      {/* Tutor mode. Switchable while the study allows self-selection; read-only when a
+          controlled run locks it (the server refuses the change too). Staff always switch. */}
       <Section
         icon={<Brain className="w-4 h-4 text-primary" />}
         title={bn ? 'টিউটর মোড' : 'Tutor mode'}
-        subtitle={bn ? 'AI টিউটর আপনাকে কীভাবে সাহায্য করবে তা বেছে নিন' : 'Choose how the AI tutor helps you'}
+        subtitle={armLocked
+          ? (bn ? 'গবেষণার জন্য নির্ধারিত' : 'Assigned for the study')
+          : (bn ? 'AI টিউটর আপনাকে কীভাবে সাহায্য করবে তা বেছে নিন' : 'Choose how the AI tutor helps you')}
       >
+        {armLocked ? (
+          <div className="p-4 rounded-2xl border bg-primary/10 border-primary shadow-glow-sm">
+            <div className="flex items-center gap-2 mb-1.5">
+              {assignedOpt.id === 'REASONING_VISIBLE'
+                ? <Brain className="w-4 h-4 text-primary" />
+                : <Bot className="w-4 h-4 text-primary" />}
+              <span className="text-sm font-extrabold font-display">{bn ? assignedOpt.bn : assignedOpt.title}</span>
+              <span className="ml-auto flex items-center gap-1 text-[10px] font-mono font-bold text-on-surface-variant">
+                <Lock className="w-3 h-3" />{bn ? 'নির্ধারিত' : 'assigned'}
+              </span>
+            </div>
+            <p className="text-[11px] text-on-surface-variant leading-relaxed">{bn ? assignedOpt.desc_bn : assignedOpt.desc_en}</p>
+            <p className="text-[10px] font-mono text-on-surface-variant/70 mt-1.5">{assignedOpt.title}</p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {ARM_OPTIONS.map((opt) => {
             const active = user.arm === opt.id;
@@ -285,10 +307,19 @@ export const Profile = () => {
             );
           })}
         </div>
+        )}
         <p className="text-[11px] text-on-surface-variant mt-3 leading-relaxed">
-          {bn
-            ? 'নিবন্ধনের সময় একটি মোড এলোমেলোভাবে নির্ধারিত হয়েছিল। আপনি চাইলে যেকোনো সময় পরিবর্তন করতে পারেন — প্রতিটি পরিবর্তন গবেষণার রেকর্ডে সময়সহ সংরক্ষিত হয়।'
-            : 'A mode was assigned at random when you registered. You can switch at any time — each change is stored with a timestamp in the research log.'}
+          {armLocked
+            ? (bn
+              ? 'নিবন্ধনের সময় আপনার টিউটর মোড এলোমেলোভাবে নির্ধারিত হয়েছে এবং গবেষণা চলাকালে তা অপরিবর্তিত থাকবে — দুই মোডের তুলনাই এই গবেষণার বিষয়। ভুল মনে হলে গবেষণা সমন্বয়কের সাথে যোগাযোগ করুন।'
+              : 'Your tutor mode was allocated at random when you enrolled and stays fixed for the study - the comparison between the two modes is what the study measures. If you believe it is wrong, contact the research coordinator.')
+            : isStudent
+              ? (bn
+                ? 'নিবন্ধনের সময় একটি মোড এলোমেলোভাবে নির্ধারিত হয়েছিল। আপনি চাইলে যেকোনো সময় পরিবর্তন করতে পারেন — প্রতিটি পরিবর্তন গবেষণার রেকর্ডে সময়সহ সংরক্ষিত হয়।'
+                : 'A mode was assigned at random when you enrolled. You can switch at any time - each change is recorded with a timestamp in the research log.')
+              : (bn
+                ? 'স্টাফ অ্যাকাউন্ট গবেষণার অংশগ্রহণকারী নয় — দুই অভিজ্ঞতা দেখতে যেকোনো সময় বদলাতে পারেন। প্রতিটি পরিবর্তন গবেষণার রেকর্ডে সংরক্ষিত হয়।'
+                : 'Staff accounts are not study participants - switch freely to preview both experiences. Each change is recorded in the research log.')}
         </p>
       </Section>
 

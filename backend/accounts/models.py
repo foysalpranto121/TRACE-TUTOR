@@ -33,6 +33,10 @@ class ParticipantProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='STUDENT')
     assigned_arm = models.CharField(max_length=20, choices=ARM_CHOICES, default='REASONING_VISIBLE')
+    # The condition allocated at enrolment. Never changes - even where participants may
+    # switch tutor mode later (settings.ARM_SELF_SELECT), the analysis compares by this,
+    # intent-to-treat, and the export carries the current arm and the switch count too.
+    enrolled_arm = models.CharField(max_length=20, choices=ARM_CHOICES, blank=True, default='')
     preferred_language = models.CharField(max_length=5, choices=LANG_CHOICES, default='bn')
     grade = models.CharField(max_length=10, default='11')
     prior_experience = models.CharField(max_length=50, default='novice')
@@ -100,7 +104,9 @@ class ParticipantProfile(models.Model):
         queryset = ParticipantProfile.objects.filter(role='STUDENT')
         if connection.features.has_select_for_update:
             queryset = queryset.select_for_update()
-        counts = Counter(queryset.values_list('assigned_arm', flat=True))
+        # Balance is about what people were allocated, not where they later moved.
+        counts = Counter(enrolled or assigned for enrolled, assigned
+                         in queryset.values_list('enrolled_arm', 'assigned_arm'))
         rv, ao = counts.get('REASONING_VISIBLE', 0), counts.get('ANSWER_ONLY', 0)
         if rv == ao:
             return random.choice(['REASONING_VISIBLE', 'ANSWER_ONLY'])

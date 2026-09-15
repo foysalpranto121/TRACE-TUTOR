@@ -129,8 +129,16 @@ class ParticipantJourneyTests(ApiTestCase):
         # ------------------------------------------------------------- 7. profile
         updated = alice_c.patch('/api/accounts/profile/', {'weekly_study_hours': 6}, format='json').json()
         self.assertEqual(updated['weekly_study_hours'], 6)
-        locked = alice_c.patch('/api/accounts/profile/', {'assigned_arm': 'ANSWER_ONLY'}, format='json')
-        self.assertEqual(locked.status_code, 400, 'the arm is the manipulation')
+        # Switching tutor mode is a study setting (ARM_SELF_SELECT, on by default). Whatever
+        # a participant does later, the arm they were enrolled in is the one of record.
+        other_arm = 'ANSWER_ONLY' if alice['arm'] == 'REASONING_VISIBLE' else 'REASONING_VISIBLE'
+        switched = alice_c.patch('/api/accounts/profile/', {'assigned_arm': other_arm}, format='json')
+        self.assertEqual(switched.status_code, 200)
+        self.assertEqual(switched.json()['arm'], other_arm)
+        self.assertEqual(switched.json()['enrolled_arm'], alice['arm'], 'the allocation of record is immutable')
+        with override_settings(ARM_SELF_SELECT=False):
+            self.assertEqual(alice_c.patch('/api/accounts/profile/', {'assigned_arm': alice['arm']},
+                                           format='json').status_code, 400, 'a locked study refuses the switch')
         mine = alice_c.get('/api/accounts/my-data/').json()
         self.assertEqual(len(mine['submissions']), 1)
 

@@ -115,10 +115,10 @@ export const AppShell = ({ children }) => {
 
           {!isStudent && <p className="text-[10px] text-on-surface-variant leading-relaxed italic">{TAGLINES[role]}</p>}
 
-          {/* Tutor mode. For a participant this is the study's randomly allocated condition,
-              so it is shown but not switchable - the server rejects a change either way.
-              Staff are not participants and may flip it to preview both experiences. */}
-          {isStudent ? (
+          {/* Tutor mode. Participants may switch it while the study allows self-selection
+              (arm_self_select, reported by the server); when a controlled run locks it,
+              the pill is shown but not clickable. Staff may always switch. */}
+          {isStudent && user?.arm_self_select === false ? (
             <div
               className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-surface-container-high border border-outline-variant/40 text-[10px]"
               title="আপনার টিউটর মোড গবেষণার জন্য নির্ধারিত (your tutor mode is assigned by the study)"

@@ -135,6 +135,7 @@ Copy `backend/.env.example` to `backend/.env` and fill it in. **Never commit `.e
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `GEMINI_API_KEY` | — | **Required.** Tutor, OCR and embeddings |
+| `ARM_SELF_SELECT` | `1` | May participants switch tutor mode? The enrolment arm is recorded permanently either way. **Set `0` for a controlled run.** |
 | `STAFF_ACCESS_CODE` | *(empty)* | Required to register a teacher or researcher account. Empty means staff registration is **refused**, never "any code will do". |
 | `DEBUG` | `0` | `1` for local development. Drives error pages, host checking, CORS and media serving. |
 | `SECRET_KEY` | — | **Required when `DEBUG=0`** — the server refuses to start without it. Signs sessions and the research device cookie. |
@@ -334,7 +335,7 @@ This platform is built for **local, single-site, proctored use**. Read this befo
 
 These are enforced server-side and covered by tests (`python manage.py test`):
 
-- A participant's **arm is fixed at enrolment**. The profile endpoint refuses to change it; only staff accounts, who are not participants, can switch their own tutor mode to preview both.
+- A participant's **arm of record is fixed at enrolment** (`enrolled_arm`). Whether they may *switch* tutor mode afterwards is a study setting, `ARM_SELF_SELECT` (on by default): every switch is logged with who made it, the export carries the enrolled arm, the current arm and the switch count, and all outcomes are compared by the enrolled arm (intent-to-treat). **Set `ARM_SELF_SELECT=0` for a controlled run** so participants stay in their allocated condition; staff accounts, who are not participants, can always switch to preview both modes.
 - Allocation is **balanced under concurrency** — the count is read under a row lock inside the registration transaction.
 - **Papers unlock in protocol order.** A participant can open the forms they have sat plus the next one; requesting `?type=withdrawal` early returns 403. Staff see the whole bank for review.
 - **Telemetry identity is unforgeable.** The participant and the arm come from the authenticated session and the server-side profile; `user_id`, `username` and `arm` in a request body are discarded.
