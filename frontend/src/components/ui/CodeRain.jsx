@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 
 // Sparse falling code glyphs behind hero/auth sections. Canvas keeps it off the

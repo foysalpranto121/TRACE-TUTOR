@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -8,11 +10,41 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 load_dotenv(BASE_DIR.parent / '.env')
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-trace-tutor-research-key-2026')
 
-DEBUG = True
+def env_flag(name, default=False):
+    return os.environ.get(name, '1' if default else '0').strip().lower() in ('1', 'true', 'yes', 'on')
 
-ALLOWED_HOSTS = ['*']
+
+def env_list(name, default=''):
+    return [item.strip() for item in os.environ.get(name, default).split(',') if item.strip()]
+
+
+# Off unless the environment says otherwise. DEBUG drives error pages, host checking,
+# CORS and the Secure flag on cookies, so the safe value has to be the one you get by
+# forgetting to set it. Put DEBUG=1 in backend/.env for local development.
+DEBUG = env_flag('DEBUG', default=False)
+
+# Anything not listed is refused by Django's host header check. Extend for a LAN
+# deployment with e.g. ALLOWED_HOSTS=lab-server.school.edu,192.168.1.50
+ALLOWED_HOSTS = env_list('ALLOWED_HOSTS') or ['localhost', '127.0.0.1', '[::1]']
+
+# Origins allowed to make browser requests. In development the Vite dev server on :3000
+# proxies /api, so same-origin already covers it; these matter once the SPA is served
+# from somewhere else.
+TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000')
+
+SECRET_KEY = os.environ.get('SECRET_KEY', '').strip()
+if not SECRET_KEY:
+    if not DEBUG:
+        # This key signs sessions and the trace_device research cookie. A shipped default
+        # is public knowledge the moment the repository is, so refuse to start without one.
+        raise ImproperlyConfigured(
+            'SECRET_KEY is not set. Generate one with:\n'
+            '  python -c "from django.core.management.utils import get_random_secret_key;'
+            ' print(get_random_secret_key())"\n'
+            'and put it in backend/.env (or set DEBUG=1 for local development).'
+        )
+    SECRET_KEY = 'django-insecure-development-only-key-do-not-deploy'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -128,26 +160,70 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Uploaded files (profile avatars). Served by Django in DEBUG; put a real file server in front for production.
+# Uploaded files (profile avatars). Django serves these itself in DEBUG. A single-site
+# lab deployment can keep doing so with SERVE_MEDIA=1; anything internet-facing should
+# put a real file server in front instead.
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 AVATAR_MAX_BYTES = 5 * 1024 * 1024
+SERVE_MEDIA = env_flag('SERVE_MEDIA', default=DEBUG)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOW_ALL_ORIGINS = True
+# Wide open in development (the dev server and the SPA are on different ports); pinned
+# to the configured origins everywhere else.
+CORS_ALLOW_ALL_ORIGINS = DEBUG
+CORS_ALLOW_CREDENTIALS = True
+if not CORS_ALLOW_ALL_ORIGINS:
+    CORS_ALLOWED_ORIGINS = env_list('CORS_ALLOWED_ORIGINS') or TRUSTED_ORIGINS
+
+# ---------------------------------------------------------------------------
+# Transport security.
+#
+# HTTPS_ONLY defaults to "on whenever DEBUG is off", which is the safe default but is
+# also the setting most likely to lock you out: on a plain-http server SECURE_SSL_REDIRECT
+# loops and Secure cookies are never sent, so nobody can log in. A proctored lab server
+# on a closed network without TLS should set HTTPS_ONLY=0 deliberately.
+# ---------------------------------------------------------------------------
+HTTPS_ONLY = env_flag('HTTPS_ONLY', default=not DEBUG)
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_REFERRER_POLICY = 'same-origin'
+
+# Behind a reverse proxy that terminates TLS, tell Django how to detect https.
+if env_flag('BEHIND_TLS_PROXY', default=False):
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+if HTTPS_ONLY:
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 60 * 60 * 24 * 365
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
+    # Fail closed. A view that forgets its @permission_classes is private, not public;
+    # the handful of genuinely public endpoints (register, login) opt out explicitly.
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    # Rates alone do nothing - DRF only throttles when a throttle CLASS is in play, so
+    # these two must stay listed here or every limit below is silently inert.
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '600/min',
-        'user': '1200/min',
+        'anon': '60/min',       # anonymous callers can only reach register/login/logout
+        'user': '600/min',      # generous: the workspace polls while a student works
+        'tutor': '30/min',      # scoped (trace_backend/throttles.py) - Gemini generation
+        'code-run': '60/min',   # scoped - server-side compile and execute
+        'ingest': '5/hour',     # scoped - a full OCR pass over the textbooks
     },
 }
 
@@ -189,11 +265,13 @@ SESSION_COOKIE_NAME = 'trace_session'
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 14
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SECURE = not DEBUG
+# Tied to HTTPS_ONLY, not to DEBUG: a browser will not send a Secure cookie over plain
+# http, so marking them Secure on a non-TLS lab server silently breaks every login.
+SESSION_COOKIE_SECURE = HTTPS_ONLY
 CSRF_COOKIE_NAME = 'trace_csrf'
 CSRF_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SECURE = not DEBUG
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(',') if o.strip()]
+CSRF_COOKIE_SECURE = HTTPS_ONLY
+CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGINS
 
 # Application cookies (trace_backend/middleware.py and accounts/views.py):
 #   trace_device - signed, HttpOnly, 1 year. Anonymous device id attached to research telemetry so

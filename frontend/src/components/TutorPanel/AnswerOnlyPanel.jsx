@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Bot, CheckCircle2, Copy, Check, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { apiService } from '../../services/api';
 

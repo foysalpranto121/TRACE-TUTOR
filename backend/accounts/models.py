@@ -1,7 +1,7 @@
 import random
 from collections import Counter
 
-from django.db import models
+from django.db import connection, models
 from django.contrib.auth.models import User
 
 STAFF_ROLES = {'EXPERT_TEACHER', 'RESEARCHER_ADMIN'}
@@ -83,8 +83,18 @@ class ParticipantProfile(models.Model):
 
     @staticmethod
     def balanced_arm():
-        """Allocate new students to the arm with fewer participants (ties broken at random)."""
-        counts = Counter(ParticipantProfile.objects.filter(role='STUDENT').values_list('assigned_arm', flat=True))
+        """Allocate a new student to the arm with fewer participants (ties broken at random).
+
+        Call this inside a transaction (register_view does). The existing student rows
+        are locked for the duration where the database supports it, so two sign-ups
+        arriving together cannot both read the same counts and pick the same arm - which
+        would quietly skew the allocation the study depends on. SQLite has no row locks
+        but serialises write transactions outright, which gives the same guarantee.
+        """
+        queryset = ParticipantProfile.objects.filter(role='STUDENT')
+        if connection.features.has_select_for_update:
+            queryset = queryset.select_for_update()
+        counts = Counter(queryset.values_list('assigned_arm', flat=True))
         rv, ao = counts.get('REASONING_VISIBLE', 0), counts.get('ANSWER_ONLY', 0)
         if rv == ao:
             return random.choice(['REASONING_VISIBLE', 'ANSWER_ONLY'])

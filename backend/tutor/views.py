@@ -1,12 +1,13 @@
 import logging
 from django.conf import settings
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from curriculum.rag_engine import rag_engine_instance
 from trace_backend import gemini
 from trace_backend.cache import cache_key, tiered_get_or_set
+from trace_backend.throttles import CodeRunThrottle, TutorThrottle
 from . import runner
 
 logger = logging.getLogger(__name__)
@@ -70,7 +71,8 @@ def _fallback_answer(prompt, code, passages, language):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
+@throttle_classes([TutorThrottle])
 def query_tutor(request):
     data = request.data
     prompt = (data.get('prompt') or '').strip()
@@ -147,8 +149,15 @@ def query_tutor(request):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
+@throttle_classes([CodeRunThrottle])
 def run_code(request):
+    """Compiles and runs submitted code on the server.
+
+    Authentication is the only thing standing between this and arbitrary code
+    execution as the server user - the runner is not sandboxed (see README). Keep it
+    behind a login, and put it in a container before any internet-facing deployment.
+    """
     data = request.data
     result = runner.run_code(
         language=data.get('language', 'c'),
@@ -160,6 +169,6 @@ def run_code(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def code_status(request):
     return Response(runner.compiler_status())

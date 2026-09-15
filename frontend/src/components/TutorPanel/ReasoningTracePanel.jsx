@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Brain, BookOpen, Sparkles, CheckCircle2, Copy, Check, ChevronDown, ChevronUp, Layers, HelpCircle, ShieldCheck, AlertTriangle, FileText } from 'lucide-react';
 import { apiService } from '../../services/api';
 

@@ -88,10 +88,22 @@ def _normalize(s):
 
 
 def judge_output(expected, actual):
-    e, a = _normalize(expected), _normalize(actual)
-    if not e:
+    """Does `actual` satisfy `expected`?
+
+    Whitespace is normalised, and the expected output may sit inside surrounding prose
+    ("The answer is 7") - but it has to match whole tokens. A plain substring test
+    graded a printed 17 as correct when the expected answer was 7, which quietly
+    inflated scores on every numeric task.
+    """
+    expected_tokens = _normalize(expected).split()
+    actual_tokens = _normalize(actual).split()
+    if not expected_tokens:
         return True
-    return e == a or e in a
+    if expected_tokens == actual_tokens:
+        return True
+    span = len(expected_tokens)
+    return any(actual_tokens[i:i + span] == expected_tokens
+               for i in range(len(actual_tokens) - span + 1))
 
 
 def _run_process(argv, stdin_text, cwd, timeout=RUN_TIMEOUT_SEC):

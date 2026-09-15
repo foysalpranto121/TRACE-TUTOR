@@ -2,55 +2,52 @@ from collections import Counter
 from datetime import timedelta
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.core.cache import caches
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from accounts.models import ParticipantProfile
+from accounts.models import ParticipantProfile, STAFF_ROLES
 from assessment.models import ExamSubmission, ExpertGrade
 from .models import InteractionLog
 from .signals import dashboard_cache_key
 
-
-def resolve_user(user_id=None, username=None, create=False):
-    """Frontend sessions may carry a DB id or only a display username (demo sessions)."""
-    user = None
-    if user_id not in (None, ''):
-        try:
-            user = User.objects.filter(id=int(user_id)).first()
-        except (TypeError, ValueError):
-            user = None
-    if user is None and username:
-        name = str(username)[:150]
-        if create:
-            user, _ = User.objects.get_or_create(username=name)
-        else:
-            user = User.objects.filter(username=name).first()
-    return user
+# Identity fields a client may no longer assert about itself. They used to be read from
+# the request body, which let anyone attribute events to any participant - and, via
+# get_or_create, conjure participant accounts that never enrolled.
+CLIENT_CONTROLLED_IDENTITY = ('user_id', 'username', 'arm')
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def log_telemetry(request):
+    """Append one behavioural event for the calling participant.
+
+    Who the event belongs to and which arm it counts towards are both taken from the
+    authenticated session and the server-side profile, never from the request body:
+    this table is the study's raw behavioural data, so a client that can name its own
+    participant or its own arm can silently invalidate the analysis.
+    """
     event_type = request.data.get('event_type', 'GENERIC_EVENT')
     event_data = request.data.get('event_data') or {}
     if not isinstance(event_data, dict):
         event_data = {'value': event_data}
+    event_data = {k: v for k, v in event_data.items() if k not in CLIENT_CONTROLLED_IDENTITY}
+
     # Anonymous device id from the signed cookie (trace_backend.middleware) - research metadata only.
     device_id = getattr(request, 'device_id', None)
-    if device_id and 'device_id' not in event_data:
+    if device_id:
         event_data['device_id'] = device_id
-    user = resolve_user(event_data.get('user_id'), event_data.get('username'), create=True)
+
+    profile = ParticipantProfile.objects.filter(user=request.user).only('assigned_arm').first()
     problem_id = str(event_data.get('problem_id') or '')[:50] or None
 
     InteractionLog.objects.create(
-        user=user,
+        user=request.user,
         event_type=str(event_type)[:50],
         payload=event_data,
-        arm=event_data.get('arm') or 'REASONING_VISIBLE',
+        arm=profile.assigned_arm if profile else 'REASONING_VISIBLE',
         problem_id=problem_id,
     )
     return Response({'status': 'success', 'logged': True})
@@ -80,18 +77,32 @@ def _local_date(dt):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def dashboard_summary(request):
-    """Per-user summary served from the memory cache for up to a minute; it is dropped the moment the
-    user's logs, submissions or profile change (logging_app/signals.py), so XP updates stay instant."""
-    user = resolve_user(request.GET.get('user_id'), request.GET.get('username'))
-    key = dashboard_cache_key(user.id if user else None)
+    """The calling participant's own summary, served from the memory cache for up to a
+    minute; it is dropped the moment their logs, submissions or profile change
+    (logging_app/signals.py), so XP updates stay instant.
+
+    The subject is always request.user. It used to come from a `user_id` query
+    parameter, which meant anyone could read any participant's scores and covariates.
+    """
+    user = request.user
+    profile = ParticipantProfile.objects.filter(user=user).only('role').first()
+    is_staff_role = bool(profile and profile.role in STAFF_ROLES)
+
+    key = dashboard_cache_key(user.id)
     data = caches['default'].get(key)
     hit = data is not None
     if not hit:
         data = _build_dashboard(user)
         caches['default'].set(key, data, settings.DASHBOARD_CACHE_SECONDS)
-    response = Response(data)
+
+    # Study-wide totals are for the people running the study, not for participants.
+    payload = dict(data)
+    if not is_staff_role:
+        payload.pop('overview', None)
+
+    response = Response(payload)
     response['X-Trace-Cache'] = 'hit' if hit else 'miss'
     return response
 

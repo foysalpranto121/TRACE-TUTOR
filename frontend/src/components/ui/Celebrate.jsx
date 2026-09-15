@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Zap, Trophy, Award, CheckCircle2, AlertTriangle, X, Sparkles } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 

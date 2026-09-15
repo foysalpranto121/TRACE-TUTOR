@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Eye, EyeOff, Check } from 'lucide-react';
 
 export const inputClass = (error) =>

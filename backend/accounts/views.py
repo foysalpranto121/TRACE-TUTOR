@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -139,20 +140,24 @@ def register_view(request):
     if errors:
         return Response({'error': 'Please fix the highlighted fields.', 'fields': errors}, status=400)
 
-    user = User.objects.create_user(username=username, email=email, password=password, first_name=full_name[:150])
-    profile = ParticipantProfile(
-        user=user,
-        role=role,
-        full_name=full_name[:150],
-        assigned_arm=ParticipantProfile.balanced_arm() if role == 'STUDENT' else 'REASONING_VISIBLE',
-    )
-    _apply_profile_fields(profile, data)
-    profile.full_name = full_name[:150]
-    if consent:
-        profile.consent_given = True
-        profile.consent_at = timezone.now()
-        profile.consent_version = str(data.get('consent_version') or 'v1')[:10]
-    profile.save()
+    # One transaction so that allocation and enrolment are atomic: balanced_arm() holds a
+    # lock on the existing student rows, and a half-created participant (user row but no
+    # profile, hence no arm) can never reach the dataset.
+    with transaction.atomic():
+        user = User.objects.create_user(username=username, email=email, password=password, first_name=full_name[:150])
+        profile = ParticipantProfile(
+            user=user,
+            role=role,
+            full_name=full_name[:150],
+            assigned_arm=ParticipantProfile.balanced_arm() if role == 'STUDENT' else 'REASONING_VISIBLE',
+        )
+        _apply_profile_fields(profile, data)
+        profile.full_name = full_name[:150]
+        if consent:
+            profile.consent_given = True
+            profile.consent_at = timezone.now()
+            profile.consent_version = str(data.get('consent_version') or 'v1')[:10]
+        profile.save()
 
     user.last_login = timezone.now()
     user.save(update_fields=['last_login'])
@@ -172,9 +177,15 @@ def login_view(request):
     lookup = User.objects.filter(email__iexact=identifier).first() if '@' in identifier else User.objects.filter(username__iexact=identifier).first()
     user = authenticate(request, username=lookup.username if lookup else identifier, password=password)
     if user is None:
+        # authenticate() refuses a deactivated account the same way it refuses a wrong
+        # password, so the "deactivated" case has to be detected here. Only say so to
+        # someone who proved they own the account - otherwise this becomes an oracle for
+        # telling a real participant apart from a made-up username.
+        if lookup and not lookup.is_active and lookup.check_password(password):
+            return Response(
+                {'error': 'This account has been deactivated. Contact the research coordinator.'},
+                status=403)
         return Response({'error': 'Invalid username or password.'}, status=401)
-    if not user.is_active:
-        return Response({'error': 'This account has been deactivated. Contact the research coordinator.'}, status=403)
 
     profile = _profile_for(user)
     user.last_login = timezone.now()
@@ -213,11 +224,19 @@ def profile_view(request):
         if 'full_name' in data and not (data.get('full_name') or '').strip():
             errors['full_name'] = 'Full name cannot be empty.'
 
-        # Tutor mode is self-selectable, but every switch is recorded so the research data stays interpretable.
+        # The arm is the independent variable of a between-subjects experiment: it is
+        # randomly allocated at enrolment and a participant must not be able to move
+        # themselves into the other condition. Staff accounts are not participants, so
+        # they may still flip their own mode to preview both tutor experiences.
         arm_switch = None
         if 'assigned_arm' in data:
             arm = str(data.get('assigned_arm') or '').upper()
-            if arm not in VALID_ARMS:
+            if profile.role not in STAFF_ROLES:
+                errors['assigned_arm'] = (
+                    'Your tutor mode is assigned at enrolment and cannot be changed. '
+                    'Contact the research coordinator if you believe it is wrong.'
+                )
+            elif arm not in VALID_ARMS:
                 errors['assigned_arm'] = 'Unknown tutor mode.'
             elif arm != profile.assigned_arm:
                 arm_switch = (profile.assigned_arm, arm)
@@ -230,8 +249,8 @@ def profile_view(request):
             profile.assigned_arm = arm_switch[1]
             InteractionLog.objects.create(
                 user=user, event_type='ARM_SWITCH', arm=arm_switch[1],
-                payload={'from': arm_switch[0], 'to': arm_switch[1], 'source': 'profile', 'self_selected': True,
-                         'device_id': getattr(request, 'device_id', None)},
+                payload={'from': arm_switch[0], 'to': arm_switch[1], 'source': 'profile',
+                         'role': profile.role, 'device_id': getattr(request, 'device_id', None)},
             )
         _apply_profile_fields(profile, data)
         if 'full_name' in data:

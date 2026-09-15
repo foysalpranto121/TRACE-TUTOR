@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Code, LayoutDashboard, FileCheck, Brain, Database, Sliders, Search, Bell, User, Languages, LogOut,
-  Sun, Moon, Zap, Flame, ChevronRight, Menu, Sparkles, Repeat,
+  Sun, Moon, Zap, Flame, ChevronRight, Menu, Sparkles, Repeat, Lock,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { apiService } from '../../services/api';
 import { computeXp, levelInfo } from '../../data/gamification';
 import { armLabel } from '../../data/profileOptions';
-import { ProgressBar, Badge, Avatar } from '../ui';
+import { ProgressBar, Avatar } from '../ui';
 
 const NAV = [
   { path: '/dashboard', label: 'ড্যাশবোর্ড', en: 'Dashboard', icon: LayoutDashboard, roles: ['STUDENT', 'EXPERT_TEACHER', 'RESEARCHER_ADMIN'] },
@@ -113,18 +113,35 @@ export const AppShell = ({ children }) => {
 
           {!isStudent && <p className="text-[10px] text-on-surface-variant leading-relaxed italic">{TAGLINES[role]}</p>}
 
-          {/* Tutor mode is self-selectable - one tap swaps the workspace between reasoning and answer-only */}
-          <button
-            onClick={toggleArm}
-            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-surface-container-high border border-outline-variant/40 text-[10px] hover:border-primary/40 press"
-            title={`টিউটর মোড: ${armLabel(arm)} — বদলাতে ক্লিক করুন (switch tutor mode)`}
-          >
-            <span className="flex items-center gap-1.5 font-mono font-bold">
-              <span className={`w-2 h-2 rounded-full ${arm === 'REASONING_VISIBLE' ? 'bg-success animate-pulse' : 'bg-warning'}`} />
-              {armLabel(arm)}
-            </span>
-            <span className="flex items-center gap-1 text-primary font-bold"><Repeat className="w-3 h-3" />switch</span>
-          </button>
+          {/* Tutor mode. For a participant this is the study's randomly allocated condition,
+              so it is shown but not switchable - the server rejects a change either way.
+              Staff are not participants and may flip it to preview both experiences. */}
+          {isStudent ? (
+            <div
+              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-surface-container-high border border-outline-variant/40 text-[10px]"
+              title="আপনার টিউটর মোড গবেষণার জন্য নির্ধারিত (your tutor mode is assigned by the study)"
+            >
+              <span className="flex items-center gap-1.5 font-mono font-bold">
+                <span className={`w-2 h-2 rounded-full ${arm === 'REASONING_VISIBLE' ? 'bg-success animate-pulse' : 'bg-warning'}`} />
+                {armLabel(arm)}
+              </span>
+              <span className="flex items-center gap-1 text-on-surface-variant font-bold">
+                <Lock className="w-3 h-3" />assigned
+              </span>
+            </div>
+          ) : (
+            <button
+              onClick={toggleArm}
+              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-surface-container-high border border-outline-variant/40 text-[10px] hover:border-primary/40 press"
+              title={`টিউটর মোড: ${armLabel(arm)} — বদলাতে ক্লিক করুন (switch tutor mode)`}
+            >
+              <span className="flex items-center gap-1.5 font-mono font-bold">
+                <span className={`w-2 h-2 rounded-full ${arm === 'REASONING_VISIBLE' ? 'bg-success animate-pulse' : 'bg-warning'}`} />
+                {armLabel(arm)}
+              </span>
+              <span className="flex items-center gap-1 text-primary font-bold"><Repeat className="w-3 h-3" />switch</span>
+            </button>
+          )}
         </div>
       </div>
 

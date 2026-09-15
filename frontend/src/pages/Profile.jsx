@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { User, School, BookOpen, ShieldCheck, KeyRound, Save, Loader2, CheckCircle2, AlertTriangle, Fingerprint, Calendar, Mail, Brain, Bot, Check, Palette, Sun, Moon, Sparkles, Camera, Trash2, Upload } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme, FX_LEVELS } from '../context/ThemeContext';

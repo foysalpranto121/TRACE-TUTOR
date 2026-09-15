@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Editor from '@monaco-editor/react';
 import {
   Play,
@@ -191,7 +191,7 @@ export const CodeEditor = ({
         const res = await apiService.runCode(lang, source, [], 'check');
         if (seq !== checkSeq.current) return;
         publishDiagnostics(res.diagnostics || []);
-      } catch (err) {
+      } catch (_) {
         if (seq !== checkSeq.current) return;
         publishDiagnostics([], 'offline');
       }

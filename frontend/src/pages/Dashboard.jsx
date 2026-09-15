@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import {
@@ -91,7 +91,7 @@ export const Dashboard = () => {
     }
   };
 
-  useEffect(() => { load(); }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { load(); }, [user?.id]);
 
   const derived = useMemo(() => {
     const progressById = Object.fromEntries((data?.problems || []).map((p) => [p.problem_id, p]));

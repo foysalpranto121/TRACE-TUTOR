@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { CodeEditor } from '../components/Editor/CodeEditor';
 import { ReasoningTracePanel } from '../components/TutorPanel/ReasoningTracePanel';

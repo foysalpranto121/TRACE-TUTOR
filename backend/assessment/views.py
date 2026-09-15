@@ -1,13 +1,24 @@
+import csv
 from collections import defaultdict
 
+from django.http import StreamingHttpResponse
+from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from accounts.models import ParticipantProfile, STAFF_ROLES
 from accounts.permissions import IsResearcher, IsStaffRole
 
-from . import scoring
+from . import analytics, scoring
 from .models import ExpertRating, ExamSubmission, ExpertGrade
+
+
+class Echo:
+    """A write-only file-like object, so csv.writer can feed a streaming response."""
+
+    def write(self, value):
+        return value
 
 RATING_FIELDS = {
     'alignment': 'alignment_score',
@@ -44,27 +55,75 @@ def _i_cvi(counts):
     return (relevant / raters) if raters else None
 
 
+PROTOCOL_ORDER = ('pre', 'post', 'transfer', 'withdrawal')
+
+
+def _accessible_exam_types(user, is_staff_role):
+    """Which forms this caller may open.
+
+    Staff need the whole bank to review it. A participant gets the forms they have
+    already sat (so they can revisit their results) plus the next one in protocol
+    order - and nothing beyond it. Without this, any enrolled student could simply
+    request ?type=withdrawal and read the papers before sitting them, which would make
+    the post, transfer and withdrawal scores uninterpretable.
+    """
+    if is_staff_role:
+        return list(PROTOCOL_ORDER)
+    submitted = set(ExamSubmission.objects.filter(student=user)
+                    .values_list('exam_type', flat=True))
+    allowed = [t for t in PROTOCOL_ORDER if t in submitted]
+    upcoming = next((t for t in PROTOCOL_ORDER if t not in submitted), None)
+    if upcoming:
+        allowed.append(upcoming)
+    return allowed
+
+
+def _is_staff_role(user):
+    profile = ParticipantProfile.objects.filter(user=user).only('role').first()
+    return bool(profile and profile.role in STAFF_ROLES)
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_items(request):
+    requested = str(request.GET.get('type') or 'pre').lower()
+    if requested not in PROTOCOL_ORDER:
+        return Response({'error': f'Unknown exam type: {requested}'}, status=400)
+
+    available = _accessible_exam_types(request.user, _is_staff_role(request.user))
+    if requested not in available:
+        return Response({
+            'error': 'That paper is not open to you yet. Complete the earlier forms first.',
+            'exam_type': requested,
+            'available': available,
+        }, status=403)
+
     try:
-        items = scoring.items_for(request.GET.get('type'))
+        items = scoring.items_for(requested)
     except scoring.ItemBankError as exc:
         return Response({'error': str(exc)}, status=500)
-    return Response([scoring.public_item(i) for i in items])
+    return Response({
+        'exam_type': requested,
+        'available': available,
+        'items': [scoring.public_item(i) for i in items],
+    })
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def submit_exam(request):
-    from logging_app.views import resolve_user
-
     exam_type = str(request.data.get('exam_type') or 'pre').lower()
     chapter = request.data.get('chapter')
     answers = request.data.get('answers') or {}
     code_answers = request.data.get('code_answers') or {}
-    student = request.user if request.user.is_authenticated else resolve_user(
-        request.data.get('user_id'), request.data.get('username'))
+    # The submission always belongs to the caller; a `user_id` in the body is ignored.
+    student = request.user
+
+    if exam_type not in PROTOCOL_ORDER:
+        return Response({'error': f'Unknown exam type: {exam_type}'}, status=400)
+    # Same gate as get_items: a paper you cannot open is a paper you cannot submit.
+    if exam_type not in _accessible_exam_types(student, _is_staff_role(student)):
+        return Response({'error': 'That paper is not open to you yet.'}, status=403)
 
     try:
         # The client never decides the score - any 'score' in the body is ignored.
@@ -267,25 +326,33 @@ def grade_student_submission(request):
 @api_view(['GET'])
 @permission_classes([IsResearcher])
 def get_admin_stats(request):
-    return Response({
-        'total_participants': 64,
-        'treatment_arm_n': 32,
-        'control_arm_n': 32,
-        'learning_gain': {
-            'treatment_mean_g': 0.68,
-            'control_mean_g': 0.65,
-            'p_value': 0.42
-        },
-        'transfer_performance': {
-            'treatment_mean': 84.5,
-            'control_mean': 71.2,
-            'cohens_d': 0.74,
-            'p_value': 0.02
-        },
-        'ai_dependency_drop': {
-            'treatment_drop': -4.2,
-            'control_drop': -18.6,
-            'cohens_d': 0.88,
-            'p_value': 0.003
-        }
-    })
+    """Study-wide outcomes computed from the collected data.
+
+    Every field comes from ExamSubmission / InteractionLog rows. Outcomes that the
+    data cannot yet support come back as null with a `note`; the client renders that
+    as "not available" rather than substituting a number.
+    """
+    return Response(analytics.study_stats())
+
+
+@api_view(['GET'])
+@permission_classes([IsResearcher])
+def export_dataset(request):
+    """One CSV row per enrolled participant, pseudonymous (participant_code, never a name).
+
+    Streamed so the export stays flat in memory as the cohort grows.
+    """
+    rows = analytics.participant_rows()
+    stamp = timezone.localtime().strftime('%Y%m%d-%H%M')
+
+    def csv_lines():
+        buffer = Echo()
+        writer = csv.DictWriter(buffer, fieldnames=analytics.CSV_COLUMNS, extrasaction='ignore')
+        yield writer.writerow({c: c for c in analytics.CSV_COLUMNS})
+        for row in rows:
+            yield writer.writerow(row)
+
+    response = StreamingHttpResponse(csv_lines(), content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = f'attachment; filename="trace_tutor_dataset_{stamp}.csv"'
+    response['X-Trace-Row-Count'] = str(len(rows))
+    return response

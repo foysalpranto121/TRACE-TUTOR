@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { apiService } from '../services/api';
 import { BookOpen, Search, RefreshCw, Sparkles, CheckCircle2, FileText, AlertTriangle, Database, Cpu } from 'lucide-react';
 
@@ -22,6 +22,16 @@ export const RAGInspector = () => {
       setStatusError(err.message);
       return null;
     }
+  };
+
+  const handleSearch = async (e) => {
+    if (e) e.preventDefault();
+    if (!searchQuery.trim()) return;
+    setIsLoading(true);
+    const langParam = selectedLang === 'all' ? null : selectedLang;
+    const res = await apiService.searchCurriculum(searchQuery, langParam);
+    setSearchResults(res);
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -53,16 +63,6 @@ export const RAGInspector = () => {
     return () => clearInterval(pollRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running]);
-
-  const handleSearch = async (e) => {
-    if (e) e.preventDefault();
-    if (!searchQuery.trim()) return;
-    setIsLoading(true);
-    const langParam = selectedLang === 'all' ? null : selectedLang;
-    const res = await apiService.searchCurriculum(searchQuery, langParam);
-    setSearchResults(res);
-    setIsLoading(false);
-  };
 
   const handleIngestBooks = async () => {
     setIngestMessage(null);

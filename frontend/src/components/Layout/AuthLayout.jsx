@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { Sun, Moon, Languages, Brain, Code2, BookOpen, ShieldCheck } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
@@ -44,7 +43,7 @@ export const AuthLayout = ({ children, width = 'max-w-md' }) => {
               <span className="bg-gradient-to-r from-primary via-cyan-300 to-secondary bg-clip-text text-transparent">দক্ষতা গড়ুন।</span>
             </h1>
             <p className="text-sm text-on-surface-variant leading-relaxed max-w-md">
-              Learn the logic, understand the code, build the skill. An AI tutor for Bangladesh's HSC ICT syllabus that shows its reasoning
+              Learn the logic, understand the code, build the skill. An AI tutor for Bangladesh&rsquo;s HSC ICT syllabus that shows its reasoning
               and cites the NCTB textbook - built for a controlled learning study.
             </p>
           </div>

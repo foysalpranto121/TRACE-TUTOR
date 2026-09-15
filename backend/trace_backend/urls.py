@@ -46,7 +46,10 @@ urlpatterns = [
     path('api/expert/grade/', assessment_views.grade_student_submission, name='grade_student_submission'),
 
     path('api/admin/stats/', assessment_views.get_admin_stats, name='get_admin_stats'),
+    path('api/admin/export/', assessment_views.export_dataset, name='export_dataset'),
 ]
 
-if settings.DEBUG:
+# Avatars. Django serves them itself in development, and in a single-site lab
+# deployment that sets SERVE_MEDIA=1; put a real file server in front otherwise.
+if settings.SERVE_MEDIA:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

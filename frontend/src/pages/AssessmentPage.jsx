@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { apiService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import {
   FileCheck,
   CheckCircle2,
-  Clock,
   ArrowRight,
   ShieldAlert,
   Award,
@@ -16,16 +15,11 @@ import {
   Bot,
   Sparkles,
   Send,
-  MessageSquare,
-  HelpCircle,
   Lightbulb,
   Lock,
   User,
-  ChevronRight,
   Terminal,
-  Zap,
   Trash2,
-  RotateCcw,
   Play,
   Loader2,
   XCircle,
@@ -34,12 +28,28 @@ import {
 } from 'lucide-react';
 import { Button, Badge } from '../components/ui';
 
+const CHAPTER_FILTERS = {
+  CHAP4: 'Chapter 4',
+  CHAP5: 'Chapter 5',
+  CHAP6: 'Chapter 6',
+};
+
+// Protocol order. The server decides which of these a given caller may actually open
+// (assessment/views.py); this list only drives the tab strip.
+const EXAM_TABS = [
+  { type: 'pre', label: 'Pre-Test (Baseline)', activeClass: 'bg-primary text-on-primary' },
+  { type: 'post', label: 'Post-Test (+AI Tutor)', activeClass: 'bg-primary text-on-primary' },
+  { type: 'transfer', label: 'Transfer Test (+AI Tutor)', activeClass: 'bg-primary text-on-primary' },
+  { type: 'withdrawal', label: 'Withdrawal Task (No AI)', activeClass: 'bg-amber-500 text-on-surface' },
+];
+
 export const AssessmentPage = () => {
   const { language } = useAuth();
   const [examType, setExamType] = useState('pre'); // 'pre', 'post', 'transfer', 'withdrawal'
+  // Which papers this participant may open, as reported by the server.
+  const [availableExams, setAvailableExams] = useState(['pre']);
   const [selectedChapter, setSelectedChapter] = useState('ALL'); // 'ALL', 'CHAP4', 'CHAP5', 'CHAP6'
   const [allItems, setAllItems] = useState([]);
-  const [filteredItems, setFilteredItems] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [userCodeAnswers, setUserCodeAnswers] = useState({});
@@ -60,7 +70,7 @@ export const AssessmentPage = () => {
 
   useEffect(() => {
     loadItems(examType);
-  }, [examType]);
+  }, [examType, loadItems]);
 
   useEffect(() => {
     // Reset AI Assistant Chat when the exam phase changes. Deliberately NOT keyed on the current
@@ -132,7 +142,7 @@ export const AssessmentPage = () => {
     ]);
   };
 
-  const loadItems = async (type) => {
+  const loadItems = useCallback(async (type) => {
     setIsSubmitted(false);
     setConfirmUnanswered(false);
     setScoreResult(null);
@@ -141,33 +151,30 @@ export const AssessmentPage = () => {
     setUserCodeAnswers({});
     setRunResults({});
     setCurrentIndex(0);
-    const data = await apiService.getAssessmentItems(type);
-    const itemsList = Array.isArray(data) ? data : (data?.items || data?.questions || []);
-    setAllItems(itemsList);
-    filterItemsByChapter(itemsList, selectedChapter);
-  };
-
-  const filterItemsByChapter = (itemsList = [], chap) => {
-    const list = Array.isArray(itemsList) ? itemsList : [];
-    let result = list;
-    if (chap === 'CHAP4') {
-      result = list.filter((item) => item.chapter?.includes('Chapter 4'));
-    } else if (chap === 'CHAP5') {
-      result = list.filter((item) => item.chapter?.includes('Chapter 5'));
-    } else if (chap === 'CHAP6') {
-      result = list.filter((item) => item.chapter?.includes('Chapter 6'));
+    try {
+      const data = await apiService.getAssessmentItems(type);
+      if (Array.isArray(data?.available)) setAvailableExams(data.available);
+      const itemsList = data?.items || [];
+      setAllItems(itemsList);
+    } catch (err) {
+      // A locked paper comes back 403 with the list of papers that are open.
+      if (Array.isArray(err.body?.available)) setAvailableExams(err.body.available);
+      setAllItems([]);
+      setSubmitError(err.message || 'Could not load this paper.');
     }
-    setFilteredItems(result);
-  };
+  }, []);
+
+  // Derived, not stored: keeping a second copy of the list in state meant every loader
+  // had to remember to re-filter it, and made loadItems depend on the selected chapter.
+  const filteredItems = useMemo(() => {
+    const chapter = CHAPTER_FILTERS[selectedChapter];
+    if (!chapter) return allItems;
+    return allItems.filter((item) => item.chapter?.includes(chapter));
+  }, [allItems, selectedChapter]);
 
   const handleChapterFilter = (chap) => {
-    handleSelectChapter(chap);
-  };
-
-  const handleSelectChapter = (chap) => {
     setSelectedChapter(chap);
     setCurrentIndex(0);
-    filterItemsByChapter(allItems, chap);
   };
 
   const handleSelectOption = (questionId, optionId) => {
@@ -429,47 +436,32 @@ export const AssessmentPage = () => {
             </div>
           </div>
 
+          {/* Papers open in protocol order. A participant can revisit forms they have sat
+              and start the next one; the rest stay locked so the later papers are not read
+              in advance. The server enforces the same rule - this only mirrors it. */}
           <div className="flex flex-wrap items-center gap-1 bg-surface-container-high p-1.5 rounded-xl border border-outline-variant/30 text-xs font-mono">
-            <button
-              onClick={() => setExamType('pre')}
-              className={`px-3.5 py-2 rounded-lg font-bold transition-all ${
-                examType === 'pre'
-                  ? 'bg-primary text-on-primary shadow-md'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-            >
-              Pre-Test (Baseline)
-            </button>
-            <button
-              onClick={() => setExamType('post')}
-              className={`px-3.5 py-2 rounded-lg font-bold transition-all ${
-                examType === 'post'
-                  ? 'bg-primary text-on-primary shadow-md'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-            >
-              Post-Test (+AI Tutor)
-            </button>
-            <button
-              onClick={() => setExamType('transfer')}
-              className={`px-3.5 py-2 rounded-lg font-bold transition-all ${
-                examType === 'transfer'
-                  ? 'bg-primary text-on-primary shadow-md'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-            >
-              Transfer Test (+AI Tutor)
-            </button>
-            <button
-              onClick={() => setExamType('withdrawal')}
-              className={`px-3.5 py-2 rounded-lg font-bold transition-all ${
-                examType === 'withdrawal'
-                  ? 'bg-amber-500 text-on-surface shadow-md'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-            >
-              Withdrawal Task (No AI)
-            </button>
+            {EXAM_TABS.map(({ type, label, activeClass }) => {
+              const unlocked = availableExams.includes(type);
+              const active = examType === type;
+              return (
+                <button
+                  key={type}
+                  onClick={() => unlocked && setExamType(type)}
+                  disabled={!unlocked}
+                  title={unlocked ? undefined : 'Complete the earlier papers to unlock this one.'}
+                  className={`px-3.5 py-2 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
+                    active
+                      ? `${activeClass} shadow-md`
+                      : unlocked
+                        ? 'text-on-surface-variant hover:text-on-surface'
+                        : 'text-on-surface-variant/40 cursor-not-allowed'
+                  }`}
+                >
+                  {!unlocked && <Lock className="w-3 h-3" />}
+                  {label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -961,7 +953,7 @@ export const AssessmentPage = () => {
                               <h5 className="font-bold text-on-surface text-xs">{msg.rag_answer.textbook_rule}</h5>
                               <p className="text-[10px] text-on-surface-variant font-mono">📍 {msg.rag_answer.curriculum_citation}</p>
                               <p className="text-[11px] italic bg-surface-container p-2.5 rounded-lg border border-outline-variant/20 leading-relaxed text-on-surface whitespace-pre-wrap">
-                                "{msg.rag_answer.textbook_explanation}"
+                                &ldquo;{msg.rag_answer.textbook_explanation}&rdquo;
                               </p>
                               {msg.retrieved_passages?.length > 0 && (
                                 <details className="text-[10px] text-on-surface-variant">
