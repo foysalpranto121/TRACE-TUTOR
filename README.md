@@ -184,8 +184,9 @@ error to staff). Nothing a participant submits can be lost to a slow or failing 
 | `GRADING_MODE` | `thread` | `thread`: grade on background threads in the web process. `worker`: the web process only queues; run `python manage.py grade_submissions` to compile. |
 | `GRADING_CONCURRENCY` | CPU count | Submissions graded side by side |
 
-Measured on a 16-CPU Windows laptop against PostgreSQL, with every participant submitting
-in the same instant (`TRACE_LOAD_TEST=<n> python manage.py test assessment.tests.test_load`):
+Measured on a 16-CPU Windows laptop against PostgreSQL, compiling on the host toolchain
+(the `docker` sandbox tier adds container start-up per compile, so expect longer marking
+times there), with every participant submitting in the same instant (`TRACE_LOAD_TEST=<n> python manage.py test assessment.tests.test_load`):
 
 | Cohort | Saved | Graded | Submit request p95 | Everyone has marks by |
 | --- | --- | --- | --- | --- |
