@@ -45,6 +45,12 @@ class ParticipantProfile(models.Model):
     # Pseudonymous research identifier shown to the participant instead of their name in exports.
     participant_code = models.CharField(max_length=20, unique=True, null=True, blank=True)
 
+    # Withdrawal from the study (accounts/withdrawal.py). The profile row survives so the
+    # enrolment denominator stays honest - "N enrolled, k withdrew" - but every personal
+    # field, every submission and every telemetry event is erased at withdrawal time.
+    withdrawn_at = models.DateTimeField(null=True, blank=True)
+    withdrawn_by = models.CharField(max_length=20, blank=True, default='')  # 'participant' | 'researcher'
+
     # Identity & demographics
     full_name = models.CharField(max_length=150, blank=True)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)

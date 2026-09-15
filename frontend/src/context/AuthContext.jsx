@@ -106,6 +106,15 @@ export const AuthProvider = ({ children }) => {
     return res;
   };
 
+  // Withdraw from the study. The server erases the participant's data and revokes the
+  // token in the same request, so once this resolves the person is signed out here too.
+  const withdraw = async (password) => {
+    const res = await apiService.withdraw(password);
+    clearSession();
+    setUser(null);
+    return res;
+  };
+
   const setLanguage = (lang) => {
     if (user) {
       updateUser({ language: lang });
@@ -149,6 +158,7 @@ export const AuthProvider = ({ children }) => {
         updateProfile,
         updateUser,
         changePassword,
+        withdraw,
         uploadAvatar,
         removeAvatar,
       }}

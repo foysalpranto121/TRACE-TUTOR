@@ -46,6 +46,24 @@ def _find_c_compiler():
     return found
 
 
+def _diagnostic_flags(argv):
+    """Plain, uncoloured, caret-free diagnostics, in the dialect of whichever compiler
+    `argv` invokes.
+
+    These differ between the two families and each rejects the other's spelling
+    outright - gcc fails with "unrecognized command-line option" before it reads a
+    line of the student's code. The host toolchain is usually zig cc (clang); the
+    sandbox container and any lab machine with MinGW on its PATH are gcc.
+    """
+    # The executable is argv[0] for a plain toolchain and argv[-1] for `python -m ziglang cc`;
+    # strip a directory and a Windows .exe so a C_COMPILER=C:\mingw\bin\gcc.exe override
+    # is recognised too.
+    names = {os.path.basename(str(part)).lower().removesuffix('.exe') for part in (argv[0], argv[-1])}
+    if names & {'gcc', 'g++'}:
+        return ['-fno-diagnostics-show-caret', '-fdiagnostics-color=never']
+    return ['-fno-caret-diagnostics', '-fno-color-diagnostics']
+
+
 def _cxx_argv(c_prefix):
     if c_prefix[-1] == 'cc':
         return c_prefix[:-1] + ['c++']
@@ -155,9 +173,10 @@ def _compile_c_family(language, code, workdir):
     exe_name = 'main.out' if (tier == sandbox.DOCKER or os.name != 'nt') else 'main.exe'
     exe = workdir / exe_name
     (workdir / src_name).write_text(code, encoding='utf-8')
-    flags = ['-fno-caret-diagnostics', '-fno-color-diagnostics', '-Wall', src_name, '-o', exe_name]
+    tail = ['-Wall', src_name, '-o', exe_name]
 
-    container_argv = ['gcc' if language == 'c' else 'g++'] + flags
+    # The container has real gcc, so it gets gcc's spellings.
+    container_argv = ['gcc' if language == 'c' else 'g++'] + _diagnostic_flags(['gcc']) + tail
 
     if tier == sandbox.DOCKER:
         label = 'gcc (sandboxed container)'
@@ -168,7 +187,8 @@ def _compile_c_family(language, code, workdir):
             return {'ok': False, 'compiler': None, 'output': compiler_status()['hint'],
                     'diagnostics': [], 'exe': None}
         label, prefix = comp
-        host_argv = (list(prefix) if language == 'c' else _cxx_argv(list(prefix))) + flags
+        argv = list(prefix) if language == 'c' else _cxx_argv(list(prefix))
+        host_argv = argv + _diagnostic_flags(argv) + tail
 
     result = sandbox.execute(
         host_argv=host_argv, container_argv=container_argv, workdir=workdir,

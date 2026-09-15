@@ -220,7 +220,7 @@ class CsvColumnTests(SimpleTestCase):
     def test_every_declared_column_is_actually_produced(self):
         """CSV_COLUMNS drives DictWriter; a column with no matching key exports blank."""
         keys = {
-            'participant_code', 'arm', 'consent_given', 'grade', 'medium', 'area_type',
+            'participant_code', 'arm', 'withdrawn', 'consent_given', 'grade', 'medium', 'area_type',
             'prior_experience', 'ai_tool_familiarity', 'normalized_gain', 'withdrawal_drop',
             'help_requests', 'code_runs', 'copy_paste', 'first_submission_at', 'last_submission_at',
         }

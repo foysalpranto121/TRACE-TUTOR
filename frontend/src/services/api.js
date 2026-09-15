@@ -122,6 +122,11 @@ export const apiService = {
   deleteAvatar: () => fetchApi('/accounts/avatar/', { method: 'DELETE' }),
   changePassword: (currentPassword, newPassword) =>
     fetchApi('/accounts/password/', { method: 'POST', body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }) }),
+  // Right of access: everything the platform holds about the caller.
+  myData: () => fetchApi('/accounts/my-data/'),
+  // Leave the study. Erases the participant's data server-side and revokes the token,
+  // so the caller must clear the local session afterwards.
+  withdraw: (password) => fetchApi('/accounts/withdraw/', { method: 'POST', body: JSON.stringify({ password }) }),
   queryTutor: (prompt, code, problemId, arm, extra = {}) =>
     fetchApi('/tutor/query/', { method: 'POST', body: JSON.stringify({ prompt, code, problem_id: problemId, arm, ...extra }) }),
 

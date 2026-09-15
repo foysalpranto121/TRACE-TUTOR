@@ -6,11 +6,13 @@ uses - is exercised here on TransactionTestCase, because a background thread gra
 its own database connection and cannot see rows inside an uncommitted test transaction.
 """
 import time
+import unittest
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.core.cache import caches
 from django.core.management import call_command
+from django.db import connection
 from django.test import TransactionTestCase, override_settings
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
@@ -298,6 +300,10 @@ class BackgroundGradingTests(TransactionTestCase):
             grading._worker(row.pk)   # must not raise
         close_all.assert_called_once()
 
+    @unittest.skipIf(connection.vendor == 'sqlite',
+                     "SQLite's in-memory test database raises 'database table is locked' "
+                     "under concurrent writers; the pool is exercised on PostgreSQL, which "
+                     "is the engine a live cohort must run on anyway")
     def test_the_worker_command_drains_the_queue_in_parallel(self):
         """The command grades several submissions side by side on pool threads, each on
         its own database connection - which is why this lives on TransactionTestCase:
@@ -308,6 +314,7 @@ class BackgroundGradingTests(TransactionTestCase):
         self.assertEqual(ExamSubmission.objects.filter(grading_status=ExamSubmission.GRADED).count(), 4)
         self.assertFalse(ExamSubmission.objects.filter(grading_status=ExamSubmission.PENDING).exists())
 
+    @unittest.skipIf(connection.vendor == 'sqlite', 'concurrent writers need PostgreSQL (see above)')
     def test_a_parallel_sweep_grades_every_row_exactly_once(self):
         rows = [pending_row(self.user) for _ in range(6)]
         self.assertEqual(grading.grade_pending(workers=4), 6)

@@ -15,7 +15,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 
+from . import withdrawal
 from .models import ParticipantProfile, EDITABLE_PROFILE_FIELDS, STAFF_ROLES
+from .permissions import IsResearcher
 
 USERNAME_RE = re.compile(r'^[A-Za-z0-9._-]{3,30}$')
 VALID_ROLES = {r for r, _ in ParticipantProfile.ROLE_CHOICES}
@@ -281,6 +283,54 @@ def change_password_view(request):
     Token.objects.filter(user=user).delete()
     token = Token.objects.create(user=user)
     return Response({'status': 'success', 'token': token.key})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_data_view(request):
+    """Everything the platform holds about the caller - the right of access."""
+    return Response(withdrawal.personal_data(request.user))
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@throttle_classes([AuthBurstThrottle])
+def withdraw_view(request):
+    """Leave the study and have all data erased. Confirmed with the account password so a
+    borrowed lab session cannot withdraw someone else. Revokes the token: the client must
+    treat the caller as signed out afterwards."""
+    if not request.user.check_password(request.data.get('password') or ''):
+        return Response({'error': 'Password is incorrect.', 'fields': {'password': 'Incorrect password.'}},
+                        status=400)
+    try:
+        profile = withdrawal.withdraw(request.user, by=withdrawal.PARTICIPANT)
+    except withdrawal.NotAParticipant as exc:
+        return Response({'error': str(exc)}, status=400)
+    return Response({
+        'status': 'withdrawn',
+        'participant_code': profile.participant_code,
+        'withdrawn_at': profile.withdrawn_at.isoformat(),
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsResearcher])
+def withdraw_participant_view(request, participant_code):
+    """A withdrawal requested outside the platform (a form, an email) is actioned here by
+    the researcher, with the same erasure."""
+    profile = ParticipantProfile.objects.filter(participant_code=participant_code).select_related('user').first()
+    if profile is None:
+        return Response({'error': f'No participant {participant_code}.'}, status=404)
+    try:
+        profile = withdrawal.withdraw(profile.user, by=withdrawal.RESEARCHER)
+    except withdrawal.NotAParticipant as exc:
+        return Response({'error': str(exc)}, status=400)
+    return Response({
+        'status': 'withdrawn',
+        'participant_code': profile.participant_code,
+        'withdrawn_at': profile.withdrawn_at.isoformat(),
+        'withdrawn_by': profile.withdrawn_by,
+    })
 
 
 AVATAR_TYPES = {'image/jpeg', 'image/png', 'image/webp'}

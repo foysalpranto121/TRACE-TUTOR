@@ -89,6 +89,30 @@ class DiagnosticParsingTests(SimpleTestCase):
         self.assertEqual(runner.parse_diagnostics('ld: cannot find -lm'), [])
 
 
+class DiagnosticFlagTests(SimpleTestCase):
+    """gcc and clang each reject the other's diagnostic flags outright. The sandbox
+    container is gcc; the host is usually zig cc (clang); a lab PC may have MinGW."""
+
+    GCC = ['-fno-diagnostics-show-caret', '-fdiagnostics-color=never']
+    CLANG = ['-fno-caret-diagnostics', '-fno-color-diagnostics']
+
+    def test_plain_gcc_and_g_plus_plus(self):
+        self.assertEqual(runner._diagnostic_flags(['gcc']), self.GCC)
+        self.assertEqual(runner._diagnostic_flags(['g++']), self.GCC)
+
+    def test_a_windows_mingw_override_with_a_full_path(self):
+        self.assertEqual(runner._diagnostic_flags([r'C:\mingw64\bin\gcc.exe']), self.GCC)
+        self.assertEqual(runner._diagnostic_flags([r'C:\mingw64\bin\G++.EXE']), self.GCC)
+
+    def test_zig_cc_is_clang(self):
+        self.assertEqual(runner._diagnostic_flags(['python.exe', '-m', 'ziglang', 'cc']), self.CLANG)
+        self.assertEqual(runner._diagnostic_flags(['python.exe', '-m', 'ziglang', 'c++']), self.CLANG)
+
+    def test_plain_clang(self):
+        self.assertEqual(runner._diagnostic_flags(['clang']), self.CLANG)
+        self.assertEqual(runner._diagnostic_flags(['/usr/bin/clang++']), self.CLANG)
+
+
 class RunCodeGuardTests(SimpleTestCase):
     def test_an_unsupported_language_is_reported_not_executed(self):
         result = runner.run_code(language='rust', code='fn main(){}')

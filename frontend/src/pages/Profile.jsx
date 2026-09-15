@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useResetOnChange } from '../hooks/useResetOnChange';
-import { User, School, BookOpen, ShieldCheck, KeyRound, Save, Loader2, CheckCircle2, AlertTriangle, Fingerprint, Calendar, Mail, Brain, Bot, Check, Palette, Sun, Moon, Sparkles, Camera, Trash2, Upload } from 'lucide-react';
+import { apiService } from '../services/api';
+import { User, School, BookOpen, ShieldCheck, KeyRound, Save, Loader2, CheckCircle2, AlertTriangle, Fingerprint, Calendar, Mail, Brain, Bot, Check, Palette, Sun, Moon, Sparkles, Camera, Trash2, Upload, Download, LogOut } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { useTheme, FX_LEVELS } from '../context/useTheme';
 import { TextField, PasswordField, SelectField, ChipGroup, StrengthMeter } from '../components/Form/fields';
@@ -38,7 +40,43 @@ const Section = ({ icon, title, subtitle, children }) => (
 );
 
 export const Profile = () => {
-  const { user, updateProfile, changePassword, setArm, uploadAvatar, removeAvatar, language } = useAuth();
+  const { user, updateProfile, changePassword, setArm, uploadAvatar, removeAvatar, language, withdraw } = useAuth();
+  const navigate = useNavigate();
+  // Participant rights: a copy of everything held, and leaving the study.
+  const [dataState, setDataState] = useState({ busy: false, error: null });
+  const [wd, setWd] = useState({ password: '', confirm: false, saving: false, error: null });
+
+  const handleDownloadData = async () => {
+    setDataState({ busy: true, error: null });
+    try {
+      const data = await apiService.myData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `trace-tutor-${user?.participant_code || 'my'}-data.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setDataState({ busy: false, error: null });
+    } catch (err) {
+      setDataState({ busy: false, error: err.message });
+    }
+  };
+
+  const handleWithdraw = async (e) => {
+    e.preventDefault();
+    if (!wd.confirm || !wd.password) return;
+    setWd((w) => ({ ...w, saving: true, error: null }));
+    try {
+      await withdraw(wd.password);
+      // The server erased the data and revoked the token; the context cleared the session.
+      navigate('/', { replace: true });
+    } catch (err) {
+      setWd((w) => ({ ...w, saving: false, error: err.fields?.password || err.message }));
+    }
+  };
   const { theme, setTheme, fxChoice, setFx, systemReducedMotion } = useTheme();
   const bn = language === 'bn';
   const isStudent = user?.role === 'STUDENT';
@@ -383,9 +421,17 @@ export const Profile = () => {
             <div className="flex justify-between gap-3"><dt className="text-on-surface-variant">{bn ? 'টিউটর মোড' : 'Tutor mode'}</dt><dd className="font-bold text-on-surface">{armLabel(user.arm)}</dd></div>
             <div className="flex justify-between gap-3"><dt className="text-on-surface-variant">{bn ? 'ডেটা ব্যবহার' : 'Data use'}</dt><dd className="text-on-surface text-right max-w-[60%]">{bn ? 'কোড, প্রশ্ন ও স্কোর কেবল কোড নম্বরে সংরক্ষিত হয়' : 'Code, questions and scores are stored under your code only'}</dd></div>
           </dl>
-          <p className="text-[11px] text-on-surface-variant mt-4 leading-relaxed">
-            {bn ? 'গবেষণা থেকে সরে যেতে বা আপনার ডেটা মুছতে গবেষণা সমন্বয়কের সাথে যোগাযোগ করুন এবং আপনার participant code জানান।' : 'To withdraw from the study or request deletion of your data, contact the research coordinator and quote your participant code.'}
-          </p>
+          <div className="mt-4 space-y-2">
+            <p className="text-[11px] text-on-surface-variant leading-relaxed">
+              {bn
+                ? 'আপনার সম্পর্কে প্ল্যাটফর্মে যা কিছু সংরক্ষিত আছে — প্রোফাইল, পরীক্ষার উত্তর, কার্যকলাপ — তার একটি কপি যেকোনো সময় ডাউনলোড করতে পারেন। গবেষণা থেকে সরে যাওয়ার অপশন নিচে আছে।'
+                : 'You can download a copy of everything the platform holds about you - profile, exam answers, activity - at any time. Leaving the study is further down this page.'}
+            </p>
+            {dataState.error && <div className="text-xs text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2">{dataState.error}</div>}
+            <button type="button" onClick={handleDownloadData} disabled={dataState.busy} className="px-4 py-2 rounded-xl bg-surface-container-high border border-outline-variant/40 text-on-surface text-xs font-bold flex items-center gap-2 hover:bg-surface-container-highest transition-colors disabled:opacity-50">
+              {dataState.busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4 text-primary" />} {bn ? 'আমার ডেটা ডাউনলোড (JSON)' : 'Download my data (JSON)'}
+            </button>
+          </div>
         </Section>
 
         <Section icon={<KeyRound className="w-4 h-4 text-primary" />} title={bn ? 'পাসওয়ার্ড পরিবর্তন' : 'Change password'}>
@@ -403,6 +449,30 @@ export const Profile = () => {
             </button>
           </form>
         </Section>
+
+        {/* Participants only: staff accounts are not enrolled in the study. The consent
+            form promises withdrawal at any time with erasure; this is that promise. */}
+        {user?.role === 'STUDENT' && (
+          <Section icon={<LogOut className="w-4 h-4 text-rose-400" />} title={bn ? 'গবেষণা থেকে সরে যান' : 'Withdraw from the study'}>
+            <form onSubmit={handleWithdraw} className="space-y-3">
+              <div className="text-xs text-on-surface-variant leading-relaxed space-y-1.5 bg-rose-500/5 border border-rose-500/20 rounded-lg px-3 py-2.5">
+                <p className="font-bold text-on-surface flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 text-rose-400" /> {bn ? 'এটি স্থায়ী এবং ফিরিয়ে আনা যাবে না।' : 'This is permanent and cannot be undone.'}</p>
+                <p>{bn
+                  ? 'আপনার সব পরীক্ষার উত্তর, কার্যকলাপের রেকর্ড, প্রোফাইল তথ্য ও ছবি এখনই মুছে ফেলা হবে এবং অ্যাকাউন্ট বন্ধ হয়ে যাবে। শুধু আপনার participant code থাকবে, যাতে গবেষণায় "কতজন যোগ দিয়েছিলেন" সংখ্যাটি সঠিক থাকে — তার সাথে আপনাকে শনাক্ত করার মতো কিছুই থাকবে না।'
+                  : 'All your exam answers, activity records, profile details and photo are erased immediately and the account is closed. Only your participant code remains, so the study can report how many people enrolled - nothing that identifies you stays with it.'}</p>
+              </div>
+              {wd.error && <div className="text-xs text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2">{wd.error}</div>}
+              <PasswordField label={bn ? 'নিশ্চিত করতে পাসওয়ার্ড দিন' : 'Enter your password to confirm'} value={wd.password} onChange={(e) => setWd({ ...wd, password: e.target.value })} autoComplete="current-password" required />
+              <label className="flex items-start gap-2.5 text-xs text-on-surface cursor-pointer select-none">
+                <input type="checkbox" checked={wd.confirm} onChange={(e) => setWd({ ...wd, confirm: e.target.checked })} className="mt-0.5 w-4 h-4 rounded accent-rose-500" />
+                <span>{bn ? 'আমি বুঝেছি যে আমার ডেটা মুছে ফেলা হবে এবং আমি গবেষণা থেকে সরে যেতে চাই।' : 'I understand my data will be erased and I want to withdraw from the study.'}</span>
+              </label>
+              <button type="submit" disabled={wd.saving || !wd.confirm || !wd.password} className="px-4 py-2 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-400 text-xs font-bold flex items-center gap-2 hover:bg-rose-500/25 transition-colors disabled:opacity-50">
+                {wd.saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />} {bn ? 'সরে যান ও আমার ডেটা মুছুন' : 'Withdraw and erase my data'}
+              </button>
+            </form>
+          </Section>
+        )}
       </div>
     </div>
   );

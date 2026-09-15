@@ -19,6 +19,10 @@ urlpatterns = [
     path('api/accounts/profile/', accounts_views.profile_view, name='profile'),
     path('api/accounts/password/', accounts_views.change_password_view, name='change_password'),
     path('api/accounts/avatar/', accounts_views.avatar_view, name='avatar'),
+    path('api/accounts/my-data/', accounts_views.my_data_view, name='my_data'),
+    path('api/accounts/withdraw/', accounts_views.withdraw_view, name='withdraw'),
+    path('api/admin/participants/<str:participant_code>/withdraw/',
+         accounts_views.withdraw_participant_view, name='withdraw_participant'),
     path('api/telemetry/log/', logging_views.log_telemetry, name='log_telemetry'),
     path('api/dashboard/', logging_views.dashboard_summary, name='dashboard_summary'),
     

@@ -27,7 +27,7 @@ ARMS = ('REASONING_VISIBLE', 'ANSWER_ONLY')
 COUNTED_EVENTS = ('HELP_REQUEST', 'CODE_RESULT', 'COPY_PASTE')
 
 CSV_COLUMNS = [
-    'participant_code', 'arm', 'consent_given', 'grade', 'medium', 'area_type',
+    'participant_code', 'arm', 'withdrawn', 'consent_given', 'grade', 'medium', 'area_type',
     'prior_experience', 'ai_tool_familiarity',
     'pre', 'post', 'transfer', 'withdrawal',
     'normalized_gain', 'withdrawal_drop',
@@ -236,6 +236,9 @@ def participant_rows():
         row = {
             'participant_code': profile.participant_code or f'unassigned-{profile.pk}',
             'arm': profile.assigned_arm,
+            # A withdrawn participant stays in the export as a row of nulls so the
+            # enrolment denominator is visible; everything they generated is gone.
+            'withdrawn': bool(profile.withdrawn_at),
             'consent_given': profile.consent_given,
             'grade': profile.grade,
             'medium': profile.medium,
@@ -289,6 +292,7 @@ def study_stats():
 
     return {
         'total_participants': len(rows),
+        'withdrawn_participants': sum(1 for r in rows if r['withdrawn']),
         'consented_participants': sum(1 for r in rows if r['consent_given']),
         'staff_accounts': staff,
         'arms': arm_counts,

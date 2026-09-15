@@ -269,11 +269,16 @@ All endpoints are prefixed `/api/`.
 | `POST` | `accounts/register/` · `login/` · `logout/` | Enrolment and authentication |
 | `GET` `PATCH` | `accounts/profile/` | Covariates, language, consent |
 | `POST` `DELETE` | `accounts/avatar/` | Profile picture |
+| `GET` | `accounts/my-data/` | Everything held about the caller (right of access) |
+| `POST` | `accounts/withdraw/` | Leave the study: erases the participant's data, closes the account |
+| `POST` | `admin/participants/<code>/withdraw/` | The same erasure, actioned by a researcher for a withdrawal received offline |
 | `POST` | `tutor/query/` | One tutoring turn — retrieval, generation, arm-filtered response |
 | `POST` | `code/run/` | Compile and run a submission |
 | `GET` | `code/status/` | Compiler availability |
 | `GET` | `assessment/items/?type=pre` | Serve an exam form |
-| `POST` | `assessment/submit/` | Record a submission |
+| `POST` | `assessment/submit/` | Save a submission (graded in the background) |
+| `GET` | `assessment/submissions/<id>/` | Poll a submission's grading state and results (owner or staff) |
+| `GET` | `expert/certification/` | Item certification report: I-CVI, modified kappa, S-CVI, difficulty, discrimination, KR-20 |
 | `POST` | `telemetry/log/` | Append a behavioural event |
 | `GET` | `dashboard/` | Participant progress summary |
 | `POST` | `curriculum/search/` · `ingest/` | Retrieval and index building |
@@ -335,6 +340,8 @@ These are enforced server-side and covered by tests (`python manage.py test`):
 - **The dashboard only ever describes the caller**, and study-wide totals are visible to staff only.
 - **Scores are computed server-side.** A `score` in a submission body is ignored.
 - **Nothing on the researcher dashboard is fabricated.** An outcome the data cannot support is returned as `null` with a note, and rendered as an em dash.
+- **Withdrawal is erasure.** A participant can leave from their profile page (password-confirmed), or a researcher can action a withdrawal received offline. Every submission, telemetry event, personal field and the avatar are deleted and the account is closed; only the pseudonymous code and the arm remain, so the study can still say how many enrolled. Participants can download everything held about them at any time.
+- **A submission is never lost.** The raw answers are saved before any grading runs; a compiler failure marks the row `failed` for staff to see and retry rather than discarding the exam.
 
 ---
 
