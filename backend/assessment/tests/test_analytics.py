@@ -229,6 +229,7 @@ class CsvColumnTests(SimpleTestCase):
             keys.add(exam_type)
             keys.add(f'{exam_type}_attempts')
             keys.add(f'{exam_type}_arm')
+            keys.add(f'{exam_type}_minutes')
         self.assertEqual(set(analytics.CSV_COLUMNS), keys)
 
     def test_no_column_carries_a_real_name_or_email(self):

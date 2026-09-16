@@ -69,6 +69,8 @@ def _summarize(log):
         return f"Switched arm to {p.get('new_arm', '?')}"
     if t == 'WORKSPACE_ENTER':
         return 'Opened the coding workspace'
+    if t == 'PAPER_OPENED':
+        return f"Opened the {p.get('exam_type', '?')} paper"
     return t.replace('_', ' ').title()
 
 

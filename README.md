@@ -136,6 +136,8 @@ Copy `backend/.env.example` to `backend/.env` and fill it in. **Never commit `.e
 | --- | --- | --- |
 | `GEMINI_API_KEY` | — | **Required.** Tutor, OCR and embeddings |
 | `ARM_SWITCH_POLICY` | `after_protocol` | When a participant may switch tutor mode: `after_protocol` (only once all four papers are in), `never`, or `always` (pilots/demos). The enrolment arm is recorded permanently either way. |
+| `NO_AI_PAPERS` | `pre,withdrawal` | Papers during which the tutor is switched off server-side |
+| `PAPER_SITTING_TTL_HOURS` | `4` | An open no-AI paper older than this stops blocking the tutor (abandoned tab) |
 | `STAFF_ACCESS_CODE` | *(empty)* | Required to register a teacher or researcher account. Empty means staff registration is **refused**, never "any code will do". |
 | `DEBUG` | `0` | `1` for local development. Drives error pages, host checking, CORS and media serving. |
 | `SECRET_KEY` | — | **Required when `DEBUG=0`** — the server refuses to start without it. Signs sessions and the research device cookie. |
@@ -203,6 +205,17 @@ under that burst. Two deployment rules follow:
 - **Serve with several web workers** (e.g. `gunicorn -w 4`, or `waitress --threads=8` on
   Windows) and, on a shared server, `GRADING_MODE=worker` with the grading command in its
   own process so compiles never contend with requests.
+
+### Before the real cohort
+
+```bash
+python manage.py reset_study_data          # lists what pilot/dev data would be removed
+python manage.py reset_study_data --yes    # removes every participant and everything they generated
+```
+
+Staff accounts, the item bank, expert ratings and the curriculum index are kept. Then download the
+**study manifest** from the researcher dashboard and file it with the protocol: it records the exact
+model, temperature, fallback chain, switching policy, sandbox tier, item-bank hash and code revision.
 
 ### Rate limits
 
@@ -288,6 +301,7 @@ All endpoints are prefixed `/api/`.
 | `GET` `POST` | `expert/reviews/` · `rating/` | Content-validity survey |
 | `GET` | `admin/stats/` | Researcher aggregates, computed from the collected data |
 | `GET` | `admin/export/` | Streams the per-participant dataset as CSV |
+| `GET` | `admin/manifest/` | The configuration that produced the data: model, temperature, chain, policy, sandbox tier, item-bank hash, code revision |
 
 Everything except `accounts/register/` and `accounts/login/` requires a token. `curriculum/search/`
 and `curriculum/passages/` are staff-only; `curriculum/ingest/`, `admin/stats/` and `admin/export/`
@@ -343,6 +357,7 @@ These are enforced server-side and covered by tests (`python manage.py test`):
 - **Scores are computed server-side.** A `score` in a submission body is ignored.
 - **Nothing on the researcher dashboard is fabricated.** An outcome the data cannot support is returned as `null` with a note, and rendered as an em dash.
 - **Withdrawal is erasure.** A participant can leave from their profile page (password-confirmed), or a researcher can action a withdrawal received offline. Every submission, telemetry event, personal field and the avatar are deleted and the account is closed; only the pseudonymous code and the arm remain, so the study can still say how many enrolled. Participants can download everything held about them at any time.
+- **The protocol is enforced by the server, not the browser.** Serving a paper opens a *sitting*; while the pre-test or the withdrawal task is open the tutor endpoint refuses (`NO_AI_PAPERS`), so a second tab on the workspace gets the same answer as the assessment page. A paper is sat once - a second submission is refused and the page shows the recorded result. Time on each paper is measured from first opening to submission and exported.
 - **A submission is never lost.** The raw answers are saved before any grading runs; a compiler failure marks the row `failed` for staff to see and retry rather than discarding the exam.
 
 ---

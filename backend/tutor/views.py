@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view, permission_classes, throttle_cla
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from assessment import sittings
 from curriculum.rag_engine import rag_engine_instance
 from trace_backend import gemini
 from trace_backend.cache import cache_key, tiered_get_or_set
@@ -87,6 +88,19 @@ def query_tutor(request):
 
     if not prompt:
         return Response({'error': 'prompt is required'}, status=400)
+
+    # The pre-test is the baseline and the withdrawal task measures dependency: while a
+    # participant has either open, the tutor is off - here, not just in the page that
+    # hides the chat, so a second tab on the workspace gets the same answer.
+    blocking = sittings.blocking_paper(request.user)
+    if blocking:
+        return Response({
+            'error': ('The AI tutor is unavailable while your '
+                      f'{"pre-test" if blocking == "pre" else "withdrawal task"} is in progress. '
+                      'Submit the paper first.'),
+            'reason': 'paper_in_progress',
+            'exam_type': blocking,
+        }, status=403)
 
     retrieval_query = ' '.join(x for x in [prompt, problem_title] if x)
     passages = rag_engine_instance.retrieve(retrieval_query, k=5)

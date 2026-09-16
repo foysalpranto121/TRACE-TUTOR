@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 class AssessmentItem(models.Model):
     """Legacy table. The live source of items is assessment/item_bank.json (see scoring.py);
@@ -95,6 +96,36 @@ class ExamSubmission(models.Model):
     @property
     def is_graded(self):
         return self.grading_status == self.GRADED
+
+
+class PaperSitting(models.Model):
+    """One participant's sitting of one paper: opened when the items are first served,
+    closed when the submission lands.
+
+    This is what lets the server enforce the protocol rather than trusting the browser:
+    the tutor refuses while a no-AI paper (pre-test, withdrawal task) is open, a paper
+    cannot be submitted twice, and time-on-paper is measured rather than guessed.
+    """
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sittings')
+    exam_type = models.CharField(max_length=20)
+    arm = models.CharField(max_length=20, blank=True, default='')       # mode when first opened
+    first_opened_at = models.DateTimeField(auto_now_add=True)
+    last_opened_at = models.DateTimeField(default=timezone.now)        # refreshed on every re-open
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    submission = models.ForeignKey('ExamSubmission', null=True, blank=True,
+                                   on_delete=models.SET_NULL, related_name='sittings')
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['student', 'exam_type'], name='uniq_sitting_per_student_paper'),
+        ]
+
+    @property
+    def is_open(self):
+        return self.submitted_at is None
+
+    def __str__(self):
+        return f'{self.exam_type} sitting by user {self.student_id} ({"open" if self.is_open else "submitted"})'
 
 
 class ExpertGrade(models.Model):

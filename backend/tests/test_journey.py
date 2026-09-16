@@ -104,6 +104,13 @@ class ParticipantJourneyTests(ApiTestCase):
         self.assertTrue(all('keyed_answer' not in item for item in papers['items']))
         self.assertEqual(alice_c.get('/api/assessment/items/?type=post').status_code, 403)
 
+        # Fetching the pre-test opened her sitting of it. It is a no-AI paper, so the
+        # tutor now refuses her everywhere - a second tab on the workspace included.
+        self.assertEqual(papers['sitting']['status'], 'open')
+        blocked = alice_c.post('/api/tutor/query/', {'prompt': 'help me', 'problem_id': 'p1'}, format='json')
+        self.assertEqual(blocked.status_code, 403)
+        self.assertEqual(blocked.json()['reason'], 'paper_in_progress')
+
         answers = {i['id']: 'a' for i in papers['items'] if i['type'] == 'concept_mcq'}
         submitted = alice_c.post('/api/assessment/submit/',
                                  {'exam_type': 'pre', 'answers': answers, 'code_answers': {}},
@@ -118,6 +125,13 @@ class ParticipantJourneyTests(ApiTestCase):
         # The poll endpoint the page uses shows the same thing, and only to its owner.
         polled = alice_c.get(f"/api/assessment/submissions/{result['submission_id']}/").json()
         self.assertEqual(polled['score_pct'], result['score_pct'])
+
+        # Submitting closed the sitting: the tutor is back, the paper is now read-only.
+        self.assertEqual(alice_c.post('/api/tutor/query/', {'prompt': 'help me', 'problem_id': 'p1'},
+                                      format='json').status_code, 200)
+        self.assertEqual(alice_c.post('/api/assessment/submit/', {'exam_type': 'pre', 'answers': {}},
+                                      format='json').status_code, 409, 'a paper is sat once')
+        self.assertEqual(alice_c.get('/api/assessment/items/?type=pre').json()['sitting']['status'], 'completed')
 
         # ---------------------------------------------- 6. results and progression
         dashboard = alice_c.get('/api/dashboard/').json()

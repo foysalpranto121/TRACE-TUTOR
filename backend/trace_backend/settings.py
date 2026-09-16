@@ -159,6 +159,13 @@ AUTH_PASSWORD_VALIDATORS = [
 # switch is logged with its timing relative to protocol completion.
 ARM_SWITCH_POLICY = os.environ.get('ARM_SWITCH_POLICY', 'after_protocol').strip().lower()
 
+# Papers during which the tutor is switched off server-side (assessment/sittings.py):
+# the pre-test is the baseline, the withdrawal task measures dependency. A sitting
+# older than the TTL without a submission no longer blocks, so an abandoned tab cannot
+# lock a participant out of the tutor for good.
+NO_AI_PAPERS = tuple(env_list('NO_AI_PAPERS', 'pre,withdrawal'))
+PAPER_SITTING_TTL_HOURS = float(os.environ.get('PAPER_SITTING_TTL_HOURS', '4'))
+
 # Teachers and researchers must present this code at registration; students never see it.
 # No default: a committed fallback is public the moment the repository is, and this code is
 # what stands between a stranger and every exam paper plus all participant data. Unset means

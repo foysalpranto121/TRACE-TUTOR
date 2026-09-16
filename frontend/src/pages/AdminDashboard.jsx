@@ -214,6 +214,23 @@ export const AdminDashboard = () => {
           </button>
 
           <button
+            onClick={async () => {
+              setError(null);
+              try {
+                const { filename } = await apiService.downloadManifest();
+                setNotice(`Saved the study manifest as ${filename} - file it with the dataset.`);
+              } catch (err) {
+                setError(err.message || 'Could not build the manifest.');
+              }
+            }}
+            disabled={!stats}
+            className="px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-bold text-xs border border-outline-variant/30 flex items-center gap-2 transition-all disabled:opacity-50"
+            title="Model, temperature, fallback chain, switch policy, sandbox tier, item-bank hash and code revision that produced the data"
+          >
+            <Info className="w-4 h-4 text-primary" /> Study manifest
+          </button>
+
+          <button
             onClick={handleExportCSV}
             disabled={isExporting || !stats}
             className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-bold text-xs flex items-center gap-2 shadow-lg shadow-primary/20 transition-all disabled:opacity-50"

@@ -150,6 +150,8 @@ export const apiService = {
   getAdminStats: () => fetchApi('/admin/stats/'),
   // Streams the real per-participant dataset straight to the browser as a download.
   exportDataset: () => downloadFile('/admin/export/', 'trace_tutor_dataset.csv'),
+  // The exact configuration behind the data - file it next to the export.
+  downloadManifest: () => downloadFile('/admin/manifest/', 'trace_tutor_manifest.json'),
   
   // Student Code Submission Evaluation & Marking by Expert
   getStudentSubmissions: () => fetchApi('/expert/submissions/'),

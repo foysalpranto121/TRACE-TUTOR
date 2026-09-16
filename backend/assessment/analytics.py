@@ -19,6 +19,7 @@ from django.db.models import Count, Min, Q
 
 from accounts.models import ParticipantProfile
 from logging_app.models import InteractionLog
+from . import sittings
 from .models import ExamSubmission
 
 EXAM_TYPES = ('pre', 'post', 'transfer', 'withdrawal')
@@ -36,6 +37,7 @@ CSV_COLUMNS = [
     'prior_experience', 'ai_tool_familiarity',
     'pre', 'post', 'transfer', 'withdrawal',
     'pre_arm', 'post_arm', 'transfer_arm', 'withdrawal_arm',
+    'pre_minutes', 'post_minutes', 'transfer_minutes', 'withdrawal_minutes',
     'normalized_gain', 'withdrawal_drop',
     'help_requests', 'code_runs', 'copy_paste',
     'pre_attempts', 'post_attempts', 'transfer_attempts', 'withdrawal_attempts',
@@ -235,6 +237,7 @@ def participant_rows():
     submissions = _first_submissions()
     events = _event_counts()
     first_switches = _first_switch_times()
+    minutes = sittings.minutes_by_paper()
 
     rows = []
     for profile in profiles:
@@ -282,6 +285,7 @@ def participant_rows():
             row[exam_type] = scores[exam_type]
             row[f'{exam_type}_attempts'] = (exams.get(exam_type) or {}).get('attempts', 0)
             row[f'{exam_type}_arm'] = (exams.get(exam_type) or {}).get('arm')
+            row[f'{exam_type}_minutes'] = minutes.get((student_id, exam_type))
         rows.append(row)
     return rows
 

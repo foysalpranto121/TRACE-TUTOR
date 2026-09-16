@@ -141,6 +141,20 @@ export const AssessmentPage = () => {
       if (Array.isArray(data?.available)) setAvailableExams(data.available);
       const itemsList = data?.items || [];
       setAllItems(itemsList);
+      // A paper is sat once. If this one is already in, show the recorded result rather
+      // than a blank form the server would refuse anyway.
+      if (data?.sitting?.status === 'completed' && data.sitting.submission_id) {
+        const done = await apiService.getSubmission(data.sitting.submission_id);
+        setGradingState(done.grading_status);
+        setScoreResult({
+          pct: done.score_pct ?? 0,
+          correct: done.correct ?? 0,
+          total: done.total ?? itemsList.length,
+          results: done.results || [],
+          submissionId: done.submission_id,
+        });
+        setIsSubmitted(true);
+      }
     } catch (err) {
       // A locked paper comes back 403 with the list of papers that are open.
       if (Array.isArray(err.body?.available)) setAvailableExams(err.body.available);

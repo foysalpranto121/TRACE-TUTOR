@@ -52,6 +52,7 @@ urlpatterns = [
 
     path('api/admin/stats/', assessment_views.get_admin_stats, name='get_admin_stats'),
     path('api/admin/export/', assessment_views.export_dataset, name='export_dataset'),
+    path('api/admin/manifest/', assessment_views.study_manifest, name='study_manifest'),
     path('api/expert/certification/', assessment_views.certification_report, name='certification_report'),
 ]
 

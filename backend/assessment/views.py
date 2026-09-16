@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from accounts.models import ParticipantProfile, STAFF_ROLES
 from accounts.permissions import IsResearcher, IsStaffRole
 
-from . import analytics, grading, psychometrics, scoring
+from . import analytics, grading, manifest, psychometrics, scoring, sittings
 from .models import ExpertRating, ExamSubmission, ExpertGrade
 
 
@@ -102,9 +102,25 @@ def get_items(request):
         items = scoring.items_for(requested)
     except scoring.ItemBankError as exc:
         return Response({'error': str(exc)}, status=500)
+
+    # Serving the paper to a participant opens their sitting of it (staff browsing the
+    # bank do not sit papers). A completed paper comes back with its submission id so
+    # the page shows the recorded result instead of a fresh form.
+    sitting = None
+    if not _is_staff_role(request.user):
+        if not sittings.already_submitted(request.user, requested):
+            profile = ParticipantProfile.objects.filter(user=request.user).only('assigned_arm').first()
+            sittings.open_paper(request.user, requested, arm=profile.assigned_arm if profile else '')
+        sitting = sittings.describe(request.user, requested)
+        if sitting['status'] != sittings.COMPLETED and sittings.already_submitted(request.user, requested):
+            # Submitted before sittings existed: report it as completed anyway.
+            latest = ExamSubmission.objects.filter(student=request.user, exam_type=requested).order_by('submitted_at').first()
+            sitting = {**sitting, 'status': sittings.COMPLETED, 'submission_id': latest.pk}
+
     return Response({
         'exam_type': requested,
         'available': available,
+        'sitting': sitting,
         'items': [scoring.public_item(i) for i in items],
     })
 
@@ -122,8 +138,16 @@ def submit_exam(request):
     if exam_type not in PROTOCOL_ORDER:
         return Response({'error': f'Unknown exam type: {exam_type}'}, status=400)
     # Same gate as get_items: a paper you cannot open is a paper you cannot submit.
-    if exam_type not in _accessible_exam_types(student, _is_staff_role(student)):
+    is_staff = _is_staff_role(student)
+    if exam_type not in _accessible_exam_types(student, is_staff):
         return Response({'error': 'That paper is not open to you yet.'}, status=403)
+    # A paper is sat once. The first attempt is the observation; a retake after seeing
+    # the marks is not, and letting it through only confused participants.
+    if not is_staff and sittings.already_submitted(student, exam_type):
+        existing = ExamSubmission.objects.filter(student=student, exam_type=exam_type).order_by('submitted_at').first()
+        return Response({'error': 'You have already submitted this paper.',
+                         'submission_id': existing.pk, 'grading_status': existing.grading_status},
+                        status=409)
 
     # Persist first, grade after. The row exists before any compiler runs, so a slow
     # or failed grading pass can never lose the exam. The client never decides the
@@ -140,6 +164,9 @@ def submit_exam(request):
                  'chapter': chapter,
                  'device_id': getattr(request, 'device_id', None)},
     )
+    if not is_staff:
+        # Closes the sitting: time-on-paper is now measurable, and the tutor is free again.
+        sittings.close_paper(student, exam_type, submission, arm=submission.arm)
     graded_now = grading.enqueue(submission.pk)
     submission.refresh_from_db()
     payload = grading.representation(submission)
@@ -359,6 +386,18 @@ def certification_report(request):
         return Response(psychometrics.certification_report())
     except scoring.ItemBankError as exc:
         return Response({'error': str(exc)}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsResearcher])
+def study_manifest(request):
+    """The exact configuration that produced the data - model, temperature, fallback
+    chain, switch policy, sandbox tier, item-bank hash, code version. Offered as a
+    download so it can sit next to the exported dataset in the thesis appendix."""
+    response = Response(manifest.build())
+    stamp = timezone.localtime().strftime('%Y%m%d-%H%M')
+    response['Content-Disposition'] = f'attachment; filename="trace_tutor_manifest_{stamp}.json"'
+    return response
 
 
 @api_view(['GET'])
