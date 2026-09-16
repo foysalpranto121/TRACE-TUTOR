@@ -15,7 +15,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 
-from . import withdrawal
+from . import arms, withdrawal
 from .models import ParticipantProfile, EDITABLE_PROFILE_FIELDS, STAFF_ROLES
 from .permissions import IsResearcher
 
@@ -29,6 +29,7 @@ class AuthBurstThrottle(AnonRateThrottle):
 
 
 def serialize_user(user, profile):
+    switch_allowed, switch_reason = arms.switch_allowed(profile)
     data = {
         'id': user.id,
         'username': user.username,
@@ -37,9 +38,11 @@ def serialize_user(user, profile):
         'role': profile.role,
         'arm': profile.assigned_arm,
         'enrolled_arm': profile.enrolled_arm or profile.assigned_arm,
-        # Whether this account may change its tutor mode: staff always, participants
-        # only while the study allows it. The UI shows a switch or a lock accordingly.
-        'arm_self_select': profile.role in STAFF_ROLES or bool(settings.ARM_SELF_SELECT),
+        # Whether this account may change its tutor mode right now, and why not if not
+        # (accounts/arms.py). The UI shows a switch, or a lock with the matching wording.
+        'arm_self_select': switch_allowed,
+        'arm_switch_reason': switch_reason,
+        'arm_switch_policy': arms.policy(),
         'language': profile.preferred_language,
         'participant_code': profile.participant_code,
         'consent_given': profile.consent_given,
@@ -232,18 +235,16 @@ def profile_view(request):
         if 'full_name' in data and not (data.get('full_name') or '').strip():
             errors['full_name'] = 'Full name cannot be empty.'
 
-        # The arm is the independent variable of a between-subjects experiment. Whether
-        # a participant may move between conditions is a study setting (ARM_SELF_SELECT);
-        # the allocation of record (enrolled_arm) is immutable regardless, and every
-        # switch is logged. Staff accounts are not participants and may always switch.
+        # The arm is the independent variable of a between-subjects experiment. When a
+        # participant may move between conditions is the ARM_SWITCH_POLICY (accounts/
+        # arms.py); the allocation of record (enrolled_arm) is immutable regardless, and
+        # every switch is logged with its reason and its timing.
         arm_switch = None
         if 'assigned_arm' in data:
             arm = str(data.get('assigned_arm') or '').upper()
-            if profile.role not in STAFF_ROLES and not settings.ARM_SELF_SELECT:
-                errors['assigned_arm'] = (
-                    'Your tutor mode is assigned at enrolment and is fixed for this study. '
-                    'Contact the research coordinator if you believe it is wrong.'
-                )
+            allowed, why_not = arms.switch_allowed(profile)
+            if not allowed:
+                errors['assigned_arm'] = arms.LOCK_MESSAGES[why_not]
             elif arm not in VALID_ARMS:
                 errors['assigned_arm'] = 'Unknown tutor mode.'
             elif arm != profile.assigned_arm:
@@ -260,6 +261,11 @@ def profile_view(request):
                 payload={'from': arm_switch[0], 'to': arm_switch[1], 'source': 'profile',
                          'role': profile.role, 'self_selected': profile.role not in STAFF_ROLES,
                          'enrolled_arm': profile.enrolled_arm or arm_switch[0],
+                         # Was the protocol already complete when they moved? Under
+                         # after_protocol always true for participants; recorded so a
+                         # run under 'always' can still separate the two.
+                         'protocol_complete': arms.protocol_complete(user),
+                         'reason': str(data.get('arm_switch_reason') or '').strip()[:300],
                          'device_id': getattr(request, 'device_id', None)},
             )
         _apply_profile_fields(profile, data)

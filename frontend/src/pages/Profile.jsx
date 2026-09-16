@@ -80,10 +80,14 @@ export const Profile = () => {
   const { theme, setTheme, fxChoice, setFx, systemReducedMotion } = useTheme();
   const bn = language === 'bn';
   const isStudent = user?.role === 'STUDENT';
-  // Participants may switch tutor mode while the study allows self-selection (the server
-  // reports arm_self_select); a controlled run locks it and the section goes read-only.
+  // The server decides whether this account may switch tutor mode right now and why not
+  // (arm_self_select / arm_switch_reason): locked until the four papers are done under
+  // the default policy, locked outright in a controlled run, free for staff.
   const armLocked = isStudent && user?.arm_self_select === false;
+  const armLockedUntilDone = armLocked && user?.arm_switch_reason === 'after_protocol';
   const assignedOpt = ARM_OPTIONS.find((o) => o.id === user?.arm) || ARM_OPTIONS[0];
+  // Optional "why?" sent along with a switch, for the preference analysis.
+  const [switchReason, setSwitchReason] = useState('');
   const [form, setForm] = useState(() => fromUser(user));
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
@@ -141,7 +145,8 @@ export const Profile = () => {
     setArmBusy(armId);
     setNotice(null);
     try {
-      await setArm(armId);
+      await setArm(armId, switchReason.trim());
+      setSwitchReason('');
       setNotice({ ok: true, text: bn ? `টিউটর মোড পরিবর্তন হয়েছে: ${armLabel(armId)}` : `Tutor mode switched to ${armLabel(armId)}.` });
     } catch (err) {
       setNotice({ ok: false, text: err.message });
@@ -260,10 +265,22 @@ export const Profile = () => {
       <Section
         icon={<Brain className="w-4 h-4 text-primary" />}
         title={bn ? 'টিউটর মোড' : 'Tutor mode'}
-        subtitle={armLocked
-          ? (bn ? 'গবেষণার জন্য নির্ধারিত' : 'Assigned for the study')
-          : (bn ? 'AI টিউটর আপনাকে কীভাবে সাহায্য করবে তা বেছে নিন' : 'Choose how the AI tutor helps you')}
+        subtitle={armLockedUntilDone
+          ? (bn ? 'চারটি পরীক্ষা শেষ হলে বদলানো যাবে' : 'Switchable after you complete all four papers')
+          : armLocked
+            ? (bn ? 'গবেষণার জন্য নির্ধারিত' : 'Assigned for the study')
+            : (bn ? 'AI টিউটর আপনাকে কীভাবে সাহায্য করবে তা বেছে নিন' : 'Choose how the AI tutor helps you')}
       >
+        {!armLocked && isStudent && (
+          <div className="mb-3">
+            <TextField
+              label={bn ? 'কেন বদলাচ্ছেন? (ঐচ্ছিক)' : 'Why are you switching? (optional)'}
+              value={switchReason}
+              onChange={(e) => setSwitchReason(e.target.value.slice(0, 300))}
+              placeholder={bn ? 'এক লাইনে লিখুন — গবেষণায় সাহায্য করবে' : 'One line helps the research'}
+            />
+          </div>
+        )}
         {armLocked ? (
           <div className="p-4 rounded-2xl border bg-primary/10 border-primary shadow-glow-sm">
             <div className="flex items-center gap-2 mb-1.5">
@@ -309,10 +326,14 @@ export const Profile = () => {
         </div>
         )}
         <p className="text-[11px] text-on-surface-variant mt-3 leading-relaxed">
-          {armLocked
+          {armLockedUntilDone
             ? (bn
-              ? 'নিবন্ধনের সময় আপনার টিউটর মোড এলোমেলোভাবে নির্ধারিত হয়েছে এবং গবেষণা চলাকালে তা অপরিবর্তিত থাকবে — দুই মোডের তুলনাই এই গবেষণার বিষয়। ভুল মনে হলে গবেষণা সমন্বয়কের সাথে যোগাযোগ করুন।'
-              : 'Your tutor mode was allocated at random when you enrolled and stays fixed for the study - the comparison between the two modes is what the study measures. If you believe it is wrong, contact the research coordinator.')
+              ? 'নিবন্ধনের সময় আপনার টিউটর মোড এলোমেলোভাবে নির্ধারিত হয়েছে। চারটি পরীক্ষা (প্রি, পোস্ট, ট্রান্সফার, উইথড্রয়াল) শেষ না হওয়া পর্যন্ত এটি অপরিবর্তিত থাকবে — দুই মোডের তুলনাই এই গবেষণার বিষয়। তারপর আপনি চাইলে অন্য মোডটি দেখতে বদলাতে পারবেন।'
+              : 'Your tutor mode was allocated at random when you enrolled. It stays as it is until you have completed all four papers (pre, post, transfer, withdrawal) - the comparison between the two modes is what the study measures. After that you are free to switch and try the other one.')
+            : armLocked
+              ? (bn
+                ? 'নিবন্ধনের সময় আপনার টিউটর মোড এলোমেলোভাবে নির্ধারিত হয়েছে এবং গবেষণা চলাকালে তা অপরিবর্তিত থাকবে — দুই মোডের তুলনাই এই গবেষণার বিষয়। ভুল মনে হলে গবেষণা সমন্বয়কের সাথে যোগাযোগ করুন।'
+                : 'Your tutor mode was allocated at random when you enrolled and stays fixed for the study - the comparison between the two modes is what the study measures. If you believe it is wrong, contact the research coordinator.')
             : isStudent
               ? (bn
                 ? 'নিবন্ধনের সময় একটি মোড এলোমেলোভাবে নির্ধারিত হয়েছিল। আপনি চাইলে যেকোনো সময় পরিবর্তন করতে পারেন — প্রতিটি পরিবর্তন গবেষণার রেকর্ডে সময়সহ সংরক্ষিত হয়।'

@@ -125,13 +125,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Tutor mode is self-selectable; persisted so the workspace and the research log agree.
-  const setArm = async (newArm) => {
+  // Switch tutor mode. The server decides whether this account may (arm_self_select);
+  // an optional reason is stored with the switch for the preference analysis.
+  const setArm = async (newArm, reason = '') => {
     if (!user || newArm === user.arm) return user;
     const previous = user.arm;
     updateUser({ arm: newArm });
     try {
-      return await updateProfile({ assigned_arm: newArm });
+      return await updateProfile({ assigned_arm: newArm, ...(reason ? { arm_switch_reason: reason } : {}) });
     } catch (err) {
       updateUser({ arm: previous });
       throw err;

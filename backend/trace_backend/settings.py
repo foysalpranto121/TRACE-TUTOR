@@ -148,11 +148,16 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# May a participant switch tutor mode after enrolment? The arm they were allocated is
-# recorded permanently either way (ParticipantProfile.enrolled_arm) and the analysis
-# compares by that, intent-to-treat; every switch is logged and counted in the export.
-# Set 0 for a controlled run where participants must stay in their allocated condition.
-ARM_SELF_SELECT = env_flag('ARM_SELF_SELECT', default=True)
+# When may a participant switch tutor mode? (accounts/arms.py)
+#   after_protocol  only once all four papers are submitted - every primary outcome is
+#                   measured in the allocated condition, and the switching afterwards is
+#                   a secondary finding ("having tried one mode, which do they choose?").
+#   never           a fully locked controlled run.
+#   always          free switching; the comparison by enrolled arm stays unbiased but
+#                   shrinks toward zero with every crossover. Pilots and demos only.
+# The allocation of record (enrolled_arm) never changes under any policy, and every
+# switch is logged with its timing relative to protocol completion.
+ARM_SWITCH_POLICY = os.environ.get('ARM_SWITCH_POLICY', 'after_protocol').strip().lower()
 
 # Teachers and researchers must present this code at registration; students never see it.
 # No default: a committed fallback is public the moment the repository is, and this code is

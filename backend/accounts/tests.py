@@ -118,38 +118,90 @@ class ArmAllocationTests(ApiTestCase):
 
 
 class ArmSwitchTests(ApiTestCase):
-    """The arm is the experiment's independent variable. Whether a participant may move
-    between conditions is a study setting (ARM_SELF_SELECT); the allocation of record
-    never changes either way, and every switch is logged with who made it."""
+    """The arm is the experiment's independent variable. When a participant may move
+    between conditions is the ARM_SWITCH_POLICY; the allocation of record never changes
+    under any policy, and every switch is logged with who made it, why, and whether the
+    protocol was already complete."""
 
     def setUp(self):
         super().setUp()
         self.student_user, self.student = enrol('stu', arm='ANSWER_ONLY')
         self.teacher_user, self.teacher = enrol('tea', role='EXPERT_TEACHER', arm='ANSWER_ONLY')
 
-    def switch(self, client, arm):
-        return client.patch('/api/accounts/profile/', {'assigned_arm': arm}, format='json')
+    def switch(self, client, arm, reason=None):
+        body = {'assigned_arm': arm}
+        if reason is not None:
+            body['arm_switch_reason'] = reason
+        return client.patch('/api/accounts/profile/', body, format='json')
 
-    @override_settings(ARM_SELF_SELECT=True)
-    def test_a_participant_may_switch_when_the_study_allows_it(self):
+    def complete_protocol(self, user):
+        from assessment.models import ExamSubmission
+        for exam_type in ('pre', 'post', 'transfer', 'withdrawal'):
+            ExamSubmission.objects.create(student=user, exam_type=exam_type, score_pct=50, answers={})
+
+    # ---------------------------------------------------------- after_protocol (default)
+    def test_the_default_policy_is_after_protocol(self):
+        from accounts import arms
+        self.assertEqual(arms.policy(), 'after_protocol')
+
+    def test_a_participant_is_locked_until_the_last_paper_is_in(self):
         response = self.switch(self.student, 'REASONING_VISIBLE')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('all four papers', response.json()['fields']['assigned_arm'])
+        self.student_user.profile.refresh_from_db()
+        self.assertEqual(self.student_user.profile.assigned_arm, 'ANSWER_ONLY')
+
+    def test_three_papers_are_not_enough(self):
+        from assessment.models import ExamSubmission
+        for exam_type in ('pre', 'post', 'transfer'):
+            ExamSubmission.objects.create(student=self.student_user, exam_type=exam_type, score_pct=50, answers={})
+        self.assertEqual(self.switch(self.student, 'REASONING_VISIBLE').status_code, 400)
+
+    def test_the_switch_unlocks_once_the_protocol_is_complete(self):
+        self.complete_protocol(self.student_user)
+        response = self.switch(self.student, 'REASONING_VISIBLE', reason='wanted to see the steps')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['arm'], 'REASONING_VISIBLE')
-        self.student_user.profile.refresh_from_db()
-        self.assertEqual(self.student_user.profile.assigned_arm, 'REASONING_VISIBLE')
 
-    @override_settings(ARM_SELF_SELECT=True)
-    def test_every_switch_is_logged_with_who_made_it(self):
+    def test_the_session_explains_the_lock_and_then_the_unlock(self):
+        before = self.student.get('/api/accounts/me/').json()
+        self.assertFalse(before['arm_self_select'])
+        self.assertEqual(before['arm_switch_reason'], 'after_protocol')
+        self.assertEqual(before['arm_switch_policy'], 'after_protocol')
+        self.complete_protocol(self.student_user)
+        after = self.student.get('/api/accounts/me/').json()
+        self.assertTrue(after['arm_self_select'])
+        self.assertEqual(after['arm_switch_reason'], 'completed')
+
+    def test_a_pending_submission_still_counts_as_a_sat_paper(self):
+        from assessment.models import ExamSubmission
+        for exam_type in ('pre', 'post', 'transfer', 'withdrawal'):
+            ExamSubmission.objects.create(student=self.student_user, exam_type=exam_type,
+                                          score_pct=None, grading_status=ExamSubmission.PENDING, answers={})
+        self.assertEqual(self.switch(self.student, 'REASONING_VISIBLE').status_code, 200)
+
+    # ------------------------------------------------------------------- logging
+    def test_every_switch_is_logged_with_who_why_and_when(self):
         from logging_app.models import InteractionLog
-        self.switch(self.student, 'REASONING_VISIBLE')
+        self.complete_protocol(self.student_user)
+        self.switch(self.student, 'REASONING_VISIBLE', reason='curious about the reasoning')
         event = InteractionLog.objects.get(user=self.student_user, event_type='ARM_SWITCH')
         self.assertEqual((event.payload['from'], event.payload['to']), ('ANSWER_ONLY', 'REASONING_VISIBLE'))
         self.assertTrue(event.payload['self_selected'])
+        self.assertTrue(event.payload['protocol_complete'])
+        self.assertEqual(event.payload['reason'], 'curious about the reasoning')
         self.assertEqual(event.payload['enrolled_arm'], 'ANSWER_ONLY')
         self.assertEqual(event.arm, 'REASONING_VISIBLE', 'the event carries the arm after the switch')
 
-    @override_settings(ARM_SELF_SELECT=True)
+    @override_settings(ARM_SWITCH_POLICY='always')
+    def test_a_switch_before_completion_is_marked_as_such(self):
+        from logging_app.models import InteractionLog
+        self.switch(self.student, 'REASONING_VISIBLE')
+        event = InteractionLog.objects.get(user=self.student_user, event_type='ARM_SWITCH')
+        self.assertFalse(event.payload['protocol_complete'])
+
     def test_switching_never_changes_the_arm_of_record(self):
+        self.complete_protocol(self.student_user)
         self.switch(self.student, 'REASONING_VISIBLE')
         self.switch(self.student, 'ANSWER_ONLY')
         self.switch(self.student, 'REASONING_VISIBLE')
@@ -157,28 +209,31 @@ class ArmSwitchTests(ApiTestCase):
         self.assertEqual(self.student_user.profile.enrolled_arm, 'ANSWER_ONLY')
         self.assertEqual(self.student.get('/api/accounts/me/').json()['enrolled_arm'], 'ANSWER_ONLY')
 
-    @override_settings(ARM_SELF_SELECT=False)
-    def test_a_participant_cannot_switch_when_the_study_locks_it(self):
+    # ------------------------------------------------------------ other policies
+    @override_settings(ARM_SWITCH_POLICY='never')
+    def test_never_locks_participants_even_after_completion(self):
+        self.complete_protocol(self.student_user)
         response = self.switch(self.student, 'REASONING_VISIBLE')
         self.assertEqual(response.status_code, 400)
-        self.assertIn('assigned_arm', response.json()['fields'])
-        self.student_user.profile.refresh_from_db()
-        self.assertEqual(self.student_user.profile.assigned_arm, 'ANSWER_ONLY')
+        self.assertIn('fixed for this study', response.json()['fields']['assigned_arm'])
+        self.assertEqual(self.student.get('/api/accounts/me/').json()['arm_switch_reason'], 'never')
 
-    @override_settings(ARM_SELF_SELECT=False)
-    def test_staff_may_switch_even_when_participants_are_locked(self):
+    @override_settings(ARM_SWITCH_POLICY='always')
+    def test_always_lets_participants_switch_at_any_time(self):
+        self.assertEqual(self.switch(self.student, 'REASONING_VISIBLE').status_code, 200)
+
+    @override_settings(ARM_SWITCH_POLICY='nonsense')
+    def test_an_unknown_policy_falls_back_to_the_safe_one(self):
+        from accounts import arms
+        self.assertEqual(arms.policy(), 'after_protocol')
+
+    @override_settings(ARM_SWITCH_POLICY='never')
+    def test_staff_may_switch_under_every_policy(self):
         response = self.switch(self.teacher, 'REASONING_VISIBLE')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['arm'], 'REASONING_VISIBLE')
+        self.assertEqual(self.teacher.get('/api/accounts/me/').json()['arm_switch_reason'], 'staff')
 
-    def test_the_session_reports_whether_switching_is_allowed(self):
-        with override_settings(ARM_SELF_SELECT=True):
-            self.assertTrue(self.student.get('/api/accounts/me/').json()['arm_self_select'])
-        with override_settings(ARM_SELF_SELECT=False):
-            self.assertFalse(self.student.get('/api/accounts/me/').json()['arm_self_select'])
-            self.assertTrue(self.teacher.get('/api/accounts/me/').json()['arm_self_select'],
-                            'staff are not participants')
-
+    # ------------------------------------------------------------------- misc
     def test_a_participant_can_still_edit_their_other_profile_fields(self):
         response = self.student.patch('/api/accounts/profile/',
                                       {'school_name': 'Dhaka College', 'weekly_study_hours': 6},
@@ -188,18 +243,38 @@ class ArmSwitchTests(ApiTestCase):
 
     def test_an_unknown_mode_is_refused(self):
         self.assertEqual(self.switch(self.teacher, 'MAGIC').status_code, 400)
-        with override_settings(ARM_SELF_SELECT=True):
-            self.assertEqual(self.switch(self.student, 'MAGIC').status_code, 400)
+        self.complete_protocol(self.student_user)
+        self.assertEqual(self.switch(self.student, 'MAGIC').status_code, 400)
 
+    @override_settings(ARM_SWITCH_POLICY='always')
     def test_allocation_balance_counts_enrolment_not_later_switches(self):
-        """Ten participants enrolled ANSWER_ONLY who all switch must not make the next
+        """Participants enrolled ANSWER_ONLY who all switch must not make the next
         enrolment land in ANSWER_ONLY to 'rebalance' a move that never happened."""
-        with override_settings(ARM_SELF_SELECT=True):
-            for i in range(3):
-                user, client = enrol(f'mover{i}', arm='ANSWER_ONLY')
-                self.switch(client, 'REASONING_VISIBLE')
+        for i in range(3):
+            user, client = enrol(f'mover{i}', arm='ANSWER_ONLY')
+            self.switch(client, 'REASONING_VISIBLE')
         # Enrolled: stu + 3 movers = 4 ANSWER_ONLY, 0 REASONING_VISIBLE -> next is REASONING_VISIBLE.
         self.assertEqual(ParticipantProfile.balanced_arm(), 'REASONING_VISIBLE')
+
+
+class SubmissionArmTests(ApiTestCase):
+    """Every paper records the mode it was sat in, so per-protocol analysis is possible."""
+
+    def test_a_submission_is_stamped_with_the_current_arm(self):
+        from assessment.models import ExamSubmission
+        user, client = enrol('stu', arm='ANSWER_ONLY')
+        client.post('/api/assessment/submit/', {'exam_type': 'pre', 'answers': {}}, format='json')
+        self.assertEqual(ExamSubmission.objects.get().arm, 'ANSWER_ONLY')
+
+    @override_settings(ARM_SWITCH_POLICY='always')
+    def test_the_stamp_follows_the_mode_at_submission_time(self):
+        from assessment.models import ExamSubmission
+        user, client = enrol('stu', arm='ANSWER_ONLY')
+        client.post('/api/assessment/submit/', {'exam_type': 'pre', 'answers': {}}, format='json')
+        client.patch('/api/accounts/profile/', {'assigned_arm': 'REASONING_VISIBLE'}, format='json')
+        client.post('/api/assessment/submit/', {'exam_type': 'post', 'answers': {}}, format='json')
+        arms_by_paper = dict(ExamSubmission.objects.values_list('exam_type', 'arm'))
+        self.assertEqual(arms_by_paper, {'pre': 'ANSWER_ONLY', 'post': 'REASONING_VISIBLE'})
 
 
 class ProfileTests(ApiTestCase):

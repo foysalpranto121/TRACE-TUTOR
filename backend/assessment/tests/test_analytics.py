@@ -220,13 +220,15 @@ class CsvColumnTests(SimpleTestCase):
     def test_every_declared_column_is_actually_produced(self):
         """CSV_COLUMNS drives DictWriter; a column with no matching key exports blank."""
         keys = {
-            'participant_code', 'arm', 'current_arm', 'arm_switches', 'withdrawn', 'consent_given', 'grade', 'medium', 'area_type',
+            'participant_code', 'arm', 'current_arm', 'arm_switches', 'switched_during_protocol',
+            'withdrawn', 'consent_given', 'grade', 'medium', 'area_type',
             'prior_experience', 'ai_tool_familiarity', 'normalized_gain', 'withdrawal_drop',
             'help_requests', 'code_runs', 'copy_paste', 'first_submission_at', 'last_submission_at',
         }
         for exam_type in analytics.EXAM_TYPES:
             keys.add(exam_type)
             keys.add(f'{exam_type}_attempts')
+            keys.add(f'{exam_type}_arm')
         self.assertEqual(set(analytics.CSV_COLUMNS), keys)
 
     def test_no_column_carries_a_real_name_or_email(self):

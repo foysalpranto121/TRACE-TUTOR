@@ -128,9 +128,11 @@ def submit_exam(request):
     # Persist first, grade after. The row exists before any compiler runs, so a slow
     # or failed grading pass can never lose the exam. The client never decides the
     # score: nothing from the body reaches score_pct, and grading.py computes it.
+    profile = ParticipantProfile.objects.filter(user=student).only('assigned_arm').first()
     submission = ExamSubmission.objects.create(
         student=student,
         exam_type=exam_type,
+        arm=profile.assigned_arm if profile else '',  # the mode they sat this paper in
         score_pct=None,
         grading_status=ExamSubmission.PENDING,
         answers={'answers': answers if isinstance(answers, dict) else {},

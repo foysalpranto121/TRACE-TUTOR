@@ -13,8 +13,9 @@ platform needs no SciPy.
 import math
 from collections import defaultdict
 
+from django.conf import settings
 from django.contrib.auth.models import User
-from django.db.models import Count, Q
+from django.db.models import Count, Min, Q
 
 from accounts.models import ParticipantProfile
 from logging_app.models import InteractionLog
@@ -30,9 +31,11 @@ COUNTED_EVENTS = ('HELP_REQUEST', 'CODE_RESULT', 'COPY_PASTE', 'ARM_SWITCH')
 # is compared by. `current_arm` and `arm_switches` are there so a per-protocol view can
 # be built from the same file.
 CSV_COLUMNS = [
-    'participant_code', 'arm', 'current_arm', 'arm_switches', 'withdrawn', 'consent_given', 'grade', 'medium', 'area_type',
+    'participant_code', 'arm', 'current_arm', 'arm_switches', 'switched_during_protocol',
+    'withdrawn', 'consent_given', 'grade', 'medium', 'area_type',
     'prior_experience', 'ai_tool_familiarity',
     'pre', 'post', 'transfer', 'withdrawal',
+    'pre_arm', 'post_arm', 'transfer_arm', 'withdrawal_arm',
     'normalized_gain', 'withdrawal_drop',
     'help_requests', 'code_runs', 'copy_paste',
     'pre_attempts', 'post_attempts', 'transfer_attempts', 'withdrawal_attempts',
@@ -182,18 +185,26 @@ def _first_submissions():
             .filter(student__isnull=False, exam_type__in=EXAM_TYPES,
                     grading_status=ExamSubmission.GRADED)
             .order_by('student_id', 'exam_type', 'submitted_at')
-            .values_list('student_id', 'exam_type', 'score_pct', 'submitted_at'))
-    for student_id, exam_type, score, submitted_at in rows:
+            .values_list('student_id', 'exam_type', 'score_pct', 'submitted_at', 'arm'))
+    for student_id, exam_type, score, submitted_at, arm in rows:
         slot = by_student[student_id].get(exam_type)
         if slot is None:
             by_student[student_id][exam_type] = {
-                'score': score, 'attempts': 1,
+                'score': score, 'attempts': 1, 'arm': arm or None,
                 'first_at': submitted_at, 'last_at': submitted_at,
             }
         else:
             slot['attempts'] += 1
             slot['last_at'] = submitted_at
     return by_student
+
+
+def _first_switch_times():
+    """student_id -> when they first changed tutor mode, if ever."""
+    rows = (InteractionLog.objects
+            .filter(user__isnull=False, event_type='ARM_SWITCH')
+            .values('user_id').annotate(first=Min('timestamp')))
+    return {r['user_id']: r['first'] for r in rows}
 
 
 def _event_counts():
@@ -223,6 +234,7 @@ def participant_rows():
                 .order_by('participant_code', 'pk'))
     submissions = _first_submissions()
     events = _event_counts()
+    first_switches = _first_switch_times()
 
     rows = []
     for profile in profiles:
@@ -236,11 +248,19 @@ def participant_rows():
         if scores['withdrawal'] is not None and scores['post'] is not None:
             withdrawal_drop = scores['withdrawal'] - scores['post']
 
+        # A switch "during the protocol" is one made before the last paper was sat -
+        # the kind that contaminates the primary comparison. A switch after it is the
+        # revealed-preference finding the after_protocol policy is designed to collect.
+        first_switch = first_switches.get(student_id)
+        protocol_done_at = (exams.get('withdrawal') or {}).get('first_at')
+        switched_during = bool(first_switch and (protocol_done_at is None or first_switch < protocol_done_at))
+
         row = {
             'participant_code': profile.participant_code or f'unassigned-{profile.pk}',
             'arm': profile.enrolled_arm or profile.assigned_arm,
             'current_arm': profile.assigned_arm,
             'arm_switches': counts.get('ARM_SWITCH', 0),
+            'switched_during_protocol': switched_during,
             # A withdrawn participant stays in the export as a row of nulls so the
             # enrolment denominator is visible; everything they generated is gone.
             'withdrawn': bool(profile.withdrawn_at),
@@ -261,13 +281,16 @@ def participant_rows():
         for exam_type in EXAM_TYPES:
             row[exam_type] = scores[exam_type]
             row[f'{exam_type}_attempts'] = (exams.get(exam_type) or {}).get('attempts', 0)
+            row[f'{exam_type}_arm'] = (exams.get(exam_type) or {}).get('arm')
         rows.append(row)
     return rows
 
 
-def _split_by_arm(rows, field):
-    treatment = [r[field] for r in rows if r['arm'] == 'REASONING_VISIBLE' and r[field] is not None]
-    control = [r[field] for r in rows if r['arm'] == 'ANSWER_ONLY' and r[field] is not None]
+def _split_by_arm(rows, field, arm_field='arm'):
+    """Values of `field` for each arm. `arm_field` is 'arm' (enrolled: intent-to-treat)
+    or e.g. 'transfer_arm' (the mode actually used for that paper: per-protocol)."""
+    treatment = [r[field] for r in rows if r[arm_field] == 'REASONING_VISIBLE' and r[field] is not None]
+    control = [r[field] for r in rows if r[arm_field] == 'ANSWER_ONLY' and r[field] is not None]
     return treatment, control
 
 
@@ -281,11 +304,27 @@ def study_stats():
         for exam_type in EXAM_TYPES
     }
 
-    outcomes = {}
-    for key, field in (('learning_gain', 'normalized_gain'),
-                       ('transfer_performance', 'transfer'),
-                       ('ai_dependency_drop', 'withdrawal_drop')):
+    # Primary: by the arm allocated at enrolment (intent-to-treat). Per-protocol: by the
+    # mode the participant was actually in when they sat the paper the outcome comes
+    # from. Under the after_protocol policy the two agree; where they differ, the
+    # difference is the crossover, and the per-protocol figures are observational.
+    outcomes, per_protocol = {}, {}
+    for key, field, paper in (('learning_gain', 'normalized_gain', 'post'),
+                              ('transfer_performance', 'transfer', 'transfer'),
+                              ('ai_dependency_drop', 'withdrawal_drop', 'withdrawal')):
         outcomes[key] = compare_arms(*_split_by_arm(rows, field))
+        per_protocol[key] = compare_arms(*_split_by_arm(rows, field, arm_field=f'{paper}_arm'))
+
+    completed = [r for r in rows if r['withdrawal'] is not None]
+    preference = {
+        arm: {
+            'stayed': sum(1 for r in completed if r['arm'] == arm and r['current_arm'] == arm),
+            'moved': sum(1 for r in completed if r['arm'] == arm and r['current_arm'] != arm),
+        }
+        for arm in ARMS
+    }
+    switched_any = sum(1 for r in rows if r['arm_switches'])
+    switched_during = sum(1 for r in rows if r['switched_during_protocol'])
 
     staff = ParticipantProfile.objects.filter(role__in=('EXPERT_TEACHER', 'RESEARCHER_ADMIN')).count()
     event_totals = InteractionLog.objects.aggregate(
@@ -300,7 +339,17 @@ def study_stats():
         'withdrawn_participants': sum(1 for r in rows if r['withdrawn']),
         # Outcomes are grouped by the arm allocated at enrolment (intent-to-treat).
         'arm_basis': 'enrolled',
-        'switched_participants': sum(1 for r in rows if r['arm_switches']),
+        'arm_switch_policy': str(getattr(settings, 'ARM_SWITCH_POLICY', 'after_protocol')),
+        'switched_participants': switched_any,
+        'crossover': {
+            'switched_any': switched_any,
+            'switched_during_protocol': switched_during,   # contaminates the primary comparison
+            'switched_after_protocol': switched_any - switched_during,
+        },
+        # Among participants who finished all four papers: did they stay in the mode
+        # they were allocated, or move once they were free to?
+        'preference': preference,
+        'per_protocol': per_protocol,
         'consented_participants': sum(1 for r in rows if r['consent_given']),
         'staff_accounts': staff,
         'arms': arm_counts,

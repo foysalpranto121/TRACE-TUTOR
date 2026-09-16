@@ -70,6 +70,10 @@ class ExamSubmission(models.Model):
 
     student = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     exam_type = models.CharField(max_length=20)
+    # The tutor mode the participant was in when they pressed Submit. Recorded rather
+    # than inferred, so a per-protocol analysis (by mode actually used) is possible and
+    # any mismatch with the enrolled arm is visible instead of assumed away.
+    arm = models.CharField(max_length=20, blank=True, default='')
     # Null until graded. Rows created directly (tests, imports) default to already-graded,
     # so a score given at creation is honoured; the submit endpoint creates them pending.
     score_pct = models.IntegerField(null=True, blank=True)

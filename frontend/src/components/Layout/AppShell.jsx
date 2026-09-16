@@ -121,14 +121,16 @@ export const AppShell = ({ children }) => {
           {isStudent && user?.arm_self_select === false ? (
             <div
               className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-surface-container-high border border-outline-variant/40 text-[10px]"
-              title="আপনার টিউটর মোড গবেষণার জন্য নির্ধারিত (your tutor mode is assigned by the study)"
+              title={user?.arm_switch_reason === 'after_protocol'
+                ? 'চারটি পরীক্ষা শেষ হলে টিউটর মোড বদলাতে পারবেন (you can switch after completing all four papers)'
+                : 'আপনার টিউটর মোড গবেষণার জন্য নির্ধারিত (your tutor mode is assigned by the study)'}
             >
               <span className="flex items-center gap-1.5 font-mono font-bold">
                 <span className={`w-2 h-2 rounded-full ${arm === 'REASONING_VISIBLE' ? 'bg-success animate-pulse' : 'bg-warning'}`} />
                 {armLabel(arm)}
               </span>
               <span className="flex items-center gap-1 text-on-surface-variant font-bold">
-                <Lock className="w-3 h-3" />assigned
+                <Lock className="w-3 h-3" />{user?.arm_switch_reason === 'after_protocol' ? 'after tests' : 'assigned'}
               </span>
             </div>
           ) : (

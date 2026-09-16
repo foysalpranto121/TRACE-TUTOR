@@ -270,6 +270,17 @@ export const AdminDashboard = () => {
               value={(events.total ?? 0).toLocaleString()}
               sub={`${events.help_requests ?? 0} help · ${events.code_runs ?? 0} runs · ${events.copy_paste ?? 0} copies`}
             />
+            <StatCard
+              label="Arm crossover"
+              value={`${stats.crossover?.switched_during_protocol ?? 0} / ${stats.crossover?.switched_any ?? 0}`}
+              sub={`switched during the protocol / switched at all · policy: ${stats.arm_switch_policy || '—'} · outcomes compared by enrolled arm`}
+              tone={(stats.crossover?.switched_during_protocol ?? 0) > 0 ? 'text-amber-500' : 'text-on-surface'}
+            />
+            <StatCard
+              label="Preference after completion"
+              value={`${(stats.preference?.REASONING_VISIBLE?.stayed ?? 0) + (stats.preference?.ANSWER_ONLY?.stayed ?? 0)} stayed · ${(stats.preference?.REASONING_VISIBLE?.moved ?? 0) + (stats.preference?.ANSWER_ONLY?.moved ?? 0)} moved`}
+              sub={`Reasoning-visible: ${stats.preference?.REASONING_VISIBLE?.stayed ?? 0} stayed, ${stats.preference?.REASONING_VISIBLE?.moved ?? 0} moved · Answer-only: ${stats.preference?.ANSWER_ONLY?.stayed ?? 0} stayed, ${stats.preference?.ANSWER_ONLY?.moved ?? 0} moved`}
+            />
           </div>
 
           <div className="bg-surface-container p-6 rounded-2xl border border-outline-variant/30 space-y-4 shadow-xl">
