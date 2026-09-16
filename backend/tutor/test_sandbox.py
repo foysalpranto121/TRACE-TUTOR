@@ -249,12 +249,12 @@ class DockerCommandTests(SimpleTestCase):
         self.assertIn('--name', argv)
         self.assertEqual(argv[argv.index('--name') + 1], 'trace-run-xyz')
 
-    def test_cpu_time_is_capped_so_a_loop_dies_even_without_the_client(self):
-        with override_settings(CODE_RUN_CPU_SECONDS=5):
-            argv = self.command()
+    def test_cpu_time_backstop_is_applied_when_given(self):
+        argv = sandbox._docker_command(['./main.out'], '/tmp/work', 'run', False,
+                                       name='x', cpu_hardcap=48)
         ulimits = [argv[i + 1] for i, a in enumerate(argv) if a == '--ulimit']
-        self.assertTrue(any(u.startswith('cpu=5') for u in ulimits),
-                        'a container CPU-time ulimit stops an infinite loop by itself')
+        self.assertTrue(any(u.startswith('cpu=48') for u in ulimits),
+                        'a container CPU-time ulimit stops an orphaned loop by itself')
 
     def test_the_configured_image_is_used(self):
         with override_settings(CODE_SANDBOX_IMAGE='my-runner:7'):

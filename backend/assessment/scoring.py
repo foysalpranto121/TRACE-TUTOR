@@ -153,6 +153,15 @@ def _grade_one(item, answers, code_answers):
     except Exception as exc:  # a broken item or a dead compiler must not 500 the submission
         return {'correct': False, 'detail': f'গ্রেড করা যায়নি (Could not grade): {exc}',
                 'status': 'GRADING_ERROR'}
+
+
+def _grade_one_on_pool_thread(item, answers, code_answers):
+    """As _grade_one, but for the code-grading pool threads: each closes its own database
+    connection when done so a thread that outlives the sweep never holds one open. This
+    must NOT run on the main thread - close_old_connections() there would drop the
+    connection that carries the request's (or the test's) own transaction."""
+    try:
+        return _grade_one(item, answers, code_answers)
     finally:
         close_old_connections()
 
@@ -172,7 +181,8 @@ def grade_submission(exam_type, answers, code_answers):
     if code_slots:
         with ThreadPoolExecutor(max_workers=min(GRADE_WORKERS, len(code_slots))) as pool:
             for (idx, _item), outcome in zip(
-                code_slots, pool.map(lambda s: _grade_one(s[1], answers, code_answers), code_slots)
+                code_slots,
+                pool.map(lambda s: _grade_one_on_pool_thread(s[1], answers, code_answers), code_slots)
             ):
                 graded[idx] = outcome
 

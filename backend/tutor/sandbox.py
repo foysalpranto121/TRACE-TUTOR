@@ -238,12 +238,19 @@ def container_name():
     return f'trace-run-{uuid.uuid4().hex[:12]}'
 
 
-def _docker_command(inner_argv, workdir, kind, writable, name=None):
+def _docker_command(inner_argv, workdir, kind, writable, name=None, cpu_hardcap=None):
     """A throwaway container: no network, capped memory, processes and CPU time, all
     capabilities dropped, and the workdir mounted read-only unless the step has to
     write output. A name lets a timed-out run be stopped by `docker kill`: killing the
-    `docker run` client alone leaves the container - and its infinite loop - running."""
+    `docker run` client alone leaves the container - and its infinite loop - running.
+
+    `cpu_hardcap` is a CPU-seconds ceiling that acts only as a backstop: it is set well
+    above the wall-clock timeout, so the normal path is still the wall-clock timeout plus
+    a `docker kill`, and this only matters when the client that would have killed the
+    container was itself orphaned. It stops an orphaned busy loop from pinning a host CPU
+    forever."""
     caps = limits(kind)
+    cpu_limit = int(cpu_hardcap or caps['cpu_seconds'])
     mount = f'{os.path.abspath(str(workdir))}:/work' + ('' if writable else ':ro')
     argv = ['docker', 'run', '--rm', '--interactive']
     if name:
@@ -256,7 +263,7 @@ def _docker_command(inner_argv, workdir, kind, writable, name=None):
         '--cpus', str(_conf('CODE_SANDBOX_CPUS', '1.0')),
         # CPU seconds, not wall seconds: a busy loop is killed by the kernel even if the
         # client that would have timed it out is gone.
-        '--ulimit', f'cpu={caps["cpu_seconds"]}:{caps["cpu_seconds"]}',
+        '--ulimit', f'cpu={cpu_limit}:{cpu_limit}',
         '--ulimit', f'fsize={caps["max_file_mb"] * 1024 * 1024}:{caps["max_file_mb"] * 1024 * 1024}',
         '--cap-drop', 'ALL',
         '--security-opt', 'no-new-privileges',
@@ -356,10 +363,14 @@ def execute(host_argv, container_argv, workdir, *, kind='run', stdin_text='',
 
     if tier == DOCKER:
         container = container_name()
-        argv = _docker_command(container_argv, workdir, kind, writable, name=container)
         # Docker adds its own startup cost; give the wall clock a little headroom so a
         # slow cold start is not reported to the student as an infinite loop.
         timeout = timeout + _conf('CODE_SANDBOX_STARTUP_GRACE', 15)
+        # The in-container CPU ceiling sits above the wall-clock timeout, so it is only a
+        # backstop for an orphaned container - the wall clock plus docker kill is primary.
+        cpu_hardcap = int(timeout) + int(_conf('CODE_SANDBOX_CPU_BACKSTOP', 30))
+        argv = _docker_command(container_argv, workdir, kind, writable,
+                               name=container, cpu_hardcap=cpu_hardcap)
     else:
         argv = host_argv
         popen_kwargs['cwd'] = str(workdir)

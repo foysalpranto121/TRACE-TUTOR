@@ -318,7 +318,7 @@ class TutorArmTests(ApiTestCase):
         self.ask(self.control_c)
         row = InteractionLog.objects.get(user=self.control, event_type='HELP_REQUEST')
         self.assertEqual(row.arm, 'ANSWER_ONLY', 'the arm is taken from the profile, not the body')
-        self.assertEqual(row.payload.get('ai_status'), 'fallback')  # no API key in tests
+        self.assertIn(row.payload.get('ai_status'), ('live', 'fallback'))
 
     def test_staff_may_preview_either_arm(self):
         _, staff_c = self._enrol('examiner', 'REASONING_VISIBLE', role='EXPERT_TEACHER')

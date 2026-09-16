@@ -168,7 +168,8 @@ Copy `backend/.env.example` to `backend/.env` and fill it in. **Never commit `.e
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `CODE_SANDBOX` | `auto` | `auto`, `docker`, `rlimit` or `none`. `auto` picks the strongest available. |
-| `CODE_SANDBOX_REQUIRED` | `not DEBUG` | Refuse to execute when no sandbox is available, instead of running unprotected |
+| `CODE_SANDBOX_REQUIRED` | `not DEBUG` | Refuse to execute when the active tier is below `CODE_SANDBOX_MIN_TIER`, instead of running under-protected |
+| `CODE_SANDBOX_MIN_TIER` | `docker` | Weakest tier that satisfies the requirement. `rlimit` leaves the host filesystem and network reachable, so it is refused unless set here explicitly. |
 | `CODE_SANDBOX_IMAGE` | `trace-tutor-runner:1` | Image built from `backend/tutor/sandbox.Dockerfile` |
 | `CODE_RUN_MEMORY_MB` | `256` | Memory cap on the student's program |
 | `CODE_RUN_MAX_PROCESSES` | `64` | Process cap — this is what stops a fork bomb |
@@ -339,7 +340,7 @@ This platform is built for **local, single-site, proctored use**. Read this befo
   docker build -f backend/tutor/sandbox.Dockerfile -t trace-tutor-runner:1 backend/tutor
   ```
 
-  Where Docker is not available the runner degrades to POSIX `setrlimit` caps, and on a host with neither it refuses to execute at all — `CODE_SANDBOX_REQUIRED` defaults to on whenever `DEBUG=0`. `GET /api/code/status/` reports which tier is active. Set `CODE_SANDBOX_REQUIRED=0` only on a closed, proctored network where you accept the risk.
+  The container is the only tier that isolates the filesystem and the network. Where Docker is not available the runner can fall back to POSIX `setrlimit` caps, but those leave the host filesystem (`.env`, the database) and the network reachable from a student's C program, so by default the endpoint **refuses to run under the rlimit tier**: `CODE_SANDBOX_REQUIRED` (on whenever `DEBUG=0`) is satisfied only by `CODE_SANDBOX_MIN_TIER` or stronger, and that minimum is `docker`. A Docker daemon that is still starting when the first request lands is re-probed, so it heals without a restart. `GET /api/code/status/` reports the active tier and whether execution is currently allowed. Accept the weaker tier only on a closed, proctored network — set `CODE_SANDBOX_MIN_TIER=rlimit`, or `CODE_SANDBOX_REQUIRED=0` to accept `none`.
 - **Every endpoint requires authentication** except register and login, and DRF's default permission is `IsAuthenticated`, so a new view is private unless it opts out. Role gates (`backend/accounts/permissions.py`) fail closed.
 - **`DEBUG` defaults to off** and is read from the environment. With `DEBUG=0` the server refuses to start without a real `SECRET_KEY`, pins `ALLOWED_HOSTS` and CORS, and marks cookies `Secure` unless you set `HTTPS_ONLY=0`.
 - **Participant data.** `backend/media/` (uploaded images) and `backend/.env` (keys and passwords) are excluded from version control. The CSV export identifies people only by `participant_code`; no name, email or school reaches it. Keep the database on institutional hardware if your ethics approval says so.
