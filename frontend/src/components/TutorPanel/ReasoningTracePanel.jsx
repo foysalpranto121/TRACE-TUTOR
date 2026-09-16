@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Brain, BookOpen, Sparkles, CheckCircle2, Copy, Check, ChevronDown, ChevronUp, Layers, HelpCircle, ShieldCheck, AlertTriangle, FileText } from 'lucide-react';
+import { Brain, BookOpen, Sparkles, CheckCircle2, Copy, Check, ChevronDown, ChevronUp, Layers, HelpCircle, ShieldCheck, AlertTriangle, FileText, Lock } from 'lucide-react';
 import { apiService } from '../../services/api';
 
 export const ReasoningTracePanel = ({
@@ -7,6 +7,7 @@ export const ReasoningTracePanel = ({
   groundedPassage,
   isLoading,
   error,
+  errorKind,   // 'policy' when the server refused by rule (a no-AI paper is open), else 'failure'
   onRequestHelp,
   onCopyCode,
 }) => {
@@ -86,13 +87,24 @@ export const ReasoningTracePanel = ({
         )}
 
         {!isLoading && error && (
-          <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-4 text-xs text-rose-400 flex items-start gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-            <div>
-              <div className="font-bold">AI request failed</div>
-              <div className="font-mono mt-1">{error}</div>
+          errorKind === 'policy' ? (
+            // A rule, not an outage: the pre-test and withdrawal task are no-AI papers.
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-xs text-amber-500 flex items-start gap-2">
+              <Lock className="w-4 h-4 shrink-0 mt-0.5" />
+              <div>
+                <div className="font-bold">Tutor paused for this paper</div>
+                <div className="mt-1 leading-relaxed">{error}</div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-4 text-xs text-rose-400 flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+              <div>
+                <div className="font-bold">AI request failed</div>
+                <div className="font-mono mt-1">{error}</div>
+              </div>
+            </div>
+          )
         )}
 
         {!isLoading && !error && !traceData && (

@@ -112,7 +112,10 @@ export const Workspace = () => {
       });
       setTutorState({ isLoading: false, traceData: res, groundedPassage: res.grounded_passage, error: null });
     } catch (err) {
-      setTutorState({ isLoading: false, traceData: null, groundedPassage: null, error: err.message });
+      // A refusal because a no-AI paper is open is a rule, not a failure; the panels
+      // present it calmly so a student mid-pre-test does not think the system is broken.
+      const errorKind = err.body?.reason === 'paper_in_progress' ? 'policy' : 'failure';
+      setTutorState({ isLoading: false, traceData: null, groundedPassage: null, error: err.message, errorKind });
     }
   };
 
@@ -265,6 +268,7 @@ export const Workspace = () => {
               groundedPassage={tutorState.groundedPassage}
               isLoading={tutorState.isLoading}
               error={tutorState.error}
+              errorKind={tutorState.errorKind}
               onRequestHelp={handleRequestHelp}
             />
           ) : (
@@ -272,6 +276,7 @@ export const Workspace = () => {
               solutionData={tutorState.traceData}
               isLoading={tutorState.isLoading}
               error={tutorState.error}
+              errorKind={tutorState.errorKind}
               onRequestHelp={handleRequestHelp}
             />
           )}
