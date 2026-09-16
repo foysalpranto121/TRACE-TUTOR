@@ -39,7 +39,7 @@ CSV_COLUMNS = [
     'pre_arm', 'post_arm', 'transfer_arm', 'withdrawal_arm',
     'pre_minutes', 'post_minutes', 'transfer_minutes', 'withdrawal_minutes',
     'normalized_gain', 'withdrawal_drop',
-    'help_requests', 'code_runs', 'copy_paste',
+    'help_requests', 'help_fallbacks', 'code_runs', 'copy_paste',
     'pre_attempts', 'post_attempts', 'transfer_attempts', 'withdrawal_attempts',
     'first_submission_at', 'last_submission_at',
 ]
@@ -210,7 +210,9 @@ def _first_switch_times():
 
 
 def _event_counts():
-    """student_id -> {event_type: count} for the events summarised in the export."""
+    """student_id -> {event_type: count} for the events summarised in the export, plus a
+    'HELP_FALLBACK' pseudo-count of tutor turns the model did not answer (the offline
+    fallback), so sessions where the manipulation was degraded can be excluded."""
     counts = defaultdict(dict)
     rows = (InteractionLog.objects
             .filter(user__isnull=False, event_type__in=COUNTED_EVENTS)
@@ -218,6 +220,12 @@ def _event_counts():
             .annotate(n=Count('id')))
     for row in rows:
         counts[row['user_id']][row['event_type']] = row['n']
+    fallbacks = (InteractionLog.objects
+                 .filter(user__isnull=False, event_type='HELP_REQUEST', payload__ai_status='fallback')
+                 .values('user_id')
+                 .annotate(n=Count('id')))
+    for row in fallbacks:
+        counts[row['user_id']]['HELP_FALLBACK'] = row['n']
     return counts
 
 
@@ -276,6 +284,10 @@ def participant_rows():
             'normalized_gain': normalized_gain(scores['pre'], scores['post']),
             'withdrawal_drop': withdrawal_drop,
             'help_requests': counts.get('HELP_REQUEST', 0),
+            # How many of those turns fell back to the offline answer (model unavailable):
+            # in REASONING_VISIBLE a fallback carries no reasoning, so a session with many
+            # is a degraded dose of the manipulation and may need excluding.
+            'help_fallbacks': counts.get('HELP_FALLBACK', 0),
             'code_runs': counts.get('CODE_RESULT', 0),
             'copy_paste': counts.get('COPY_PASTE', 0),
             'first_submission_at': min(stamps).isoformat() if stamps else None,

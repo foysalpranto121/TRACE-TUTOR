@@ -75,27 +75,36 @@ class ParticipantJourneyTests(ApiTestCase):
         alice_c.post('/api/telemetry/log/', {'event_type': 'CODE_RESULT',
                                              'event_data': {'problem_id': 'p1', 'status': 'SUCCESS',
                                                             'passed_count': 1, 'total': 1}}, format='json')
-        alice_c.post('/api/telemetry/log/', {'event_type': 'HELP_REQUEST',
-                                             'event_data': {'problem_id': 'p1', 'prompt': 'why?'}}, format='json')
-        # REGISTER/LOGIN/LOGOUT events are posted by the browser after the auth call
-        # returns (AuthContext), not by the server, so only the two workspace events exist.
+        # HELP_REQUEST is logged server-side by the tutor endpoint now, not posted by the
+        # browser, so at this point only the one workspace event (CODE_RESULT) exists.
         logged = InteractionLog.objects.filter(user__username='alice')
-        self.assertEqual(logged.count(), 2, 'CODE_RESULT + HELP_REQUEST')
+        self.assertEqual(logged.count(), 1, 'CODE_RESULT only')
         self.assertTrue(all(e.arm == alice['arm'] for e in logged), 'arm comes from the profile')
 
         # -------------------------------------------------------------- 4. tutor
-        # No API key in tests: the tutor answers from its offline fallback, and the panel
-        # must still get every field it renders.
+        # No API key in tests: the tutor answers from its offline fallback. What the panel
+        # receives depends on the arm - and the server, not the client, decides the arm.
         tutor = alice_c.post('/api/tutor/query/', {'prompt': 'What does a for loop do?',
                                                    'code': 'int main(){}', 'problem_id': 'p1',
                                                    'arm': alice['arm']}, format='json')
         self.assertEqual(tutor.status_code, 200)
         answer = tutor.json()
-        for key in ('rag_answer', 'independent_ai_answer', 'direct_answer', 'retrieved_passages',
-                    'ai_status', 'model', 'mode'):
-            self.assertIn(key, answer)
         self.assertIn(answer['ai_status'], ('live', 'fallback'))
-        self.assertIsInstance(answer['independent_ai_answer']['problem_breakdown'], list)
+        self.assertEqual(answer['mode'], alice['arm'])
+        if alice['arm'] == 'REASONING_VISIBLE':
+            for key in ('rag_answer', 'independent_ai_answer', 'direct_answer', 'retrieved_passages', 'model'):
+                self.assertIn(key, answer)
+            self.assertIsInstance(answer['independent_ai_answer']['problem_breakdown'], list)
+        else:
+            # The control arm gets only the direct answer and a code fix - never the working.
+            self.assertIn('direct_answer', answer)
+            self.assertIn('code_solution', answer)
+            for leaked in ('rag_answer', 'independent_ai_answer', 'reasoning_trace', 'retrieved_passages'):
+                self.assertNotIn(leaked, answer, f'{leaked} must not reach the control arm')
+        # The answered turn was logged server-side, as the profile's arm.
+        help_row = InteractionLog.objects.filter(user__username='alice', event_type='HELP_REQUEST').first()
+        self.assertIsNotNone(help_row, 'the tutor turn is recorded without the browser posting it')
+        self.assertEqual(help_row.arm, alice['arm'])
 
         # ------------------------------------------------------ 5. the pre-test
         papers = alice_c.get('/api/assessment/items/?type=pre').json()
@@ -136,7 +145,10 @@ class ParticipantJourneyTests(ApiTestCase):
         # ---------------------------------------------- 6. results and progression
         dashboard = alice_c.get('/api/dashboard/').json()
         self.assertEqual(dashboard['assessments']['pre']['latest_score'], result['score_pct'])
-        self.assertEqual(dashboard['stats']['help_requests'], 1)
+        # Two answered tutor turns were logged server-side (step 4, and again after the
+        # pre-test freed the tutor); the turn blocked during the pre-test is a HELP_BLOCKED,
+        # not a HELP_REQUEST, so it does not inflate this count.
+        self.assertEqual(dashboard['stats']['help_requests'], 2)
         self.assertEqual(alice_c.get('/api/assessment/items/?type=post').json()['available'], ['pre', 'post'])
         self.assertEqual(alice_c.get('/api/assessment/items/?type=transfer').status_code, 403)
 

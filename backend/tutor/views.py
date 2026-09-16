@@ -4,14 +4,21 @@ from rest_framework.decorators import api_view, permission_classes, throttle_cla
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from accounts.models import STAFF_ROLES, ParticipantProfile
 from assessment import sittings
 from curriculum.rag_engine import rag_engine_instance
+from logging_app.models import InteractionLog
 from trace_backend import gemini
 from trace_backend.cache import cache_key, tiered_get_or_set
 from trace_backend.throttles import CodeRunThrottle, TutorThrottle
 from . import runner
 
 logger = logging.getLogger(__name__)
+
+ARMS = ('REASONING_VISIBLE', 'ANSWER_ONLY')
+# Kept in a HELP_REQUEST payload. Prompts are research data (what students ask for) but
+# need not be unbounded; code is summarised by length.
+MAX_LOGGED_PROMPT = 1000
 
 SYSTEM_INSTRUCTION = """You are TRACE Tutor, an expert tutor for the Bangladesh NCTB HSC ICT syllabus (Chapter 4 HTML, Chapter 5 C programming, Chapter 6 DBMS).
 You produce a DUAL answer for every student message:
@@ -71,6 +78,62 @@ def _fallback_answer(prompt, code, passages, language):
     }
 
 
+def resolve_arm(user, requested=None):
+    """The tutor mode this caller is entitled to.
+
+    For a participant that is the arm on their profile - the client's claim is ignored,
+    because the arm decides what the response contains and a request body is the one
+    thing a curious student can edit. Staff (who are not observations) may name an arm
+    to preview either condition.
+    """
+    profile = ParticipantProfile.objects.filter(user=user).only('role', 'assigned_arm').first()
+    if profile is None:
+        return 'REASONING_VISIBLE'
+    if profile.role in STAFF_ROLES and requested in ARMS:
+        return requested
+    return profile.assigned_arm if profile.assigned_arm in ARMS else 'REASONING_VISIBLE'
+
+
+def answer_only_payload(payload):
+    """What the control arm receives: the direct answer and the code fix, nothing that
+    shows the working. The dual answer is generated and cached once for both arms and
+    reduced here, after the cache read, so the two conditions differ only in what is
+    shown - not in the model call that produced it."""
+    indep = payload.get('independent_ai_answer') or {}
+    return {
+        'mode': payload['mode'],
+        'model': payload['model'],
+        'ai_status': payload['ai_status'],
+        'error': payload['error'],
+        'direct_answer': payload['direct_answer'],
+        'code_solution': indep.get('code_solution') or '',
+        'cached': payload['cached'],
+        'cache_tier': payload['cache_tier'],
+    }
+
+
+def _log_tutor_event(user, event_type, arm, problem_id, prompt, code, language, **detail):
+    """The server's own record of a tutor turn: what was asked, in which mode, during
+    which paper, and whether the answer was live, cached or a fallback. The browser used
+    to post this itself, which meant a page that forgot to (the assessment chat did) left
+    the dependency measure without its main input.
+
+    An answered turn is a HELP_REQUEST (the dependency covariate). A turn refused because
+    a no-AI paper is open is a HELP_BLOCKED - kept in the record as an attempted use, but
+    a distinct event so it never inflates the help-request count."""
+    try:
+        payload = {
+            'prompt': prompt[:MAX_LOGGED_PROMPT],
+            'code_length': len(code or ''),
+            'language': language,
+            **detail,
+        }
+        InteractionLog.objects.create(user=user, event_type=event_type, arm=arm,
+                                      problem_id=str(problem_id or '')[:50] or None, payload=payload)
+    except Exception:  # noqa: BLE001 - telemetry must never break the answer
+        logger.exception('Could not log a %s for user %s', event_type, user.pk)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @throttle_classes([TutorThrottle])
@@ -79,7 +142,7 @@ def query_tutor(request):
     prompt = (data.get('prompt') or '').strip()
     code = data.get('code') or ''
     problem_id = data.get('problem_id', 'prob_assessment')
-    arm = data.get('arm', 'REASONING_VISIBLE')
+    arm = resolve_arm(request.user, data.get('arm'))
     # Body wins; otherwise the trace_lang cookie set at login/profile update; otherwise Bangla.
     language = (data.get('language') or request.COOKIES.get(settings.LANG_COOKIE_NAME) or 'bn').lower()
     problem_title = data.get('problem_title') or ''
@@ -94,6 +157,8 @@ def query_tutor(request):
     # hides the chat, so a second tab on the workspace gets the same answer.
     blocking = sittings.blocking_paper(request.user)
     if blocking:
+        _log_tutor_event(request.user, 'HELP_BLOCKED', arm, problem_id, prompt, code, language,
+                         reason='paper_in_progress', exam_type=blocking)
         return Response({
             'error': ('The AI tutor is unavailable while your '
                       f'{"pre-test" if blocking == "pre" else "withdrawal task"} is in progress. '
@@ -157,6 +222,12 @@ def query_tutor(request):
         'cached': tier != 'computed',
         'cache_tier': tier,
     }
+    if arm == 'ANSWER_ONLY':
+        payload = answer_only_payload(payload)
+
+    _log_tutor_event(request.user, 'HELP_REQUEST', arm, problem_id, prompt, code, language,
+                     ai_status=ai_status, cache_tier=tier, model=model,
+                     exam_type=sittings.open_paper_of(request.user))
     response = Response(payload)
     response['X-Trace-Cache'] = 'miss' if tier == 'computed' else f'hit-{tier}'
     return response

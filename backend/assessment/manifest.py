@@ -79,6 +79,8 @@ def build():
         'execution': {
             'sandbox_tier': sandbox.status()['tier'],
             'sandbox_required': sandbox.required(),
+            'sandbox_min_tier': sandbox.minimum_tier() if sandbox.required() else None,
+            'sandbox_allowed': sandbox.status()['allowed'],
             'debug': settings.DEBUG,
         },
         'item_bank': _item_bank(),

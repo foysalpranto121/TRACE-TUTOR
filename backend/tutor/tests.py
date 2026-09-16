@@ -16,6 +16,7 @@ from rest_framework.test import APIClient
 from trace_backend.test_utils import ApiTestCase
 
 from accounts.models import ParticipantProfile
+from logging_app.models import InteractionLog
 from trace_backend import gemini
 from tutor import runner
 
@@ -267,3 +268,61 @@ class ModelConfigTests(SimpleTestCase):
     def test_an_unparseable_temperature_falls_back_to_zero(self):
         os.environ['GEMINI_TEMPERATURE'] = 'warm'
         self.assertEqual(gemini.generation_temperature(), 0.0)
+
+
+class TutorArmTests(ApiTestCase):
+    """The tutor is the manipulation. The control arm must never receive the reasoning
+    trace or the retrieved passages, and the server - not the request body - decides which
+    arm a caller is in, because the body is the one thing a curious student can edit."""
+
+    def _enrol(self, username, arm, role='STUDENT'):
+        user = User.objects.create_user(username=username, password='Testpass!2345')
+        ParticipantProfile.objects.create(user=user, role=role, assigned_arm=arm,
+                                          enrolled_arm=arm, consent_given=True)
+        return user, APIClient(HTTP_AUTHORIZATION='Token ' + Token.objects.create(user=user).key)
+
+    def setUp(self):
+        super().setUp()
+        self.control, self.control_c = self._enrol('control', 'ANSWER_ONLY')
+        self.treat, self.treat_c = self._enrol('treat', 'REASONING_VISIBLE')
+
+    def ask(self, client, **body):
+        payload = {'prompt': 'What does a for loop do?', 'problem_id': 'p1'}
+        payload.update(body)
+        return client.post('/api/tutor/query/', payload, format='json')
+
+    REASONING_FIELDS = ('rag_answer', 'independent_ai_answer', 'reasoning_trace',
+                        'retrieved_passages', 'grounded_passage')
+
+    def test_the_control_arm_receives_only_the_direct_answer_and_a_code_fix(self):
+        answer = self.ask(self.control_c).json()
+        self.assertEqual(answer['mode'], 'ANSWER_ONLY')
+        self.assertIn('direct_answer', answer)
+        self.assertIn('code_solution', answer)
+        for leaked in self.REASONING_FIELDS:
+            self.assertNotIn(leaked, answer, f'{leaked} must not reach the control arm')
+
+    def test_the_treatment_arm_receives_the_full_dual_answer(self):
+        answer = self.ask(self.treat_c).json()
+        self.assertEqual(answer['mode'], 'REASONING_VISIBLE')
+        for key in ('rag_answer', 'independent_ai_answer', 'reasoning_trace', 'retrieved_passages'):
+            self.assertIn(key, answer)
+
+    def test_a_control_participant_cannot_claim_the_treatment_arm_from_the_body(self):
+        answer = self.ask(self.control_c, arm='REASONING_VISIBLE').json()
+        self.assertEqual(answer['mode'], 'ANSWER_ONLY')
+        for leaked in self.REASONING_FIELDS:
+            self.assertNotIn(leaked, answer)
+
+    def test_an_answered_turn_is_logged_server_side_with_the_profile_arm(self):
+        self.ask(self.control_c)
+        row = InteractionLog.objects.get(user=self.control, event_type='HELP_REQUEST')
+        self.assertEqual(row.arm, 'ANSWER_ONLY', 'the arm is taken from the profile, not the body')
+        self.assertEqual(row.payload.get('ai_status'), 'fallback')  # no API key in tests
+
+    def test_staff_may_preview_either_arm(self):
+        _, staff_c = self._enrol('examiner', 'REASONING_VISIBLE', role='EXPERT_TEACHER')
+        answer = staff_c.post('/api/tutor/query/', {'prompt': 'hi', 'arm': 'ANSWER_ONLY'},
+                              format='json').json()
+        self.assertEqual(answer['mode'], 'ANSWER_ONLY')
+        self.assertNotIn('independent_ai_answer', answer)

@@ -22,9 +22,11 @@ compiler hiccup.
 import logging
 import threading
 from concurrent.futures import ThreadPoolExecutor
+from datetime import timedelta
 
 from django.conf import settings
 from django.db import connections, transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from . import scoring
@@ -38,6 +40,12 @@ _pool = None
 
 def _concurrency():
     return max(1, int(getattr(settings, 'GRADING_CONCURRENCY', 2)))
+
+
+def _stale_minutes():
+    """How long a row may sit in 'grading' before it is treated as abandoned. Grading a
+    form takes seconds, so ten minutes is comfortably past any real run."""
+    return max(1, int(getattr(settings, 'GRADING_STALE_MINUTES', 10)))
 
 
 def _inline():
@@ -72,32 +80,55 @@ def claim(submission_id):
     """Atomically take ownership of a pending row. True if this caller won it."""
     won = (ExamSubmission.objects
            .filter(pk=submission_id, grading_status=ExamSubmission.PENDING)
-           .update(grading_status=ExamSubmission.GRADING))
+           .update(grading_status=ExamSubmission.GRADING, claimed_at=timezone.now()))
     return won == 1
 
 
+def requeue_stale(minutes=None):
+    """Return rows stuck in 'grading' past the stale threshold to PENDING.
+
+    A grader that dies between claim and persist - a restarted web process, a killed
+    worker - leaves its row in 'grading' forever, and the participant's result page
+    polls it forever. This is the backstop: the next sweep reclaims it. Rows with no
+    claimed_at (claimed before this field existed) use submitted_at as the yardstick.
+    """
+    cutoff = timezone.now() - timedelta(minutes=minutes or _stale_minutes())
+    return (ExamSubmission.objects
+            .filter(grading_status=ExamSubmission.GRADING)
+            .filter(Q(claimed_at__lt=cutoff) | Q(claimed_at__isnull=True, submitted_at__lt=cutoff))
+            .update(grading_status=ExamSubmission.PENDING, claimed_at=None,
+                    grading_error='Requeued after a grader did not finish'))
+
+
 def grade(submission):
-    """Grade one claimed submission and persist the outcome. Never raises."""
+    """Grade one claimed submission and persist the outcome. Never raises.
+
+    Both the scoring and the persist are inside the failure handler: if either throws -
+    a compiler that never returns, a database error writing the score - the row is
+    marked FAILED (and is retryable) rather than left stranded in 'grading'.
+    """
     stored = submission.answers if isinstance(submission.answers, dict) else {}
     try:
         score_pct, correct, total, results = scoring.grade_submission(
             submission.exam_type, stored.get('answers') or {}, stored.get('code_answers') or {})
+        stored['results'] = results
+        with transaction.atomic():
+            row = ExamSubmission.objects.select_for_update().get(pk=submission.pk) \
+                if _supports_row_locks() else ExamSubmission.objects.get(pk=submission.pk)
+            row.answers = stored
+            row.score_pct = score_pct
+            row.grading_status = ExamSubmission.GRADED
+            row.graded_at = timezone.now()
+            row.grading_error = ''
+            row.save(update_fields=['answers', 'score_pct', 'grading_status', 'graded_at', 'grading_error'])
     except Exception as exc:  # noqa: BLE001 - the failure is recorded, not propagated
         logger.exception('Grading submission %s failed', submission.pk)
-        ExamSubmission.objects.filter(pk=submission.pk).update(
-            grading_status=ExamSubmission.FAILED, grading_error=str(exc)[:2000])
+        try:
+            ExamSubmission.objects.filter(pk=submission.pk).update(
+                grading_status=ExamSubmission.FAILED, grading_error=str(exc)[:2000])
+        except Exception:  # noqa: BLE001 - if even this write fails, requeue_stale reclaims it
+            logger.exception('Could not mark submission %s FAILED', submission.pk)
         return False
-
-    stored['results'] = results
-    with transaction.atomic():
-        row = ExamSubmission.objects.select_for_update().get(pk=submission.pk) \
-            if _supports_row_locks() else ExamSubmission.objects.get(pk=submission.pk)
-        row.answers = stored
-        row.score_pct = score_pct
-        row.grading_status = ExamSubmission.GRADED
-        row.graded_at = timezone.now()
-        row.grading_error = ''
-        row.save(update_fields=['answers', 'score_pct', 'grading_status', 'graded_at', 'grading_error'])
     logger.info('Graded submission %s: %s/%s (%s%%)', submission.pk, correct, total, score_pct)
     return True
 
@@ -121,7 +152,11 @@ def grade_pending(limit=50, workers=1):
     `workers` > 1 grades that many submissions side by side - the dedicated worker
     process uses GRADING_CONCURRENCY here. One at a time made a cohort of 60 wait 156 s
     for marks on a 16-CPU box; in parallel it is half that.
+
+    Rows stranded in 'grading' by a dead grader are reclaimed first, so a restart
+    mid-cohort cannot leave a participant polling a result that never comes.
     """
+    requeue_stale()
     ids = list(ExamSubmission.objects
                .filter(grading_status=ExamSubmission.PENDING)
                .order_by('submitted_at')

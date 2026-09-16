@@ -16,8 +16,12 @@ Three tiers, in descending order of containment:
   none    No containment. Wall-clock timeout and a process-tree kill, nothing more.
 
 `CODE_SANDBOX` selects a tier ('auto' picks the best available). `CODE_SANDBOX_REQUIRED`
-- which defaults to "on whenever DEBUG is off" - refuses to execute at all when only the
-'none' tier is available, so a deployment cannot silently end up running unprotected.
+- which defaults to "on whenever DEBUG is off" - refuses to execute unless the active
+tier is at least `CODE_SANDBOX_MIN_TIER` (default: docker), so a deployment cannot
+silently end up running student programs with the host's filesystem and network in
+reach just because the daemon was down or the image was not built when the first
+request arrived. While refusing, the tier is re-probed every few seconds so a Docker
+restart heals without a server restart.
 
 To enable the docker tier, build the runner image once:
 
@@ -30,6 +34,7 @@ import shutil
 import signal
 import subprocess
 import time
+import uuid
 
 from django.conf import settings
 
@@ -38,7 +43,8 @@ logger = logging.getLogger(__name__)
 DOCKER = 'docker'
 RLIMIT = 'rlimit'
 NONE = 'none'
-TIER_ORDER = (DOCKER, RLIMIT, NONE)
+TIER_ORDER = (DOCKER, RLIMIT, NONE)     # strongest first
+TIER_RANK = {tier: rank for rank, tier in enumerate(reversed(TIER_ORDER))}   # none=0 ... docker=2
 
 TIER_LABELS = {
     DOCKER: 'docker (no network, memory and process caps, read-only root)',
@@ -64,6 +70,17 @@ def image_name():
 
 def required():
     return _conf('CODE_SANDBOX_REQUIRED', not settings.DEBUG)
+
+
+def minimum_tier():
+    """The weakest tier that satisfies CODE_SANDBOX_REQUIRED. Docker unless the operator
+    has explicitly accepted rlimit's gaps (CODE_SANDBOX_MIN_TIER=rlimit)."""
+    configured = str(_conf('CODE_SANDBOX_MIN_TIER', DOCKER)).lower()
+    return configured if configured in TIER_ORDER else DOCKER
+
+
+def reprobe_seconds():
+    return float(_conf('CODE_SANDBOX_REPROBE_SECONDS', 30))
 
 
 def limits(kind):
@@ -129,10 +146,23 @@ def _rlimit_usable():
     return True, None
 
 
+def _satisfies_policy(tier):
+    return not required() or TIER_RANK[tier] >= TIER_RANK[minimum_tier()]
+
+
 def detect(refresh=False):
-    """(tier, reason) for the tier that will actually be used."""
+    """(tier, reason) for the tier that will actually be used.
+
+    The probe starts a container, so the answer is cached - for the life of the process
+    while it satisfies the policy, and only for CODE_SANDBOX_REPROBE_SECONDS while it
+    does not. A Docker daemon that was still starting when the first student pressed Run
+    must not disable code execution until someone restarts the web server.
+    """
     if _detected and not refresh:
-        return _detected['tier'], _detected['reason']
+        stale = (not _satisfies_policy(_detected['tier'])
+                 and time.monotonic() - _detected['at'] > reprobe_seconds())
+        if not stale:
+            return _detected['tier'], _detected['reason']
 
     configured = str(_conf('CODE_SANDBOX', 'auto')).lower()
     checks = {DOCKER: _docker_usable, RLIMIT: _rlimit_usable, NONE: lambda: (True, None)}
@@ -152,9 +182,14 @@ def detect(refresh=False):
             notes[candidate] = why
         reason = '; '.join(f'{k}: {v}' for k, v in notes.items()) or None
 
-    _detected.update(tier=tier, reason=reason)
-    if tier == NONE:
+    _detected.update(tier=tier, reason=reason, at=time.monotonic())
+    if not _satisfies_policy(tier):
+        logger.error('Code execution is BLOCKED: the %s tier is below the required %s. %s',
+                     tier, minimum_tier(), reason or '')
+    elif tier == NONE:
         logger.warning('Code execution is running UNSANDBOXED. %s', reason or '')
+    elif tier != DOCKER:
+        logger.warning('Code execution is running with partial containment (%s). %s', tier, reason or '')
     return tier, reason
 
 
@@ -171,35 +206,58 @@ def status():
         'label': TIER_LABELS[tier],
         'isolated': tier == DOCKER,
         'enforced': required(),
+        'required_tier': minimum_tier() if required() else None,
+        'allowed': _satisfies_policy(tier),
         'detail': reason,
         'image': image_name() if tier == DOCKER else None,
     }
 
 
 def ensure_allowed():
-    """Refuse to execute unprotected when policy says containment is mandatory."""
+    """Refuse to execute when policy says containment is mandatory and the active tier
+    does not provide it. The rlimit tier caps memory and processes but leaves the
+    host's files - .env, the database - and the network within reach of a student
+    program, so it only counts when the operator has opted into it by name."""
     tier, reason = detect()
-    if tier == NONE and required():
+    if not _satisfies_policy(tier):
+        if tier == NONE:
+            raise SandboxUnavailable(
+                'Code execution is disabled: no sandbox is available on this host '
+                f'({reason or "no containment backend"}). Build the runner image, or set '
+                'CODE_SANDBOX_REQUIRED=0 to accept the risk on a closed network.')
         raise SandboxUnavailable(
-            'Code execution is disabled: no sandbox is available on this host '
-            f'({reason or "no containment backend"}). Build the runner image, or set '
-            'CODE_SANDBOX_REQUIRED=0 to accept the risk on a closed network.')
+            f'Code execution is disabled: only the {tier} tier is available and the policy '
+            f'requires {minimum_tier()} ({reason or "the container runtime is not usable"}). '
+            f'Build the runner image, or set CODE_SANDBOX_MIN_TIER={tier} to accept that '
+            'student programs can reach the host filesystem and network.')
     return tier
 
 
 # ----------------------------------------------------------------------- docker tier
-def _docker_command(inner_argv, workdir, kind, writable):
-    """A throwaway container: no network, capped memory and processes, all capabilities
-    dropped, and the workdir mounted read-only unless the step has to write output."""
+def container_name():
+    return f'trace-run-{uuid.uuid4().hex[:12]}'
+
+
+def _docker_command(inner_argv, workdir, kind, writable, name=None):
+    """A throwaway container: no network, capped memory, processes and CPU time, all
+    capabilities dropped, and the workdir mounted read-only unless the step has to
+    write output. A name lets a timed-out run be stopped by `docker kill`: killing the
+    `docker run` client alone leaves the container - and its infinite loop - running."""
     caps = limits(kind)
     mount = f'{os.path.abspath(str(workdir))}:/work' + ('' if writable else ':ro')
-    argv = [
-        'docker', 'run', '--rm', '--interactive',
+    argv = ['docker', 'run', '--rm', '--interactive']
+    if name:
+        argv += ['--name', name]
+    argv += [
         '--network', 'none',                       # no outbound sockets, no LAN
         '--memory', f'{caps["memory_mb"]}m',
         '--memory-swap', f'{caps["memory_mb"]}m',  # no swap as an escape hatch
         '--pids-limit', str(caps['max_processes']),
         '--cpus', str(_conf('CODE_SANDBOX_CPUS', '1.0')),
+        # CPU seconds, not wall seconds: a busy loop is killed by the kernel even if the
+        # client that would have timed it out is gone.
+        '--ulimit', f'cpu={caps["cpu_seconds"]}:{caps["cpu_seconds"]}',
+        '--ulimit', f'fsize={caps["max_file_mb"] * 1024 * 1024}:{caps["max_file_mb"] * 1024 * 1024}',
         '--cap-drop', 'ALL',
         '--security-opt', 'no-new-privileges',
         '--workdir', '/work',
@@ -210,6 +268,14 @@ def _docker_command(inner_argv, workdir, kind, writable):
     argv += [image_name()]
     argv += list(inner_argv)
     return argv
+
+
+def _docker_kill(name):
+    """Stop a named container outright. Best effort: the container may already be gone."""
+    try:
+        subprocess.run(['docker', 'kill', name], capture_output=True, timeout=20)
+    except (OSError, subprocess.SubprocessError) as exc:
+        logger.warning('docker kill %s failed: %s', name, exc)
 
 
 # ----------------------------------------------------------------------- rlimit tier
@@ -237,13 +303,23 @@ def _rlimit_preexec(kind):
 
 
 # ------------------------------------------------------------------------ execution
-def _kill_tree(proc):
-    """Kill the child AND everything it spawned; a fork bomb outlives a plain kill()."""
+def _kill_tree(proc, container=None):
+    """Kill the child AND everything it spawned; a fork bomb outlives a plain kill().
+
+    For the docker tier the child is the `docker run` client and the untrusted code is
+    in a named container, so stop that by name - killing the client can leave the
+    container's loop running. On POSIX the child is in its own session (see execute),
+    so signalling its process group is safe; the guard is belt-and-braces against ever
+    signalling the web server's own group."""
+    if container:
+        _docker_kill(container)
     try:
         if os.name == 'posix':
             try:
-                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-                return
+                pgid = os.getpgid(proc.pid)
+                if pgid not in (os.getpgrp(), 0):
+                    os.killpg(pgid, signal.SIGKILL)
+                    return
             except (ProcessLookupError, PermissionError, OSError):
                 pass
         else:
@@ -267,22 +343,29 @@ def execute(host_argv, container_argv, workdir, *, kind='run', stdin_text='',
     """
     tier = ensure_allowed()
     start = time.time()
+    container = None
+
+    # Every tier detaches its child into its own process group / session, so a timeout
+    # kill can never reach the web server's own group. The docker client is named so the
+    # container it starts can be stopped directly on timeout.
+    popen_kwargs = {}
+    if os.name == 'posix':
+        popen_kwargs['start_new_session'] = True
+    elif os.name == 'nt':
+        popen_kwargs['creationflags'] = subprocess.CREATE_NEW_PROCESS_GROUP
 
     if tier == DOCKER:
-        argv = _docker_command(container_argv, workdir, kind, writable)
-        popen_kwargs = {}
+        container = container_name()
+        argv = _docker_command(container_argv, workdir, kind, writable, name=container)
         # Docker adds its own startup cost; give the wall clock a little headroom so a
         # slow cold start is not reported to the student as an infinite loop.
         timeout = timeout + _conf('CODE_SANDBOX_STARTUP_GRACE', 15)
     else:
         argv = host_argv
-        popen_kwargs = {'cwd': str(workdir)}
+        popen_kwargs['cwd'] = str(workdir)
         if tier == RLIMIT:
             popen_kwargs['preexec_fn'] = _rlimit_preexec(kind)
-        elif os.name == 'posix':
-            popen_kwargs['start_new_session'] = True
-        elif os.name == 'nt':
-            popen_kwargs['creationflags'] = subprocess.CREATE_NEW_PROCESS_GROUP
+            popen_kwargs.pop('start_new_session', None)  # setsid runs inside the preexec
 
     try:
         proc = subprocess.Popen(
@@ -297,7 +380,7 @@ def execute(host_argv, container_argv, workdir, *, kind='run', stdin_text='',
         stdout, stderr = proc.communicate(input=stdin_text or '', timeout=timeout)
         timed_out = False
     except subprocess.TimeoutExpired:
-        _kill_tree(proc)
+        _kill_tree(proc, container=container)
         try:
             stdout, stderr = proc.communicate(timeout=10)
         except subprocess.SubprocessError:

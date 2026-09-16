@@ -108,6 +108,33 @@ class CodeGradingTests(SimpleTestCase):
         self.assertIn('Could not grade', outcome['detail'])
 
 
+class InfrastructureFailureTests(SimpleTestCase):
+    """A runner that could not judge an answer (Docker down, no compiler) must fail the
+    whole submission - which makes it retryable - not bank a real-looking zero."""
+
+    def setUp(self):
+        patcher = patch('assessment.scoring.load_item_bank', return_value={'pre': [MCQ, C_ITEM]})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_a_sandbox_outage_fails_the_submission_instead_of_scoring_it(self):
+        with patch('tutor.runner.run_code', return_value={'status': 'SANDBOX_UNAVAILABLE', 'test_results': []}):
+            with self.assertRaises(scoring.GradingUnavailable):
+                scoring.grade_submission('pre', {'q1': 'b'}, {'c1': 'int main(){}'})
+
+    def test_a_grading_exception_also_fails_the_submission(self):
+        with patch('tutor.runner.run_code', side_effect=OSError('compiler gone')):
+            with self.assertRaises(scoring.GradingUnavailable):
+                scoring.grade_submission('pre', {'q1': 'b'}, {'c1': 'int main(){}'})
+
+    def test_a_genuine_wrong_answer_is_still_banked_not_treated_as_an_outage(self):
+        with patch('tutor.runner.run_code', return_value={
+                'status': 'COMPILE_ERROR', 'test_results': [], 'passed_count': 0}):
+            score, correct, total, _ = scoring.grade_submission('pre', {'q1': 'b'}, {'c1': 'bad code'})
+        self.assertEqual((correct, total), (1, 2), 'a compile error is a wrong answer, not a failure')
+        self.assertEqual(score, 50)
+
+
 class SubmissionGradingTests(SimpleTestCase):
     def setUp(self):
         self.bank = {'pre': [MCQ, dict(MCQ, id='q2', keyed_answer='a'),

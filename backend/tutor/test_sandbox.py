@@ -9,7 +9,7 @@ executing untrusted code with no protection at all.
 import os
 import textwrap
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from django.test import SimpleTestCase, override_settings
 
@@ -116,6 +116,84 @@ class PolicyTests(SimpleTestCase):
             result = runner.run_code(language='html', code='<p>hi</p>', mode='check')
         self.assertNotEqual(result['status'], 'SANDBOX_UNAVAILABLE')
 
+    @override_settings(CODE_SANDBOX='rlimit', CODE_SANDBOX_REQUIRED=True)
+    def test_rlimit_is_refused_when_a_container_is_required(self):
+        """rlimit caps memory and processes but leaves the host filesystem and network in
+        reach; when the policy requires docker it must not be silently accepted."""
+        sandbox.reset_detection()
+        with patch('tutor.sandbox._rlimit_usable', return_value=(True, None)):
+            with self.assertRaises(sandbox.SandboxUnavailable):
+                sandbox.ensure_allowed()
+
+    @override_settings(CODE_SANDBOX='rlimit', CODE_SANDBOX_REQUIRED=True, CODE_SANDBOX_MIN_TIER='rlimit')
+    def test_rlimit_is_accepted_only_when_explicitly_opted_into(self):
+        sandbox.reset_detection()
+        with patch('tutor.sandbox._rlimit_usable', return_value=(True, None)):
+            self.assertEqual(sandbox.ensure_allowed(), sandbox.RLIMIT)
+
+    @override_settings(CODE_SANDBOX='rlimit', CODE_SANDBOX_REQUIRED=True)
+    def test_run_code_refuses_the_rlimit_tier_and_names_the_gap(self):
+        sandbox.reset_detection()
+        with patch('tutor.sandbox._rlimit_usable', return_value=(True, None)), \
+             patch('tutor.sandbox.execute') as executed:
+            result = runner.run_code(language='c', code='int main(){return 0;}')
+        executed.assert_not_called()
+        self.assertEqual(result['status'], 'SANDBOX_UNAVAILABLE')
+
+    @override_settings(CODE_SANDBOX='docker', CODE_SANDBOX_REQUIRED=True, CODE_SANDBOX_REPROBE_SECONDS=0)
+    def test_a_blocked_tier_is_reprobed_so_a_late_docker_start_heals(self):
+        """A Docker daemon still starting when the first request lands must not disable
+        code execution for the life of the process."""
+        sandbox.reset_detection()
+        with patch('tutor.sandbox._docker_usable', return_value=(False, 'daemon starting')):
+            self.assertEqual(sandbox.detect()[0], sandbox.NONE)
+        with patch('tutor.sandbox._docker_usable', return_value=(True, None)):
+            self.assertEqual(sandbox.detect()[0], sandbox.DOCKER, 're-probed, not the cached NONE')
+
+    @override_settings(CODE_SANDBOX='docker', CODE_SANDBOX_REQUIRED=True)
+    def test_compiler_status_is_blocked_when_only_rlimit_is_available(self):
+        sandbox.reset_detection()
+        with patch('tutor.sandbox._docker_usable', return_value=(False, 'no daemon')), \
+             patch('tutor.sandbox._rlimit_usable', return_value=(True, None)):
+            # Explicit docker was requested and is unavailable, so detect lands on NONE and
+            # the status is blocked; the point is that "ready" never lies.
+            status = runner.compiler_status()
+        self.assertFalse(status['ready'])
+        self.assertIn('disabled', status['hint'])
+
+
+class KillTreeTests(SimpleTestCase):
+    """A timed-out run must be stopped without ever signalling the web server itself."""
+
+    def test_a_timed_out_docker_run_is_stopped_by_container_name(self):
+        proc = Mock()
+        proc.pid = 2 ** 30  # a pid that does not exist, so the fallback path is harmless
+        with patch('tutor.sandbox._docker_kill') as docker_kill, \
+             patch('tutor.sandbox.subprocess.run'):
+            sandbox._kill_tree(proc, container='trace-run-abc')
+        docker_kill.assert_called_once_with('trace-run-abc')
+
+    @unittest.skipUnless(os.name == 'posix', 'process groups are POSIX')
+    def test_it_never_signals_the_web_servers_own_process_group(self):
+        proc = Mock()
+        proc.pid = 2 ** 30
+        with patch('os.getpgid', return_value=os.getpgrp()), \
+             patch('os.killpg') as killpg:
+            sandbox._kill_tree(proc)
+        killpg.assert_not_called()
+        proc.kill.assert_called_once()
+
+    @unittest.skipUnless(os.name == 'posix', 'process groups are POSIX')
+    def test_it_kills_the_childs_own_group_when_that_is_not_ours(self):
+        proc = Mock()
+        proc.pid = 2 ** 30
+        with patch('os.getpgid', return_value=2 ** 29), \
+             patch('os.getpgrp', return_value=1), \
+             patch('os.killpg') as killpg:
+            sandbox._kill_tree(proc)
+        killpg.assert_called_once()
+        proc.kill.assert_not_called()
+
 
 class DockerCommandTests(SimpleTestCase):
     """The container flags are the containment, so assert on them directly."""
@@ -165,6 +243,18 @@ class DockerCommandTests(SimpleTestCase):
 
     def test_the_container_is_removed_after_the_run(self):
         self.assertIn('--rm', self.command())
+
+    def test_a_named_container_can_be_killed_on_timeout(self):
+        argv = sandbox._docker_command(['./main.out'], '/tmp/work', 'run', False, name='trace-run-xyz')
+        self.assertIn('--name', argv)
+        self.assertEqual(argv[argv.index('--name') + 1], 'trace-run-xyz')
+
+    def test_cpu_time_is_capped_so_a_loop_dies_even_without_the_client(self):
+        with override_settings(CODE_RUN_CPU_SECONDS=5):
+            argv = self.command()
+        ulimits = [argv[i + 1] for i, a in enumerate(argv) if a == '--ulimit']
+        self.assertTrue(any(u.startswith('cpu=5') for u in ulimits),
+                        'a container CPU-time ulimit stops an infinite loop by itself')
 
     def test_the_configured_image_is_used(self):
         with override_settings(CODE_SANDBOX_IMAGE='my-runner:7'):

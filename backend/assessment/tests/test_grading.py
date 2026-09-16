@@ -7,6 +7,7 @@ its own database connection and cannot see rows inside an uncommitted test trans
 """
 import time
 import unittest
+from datetime import timedelta
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
@@ -14,6 +15,7 @@ from django.core.cache import caches
 from django.core.management import call_command
 from django.db import connection
 from django.test import TransactionTestCase, override_settings
+from django.utils import timezone
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
@@ -119,6 +121,50 @@ class GradeOutcomeTests(ApiTestCase):
         self.assertEqual(grading.grade_pending(), 3)
         self.assertTrue(all(ExamSubmission.objects.get(pk=r.pk).is_graded for r in rows))
         self.assertEqual(grading.grade_pending(), 0)
+
+class StaleGradingTests(ApiTestCase):
+    """A grader that dies between claim and persist leaves its row in 'grading' forever;
+    the next sweep must reclaim it so the participant's result is not lost."""
+
+    def setUp(self):
+        super().setUp()
+        self.user, _ = enrol('stu')
+
+    def test_a_row_stuck_in_grading_is_requeued_and_then_grades(self):
+        row = pending_row(self.user)
+        self.assertTrue(grading.claim(row.pk))       # -> GRADING, claimed_at = now
+        ExamSubmission.objects.filter(pk=row.pk).update(
+            claimed_at=timezone.now() - timedelta(minutes=30))
+        self.assertEqual(grading.requeue_stale(), 1)
+        row.refresh_from_db()
+        self.assertEqual(row.grading_status, ExamSubmission.PENDING)
+        self.assertEqual(grading.grade_pending(), 1)
+        self.assertTrue(ExamSubmission.objects.get(pk=row.pk).is_graded)
+
+    def test_a_freshly_claimed_row_is_left_alone(self):
+        row = pending_row(self.user)
+        grading.claim(row.pk)
+        self.assertEqual(grading.requeue_stale(), 0)
+        self.assertEqual(ExamSubmission.objects.get(pk=row.pk).grading_status, ExamSubmission.GRADING)
+
+    def test_grade_pending_reclaims_a_stranded_row_on_its_own(self):
+        row = pending_row(self.user)
+        grading.claim(row.pk)
+        ExamSubmission.objects.filter(pk=row.pk).update(
+            claimed_at=timezone.now() - timedelta(minutes=30))
+        self.assertEqual(grading.grade_pending(), 1, 'the sweep requeues then grades it')
+        self.assertTrue(ExamSubmission.objects.get(pk=row.pk).is_graded)
+
+    def test_a_grading_unavailable_error_marks_the_row_failed_and_is_retryable(self):
+        row = pending_row(self.user)
+        with patch('assessment.grading.scoring.grade_submission',
+                   side_effect=scoring.GradingUnavailable('runner down')):
+            self.assertFalse(grading.grade_now(row.pk))
+        row.refresh_from_db()
+        self.assertEqual(row.grading_status, ExamSubmission.FAILED)
+        self.assertIn('runner down', row.grading_error)
+        self.assertEqual(grading.retry_failed(), 1)
+
 
 class RepresentationTests(ApiTestCase):
     def setUp(self):

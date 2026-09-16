@@ -21,6 +21,18 @@ class ItemBankError(RuntimeError):
     """The item bank is missing, unreadable or not shaped like a bank."""
 
 
+class GradingUnavailable(RuntimeError):
+    """A code item could not be graded because the runner was unavailable, not because
+    the answer was wrong. Raised so the submission is recorded FAILED (and retried when
+    the toolchain is back) instead of banking a real-looking zero."""
+
+
+# Statuses that mean "the runner could not judge this answer", as opposed to a genuine
+# wrong answer (COMPILE_ERROR, RUNTIME_ERROR, WRONG_ANSWER, NO_ANSWER). A submission
+# with any of these is a grading failure, not a low score.
+INFRASTRUCTURE_STATUSES = {'SANDBOX_UNAVAILABLE', 'UNSUPPORTED', 'UNKNOWN', 'GRADING_ERROR'}
+
+
 def load_item_bank():
     """Item bank JSON, held in the memory cache and keyed by the file's mtime so edits show up
     without a restart."""
@@ -139,7 +151,8 @@ def _grade_one(item, answers, code_answers):
             return _grade_code(item, code_answers)
         return _grade_mcq(item, answers)
     except Exception as exc:  # a broken item or a dead compiler must not 500 the submission
-        return {'correct': False, 'detail': f'গ্রেড করা যায়নি (Could not grade): {exc}'}
+        return {'correct': False, 'detail': f'গ্রেড করা যায়নি (Could not grade): {exc}',
+                'status': 'GRADING_ERROR'}
     finally:
         close_old_connections()
 
@@ -171,6 +184,16 @@ def grade_submission(exam_type, answers, code_answers):
             if key in outcome:
                 entry[key] = outcome[key]
         results.append(entry)
+
+    stuck = sorted({r['status'] for r in results
+                    if r.get('status') in INFRASTRUCTURE_STATUSES})
+    if stuck:
+        # Do not bank a score built on items the runner could not judge: every code item
+        # marked wrong because Docker was down would look like a real, low score. Fail the
+        # whole submission so grading.grade records it FAILED and retry_failed re-grades it.
+        raise GradingUnavailable(
+            f'{len(stuck)} runner status(es) prevented grading: {", ".join(stuck)}. '
+            'The answers are saved; grade again once the code runner is available.')
 
     total = len(results)
     correct = sum(1 for r in results if r['correct'])

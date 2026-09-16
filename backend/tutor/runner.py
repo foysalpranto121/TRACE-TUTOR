@@ -80,10 +80,15 @@ def compiler_status():
     c = _find_c_compiler()
     # In the docker tier the container supplies gcc, so a host toolchain is not needed.
     label = 'gcc (sandboxed container)' if containerised else (c[0] if c else None)
-    blocked = box['tier'] == sandbox.NONE and box['enforced']
+    # Blocked whenever the active tier does not meet the required minimum - not only when
+    # there is no sandbox at all, but also when only rlimit is up and the policy wants a
+    # container. Otherwise status would advertise "ready" for runs the endpoint refuses.
+    blocked = not box.get('allowed', True)
     if blocked:
-        hint = ('Code execution is disabled because no sandbox is available. '
-                'Build the runner image (backend/tutor/sandbox.Dockerfile) or set '
+        need = box.get('required_tier') or sandbox.DOCKER
+        hint = (f'Code execution is disabled: the available containment ({box["tier"]}) is '
+                f'below the required {need}. Build the runner image '
+                '(backend/tutor/sandbox.Dockerfile), or lower CODE_SANDBOX_MIN_TIER / set '
                 'CODE_SANDBOX_REQUIRED=0 on a closed network.')
     elif not (containerised or c):
         hint = 'No C compiler found. Install gcc/clang or run: pip install ziglang'

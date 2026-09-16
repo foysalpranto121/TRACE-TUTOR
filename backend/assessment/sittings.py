@@ -63,20 +63,25 @@ def already_submitted(user, exam_type):
     return ExamSubmission.objects.filter(student=user, exam_type=exam_type).exists()
 
 
-def blocking_paper(user):
-    """The no-AI paper this participant currently has open, or None.
+def open_paper_of(user, exam_types=None):
+    """The paper this participant currently has open, or None.
 
-    'Currently' means opened or re-opened within the TTL. Once they submit, or walk
-    away for longer than the TTL, the tutor is available again.
+    'Currently' means opened or re-opened within the TTL. `exam_types` narrows it to
+    some papers (the no-AI ones, for the tutor gate); by default any paper counts, which
+    is how a tutor turn gets stamped with the paper it was asked during.
     """
     since = timezone.now() - ttl()
-    row = (PaperSitting.objects
-           .filter(student=user, exam_type__in=no_ai_papers(),
-                   submitted_at__isnull=True, last_opened_at__gte=since)
-           .order_by('-last_opened_at')
-           .values_list('exam_type', flat=True)
-           .first())
-    return row
+    queryset = PaperSitting.objects.filter(student=user, submitted_at__isnull=True,
+                                           last_opened_at__gte=since)
+    if exam_types is not None:
+        queryset = queryset.filter(exam_type__in=exam_types)
+    return queryset.order_by('-last_opened_at').values_list('exam_type', flat=True).first()
+
+
+def blocking_paper(user):
+    """The no-AI paper this participant currently has open, or None. Once they submit,
+    or walk away for longer than the TTL, the tutor is available again."""
+    return open_paper_of(user, no_ai_papers())
 
 
 def describe(user, exam_type):

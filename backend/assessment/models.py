@@ -81,6 +81,10 @@ class ExamSubmission(models.Model):
     answers = models.JSONField(default=dict)
     submitted_at = models.DateTimeField(auto_now_add=True, db_index=True)
     grading_status = models.CharField(max_length=10, choices=GRADING_STATES, default=GRADED, db_index=True)
+    # When a grader claimed this row (moved it PENDING -> GRADING). A row that is still
+    # 'grading' long after this was set belongs to a grader that died - a restart mid
+    # compile, say - and is requeued by the next sweep instead of polling forever.
+    claimed_at = models.DateTimeField(null=True, blank=True)
     graded_at = models.DateTimeField(null=True, blank=True)
     grading_error = models.TextField(blank=True, default='')
 

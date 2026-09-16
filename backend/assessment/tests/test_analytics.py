@@ -223,7 +223,8 @@ class CsvColumnTests(SimpleTestCase):
             'participant_code', 'arm', 'current_arm', 'arm_switches', 'switched_during_protocol',
             'withdrawn', 'consent_given', 'grade', 'medium', 'area_type',
             'prior_experience', 'ai_tool_familiarity', 'normalized_gain', 'withdrawal_drop',
-            'help_requests', 'code_runs', 'copy_paste', 'first_submission_at', 'last_submission_at',
+            'help_requests', 'help_fallbacks', 'code_runs', 'copy_paste',
+            'first_submission_at', 'last_submission_at',
         }
         for exam_type in analytics.EXAM_TYPES:
             keys.add(exam_type)

@@ -291,6 +291,10 @@ GRADING_INLINE = env_flag('GRADING_INLINE', default=False)
 # 'thread' grades inside the web process; 'worker' leaves every compile to a separate
 # `manage.py grade_submissions` process, which keeps Submit fast for a whole cohort.
 GRADING_MODE = os.environ.get('GRADING_MODE', 'thread').strip().lower()
+# A submission still 'grading' this many minutes after it was claimed belongs to a grader
+# that died (a restart mid-compile). The next sweep returns it to the queue so the
+# participant's result is never lost. Grading a form takes seconds, so ten is generous.
+GRADING_STALE_MINUTES = int(os.environ.get('GRADING_STALE_MINUTES', '10'))
 
 # ---------------------------------------------------------------------------
 # Code execution sandbox (tutor/sandbox.py).
@@ -306,9 +310,17 @@ GRADING_MODE = os.environ.get('GRADING_MODE', 'thread').strip().lower()
 # ---------------------------------------------------------------------------
 CODE_SANDBOX = os.environ.get('CODE_SANDBOX', 'auto').strip().lower()
 CODE_SANDBOX_REQUIRED = env_flag('CODE_SANDBOX_REQUIRED', default=not DEBUG)
+# The weakest tier that satisfies CODE_SANDBOX_REQUIRED. 'docker' (the default) refuses
+# to run student code under the rlimit tier, which caps memory and processes but leaves
+# the host filesystem (.env, the database) and the network reachable. Set to 'rlimit'
+# only to accept those gaps on a closed, proctored network.
+CODE_SANDBOX_MIN_TIER = os.environ.get('CODE_SANDBOX_MIN_TIER', 'docker').strip().lower()
 CODE_SANDBOX_IMAGE = os.environ.get('CODE_SANDBOX_IMAGE', 'trace-tutor-runner:1')
 CODE_SANDBOX_CPUS = os.environ.get('CODE_SANDBOX_CPUS', '1.0')
 CODE_SANDBOX_STARTUP_GRACE = int(os.environ.get('CODE_SANDBOX_STARTUP_GRACE', '15'))
+# While the active tier is below the required minimum, re-probe this often (seconds) so a
+# Docker daemon that was still starting on the first request heals without a restart.
+CODE_SANDBOX_REPROBE_SECONDS = int(os.environ.get('CODE_SANDBOX_REPROBE_SECONDS', '30'))
 
 # Caps applied to the student's program.
 CODE_RUN_MEMORY_MB = int(os.environ.get('CODE_RUN_MEMORY_MB', '256'))

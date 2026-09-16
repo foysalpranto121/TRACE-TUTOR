@@ -93,12 +93,9 @@ export const Workspace = () => {
   const handleRequestHelp = async (queryText) => {
     setTutorState({ isLoading: true, traceData: null, groundedPassage: null, error: null });
 
-    apiService.logTelemetry('HELP_REQUEST', {
-      prompt: queryText,
-      arm: arm,
-      problem_id: activeProblem.id,
-    });
-
+    // HELP_REQUEST is logged server-side in query_tutor now (with arm, paper, ai_status
+    // and whether it was refused), so the assessment chat and the workspace are both
+    // recorded and cannot disagree. No client-side HELP_REQUEST here.
     const compilerOutput = lastCompile?.status === 'COMPILE_ERROR'
       ? lastCompile.compile_output
       : lastCompile?.testResults?.filter((t) => !t.passed).map((t) => `Test ${t.id} input=${t.input} expected="${t.expected}" actual="${t.actual}" ${t.stderr || ''}`).join('\n') || '';

@@ -64,18 +64,28 @@ const PHASE_LABEL = {
  * regardless of the chapter they were working in. Nothing in this panel may claim a
  * curriculum source that retrieval did not actually return.
  */
-const welcomeMessage = (examType, cleared = false) => ({
+const welcomeMessage = (examType, cleared = false, answerOnly = false) => ({
   sender: 'ai',
-  text: cleared
-    ? 'Chat history cleared. Ask a question about this task and I will answer from the NCTB textbook passages I retrieve, alongside my own reasoning.'
-    : `TRACE Tutor is available during the ${PHASE_LABEL[examType] || 'assessment'}. `
-      + 'Ask about a concept, an error or your code. Each answer shows the NCTB textbook '
-      + 'passage it is grounded in, with its page citation, next to independent reasoning.',
+  text: answerOnly
+    ? (cleared
+        ? 'Chat history cleared. Ask about this task and I will give you the direct solution.'
+        : `TRACE Tutor is available during the ${PHASE_LABEL[examType] || 'assessment'}. `
+          + 'Ask about a concept, an error or your code and I will give you the direct answer and a working solution.')
+    : (cleared
+        ? 'Chat history cleared. Ask a question about this task and I will answer from the NCTB textbook passages I retrieve, alongside my own reasoning.'
+        : `TRACE Tutor is available during the ${PHASE_LABEL[examType] || 'assessment'}. `
+          + 'Ask about a concept, an error or your code. Each answer shows the NCTB textbook '
+          + 'passage it is grounded in, with its page citation, next to independent reasoning.'),
   time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
 });
 
 export const AssessmentPage = () => {
-  const { language } = useAuth();
+  const { language, arm } = useAuth();
+  // The manipulation: the treatment arm sees the reasoning trace and retrieved passages;
+  // the control arm gets only the direct answer and a working solution. The server also
+  // strips the reasoning fields for ANSWER_ONLY, so this decides what is *shown*, never
+  // what is trusted.
+  const isReasoningArm = arm !== 'ANSWER_ONLY';
   const [examType, setExamType] = useState('pre'); // 'pre', 'post', 'transfer', 'withdrawal'
   // Which papers this participant may open, as reported by the server.
   const [availableExams, setAvailableExams] = useState(['pre']);
@@ -104,8 +114,8 @@ export const AssessmentPage = () => {
   useEffect(() => {
     // Reset AI Assistant Chat when the exam phase changes. Deliberately NOT keyed on the current
     // question - navigating between questions must not wipe the conversation.
-    setChatMessages([welcomeMessage(examType)]);
-  }, [examType]);
+    setChatMessages([welcomeMessage(examType, false, !isReasoningArm)]);
+  }, [examType, isReasoningArm]);
 
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -124,7 +134,7 @@ export const AssessmentPage = () => {
   }, [currentIndex]);
 
   const handleClearChat = () => {
-    setChatMessages([welcomeMessage(examType, true)]);
+    setChatMessages([welcomeMessage(examType, true, !isReasoningArm)]);
   };
 
   const loadItems = useCallback(async (type) => {
@@ -326,13 +336,32 @@ export const AssessmentPage = () => {
         textToSend,
         currentCode,
         currentItem?.id || 'prob_assessment',
-        'REASONING_VISIBLE',
+        arm,   // the participant's real arm; the server resolves it from the profile regardless
         {
           language,
           problem_title: currentItem?.title || '',
           problem_description: currentItem?.question || '',
         }
       );
+
+      // Control arm: the server returns only direct_answer + code_solution, and this
+      // renders exactly that - no reasoning trace, no retrieved passages, no view modes.
+      if (!isReasoningArm) {
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            sender: 'ai',
+            text: response.direct_answer || 'The AI assistant could not produce an answer.',
+            code_solution: response.code_solution || '',
+            answer_only: true,
+            model: response.model,
+            ai_status: response.ai_status,
+            ai_error: response.error,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          },
+        ]);
+        return;
+      }
 
       let replyText = '';
       if (response.answer) {
@@ -888,67 +917,85 @@ export const AssessmentPage = () => {
                       <Trash2 className="w-3 h-3 text-rose-400" />
                       <span>Clear Chat</span>
                     </button>
-                    <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono text-[10px] font-bold border border-emerald-500/30">
-                      Dual RAG + AI
+                    <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold border ${
+                      isReasoningArm
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                        : 'bg-amber-500/10 text-amber-500 border-amber-500/30'
+                    }`}>
+                      {isReasoningArm ? 'Dual RAG + AI' : 'Answer-Only'}
                     </span>
                   </div>
                 </div>
 
-                {/* Structured View Mode Selector */}
-                <div className="flex items-center gap-1 bg-surface-container-lowest p-1 rounded-xl border border-outline-variant/20 text-[11px] font-mono">
-                  <button
-                    onClick={() => setChatFilterMode('dual')}
-                    className={`flex-1 py-1 px-2 rounded-lg font-bold transition-all ${
-                      chatFilterMode === 'dual'
-                        ? 'bg-primary text-on-primary shadow-sm'
-                        : 'text-on-surface-variant hover:text-on-surface'
-                    }`}
-                  >
-                    ✨ Dual View
-                  </button>
-                  <button
-                    onClick={() => setChatFilterMode('rag')}
-                    className={`flex-1 py-1 px-2 rounded-lg font-bold transition-all ${
-                      chatFilterMode === 'rag'
-                        ? 'bg-sky-500 text-on-surface shadow-sm'
-                        : 'text-on-surface-variant hover:text-on-surface'
-                    }`}
-                  >
-                    📖 RAG Book
-                  </button>
-                  <button
-                    onClick={() => setChatFilterMode('independent')}
-                    className={`flex-1 py-1 px-2 rounded-lg font-bold transition-all ${
-                      chatFilterMode === 'independent'
-                        ? 'bg-purple-500 text-on-surface shadow-sm'
-                        : 'text-on-surface-variant hover:text-on-surface'
-                    }`}
-                  >
-                    🤖 Independent AI
-                  </button>
-                </div>
+                {/* Structured View Mode Selector - reasoning arm only (the control arm has one view) */}
+                {isReasoningArm && (
+                  <div className="flex items-center gap-1 bg-surface-container-lowest p-1 rounded-xl border border-outline-variant/20 text-[11px] font-mono">
+                    <button
+                      onClick={() => setChatFilterMode('dual')}
+                      className={`flex-1 py-1 px-2 rounded-lg font-bold transition-all ${
+                        chatFilterMode === 'dual'
+                          ? 'bg-primary text-on-primary shadow-sm'
+                          : 'text-on-surface-variant hover:text-on-surface'
+                      }`}
+                    >
+                      ✨ Dual View
+                    </button>
+                    <button
+                      onClick={() => setChatFilterMode('rag')}
+                      className={`flex-1 py-1 px-2 rounded-lg font-bold transition-all ${
+                        chatFilterMode === 'rag'
+                          ? 'bg-sky-500 text-on-surface shadow-sm'
+                          : 'text-on-surface-variant hover:text-on-surface'
+                      }`}
+                    >
+                      📖 RAG Book
+                    </button>
+                    <button
+                      onClick={() => setChatFilterMode('independent')}
+                      className={`flex-1 py-1 px-2 rounded-lg font-bold transition-all ${
+                        chatFilterMode === 'independent'
+                          ? 'bg-purple-500 text-on-surface shadow-sm'
+                          : 'text-on-surface-variant hover:text-on-surface'
+                      }`}
+                    >
+                      🤖 Independent AI
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* Suggested Quick Prompts */}
+              {/* Suggested Quick Prompts. The reasoning arm's hint/concept/logic prompts each
+                  elicit the reasoning trace, so the control arm gets a single direct-answer prompt. */}
               <div className="p-2.5 bg-surface-container-lowest border-b border-outline-variant/20 flex items-center gap-1.5 overflow-x-auto text-[11px] font-mono">
-                <button
-                  onClick={() => handleSendAiMessage('Give me a hint for this question without spoiling the full answer')}
-                  className="px-2.5 py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-primary whitespace-nowrap border border-primary/20 flex items-center gap-1"
-                >
-                  <Lightbulb className="w-3 h-3" /> Hint
-                </button>
-                <button
-                  onClick={() => handleSendAiMessage('Explain the core concept and NCTB textbook rule for this problem')}
-                  className="px-2.5 py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-sky-400 whitespace-nowrap border border-sky-500/20 flex items-center gap-1"
-                >
-                  <BookOpen className="w-3 h-3" /> Concept Rule
-                </button>
-                <button
-                  onClick={() => handleSendAiMessage('How should I structure the main logic and loop condition?')}
-                  className="px-2.5 py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-purple-400 whitespace-nowrap border border-purple-500/20 flex items-center gap-1"
-                >
-                  <Code className="w-3 h-3" /> Logic Structure
-                </button>
+                {isReasoningArm ? (
+                  <>
+                    <button
+                      onClick={() => handleSendAiMessage('Give me a hint for this question without spoiling the full answer')}
+                      className="px-2.5 py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-primary whitespace-nowrap border border-primary/20 flex items-center gap-1"
+                    >
+                      <Lightbulb className="w-3 h-3" /> Hint
+                    </button>
+                    <button
+                      onClick={() => handleSendAiMessage('Explain the core concept and NCTB textbook rule for this problem')}
+                      className="px-2.5 py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-sky-400 whitespace-nowrap border border-sky-500/20 flex items-center gap-1"
+                    >
+                      <BookOpen className="w-3 h-3" /> Concept Rule
+                    </button>
+                    <button
+                      onClick={() => handleSendAiMessage('How should I structure the main logic and loop condition?')}
+                      className="px-2.5 py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-purple-400 whitespace-nowrap border border-purple-500/20 flex items-center gap-1"
+                    >
+                      <Code className="w-3 h-3" /> Logic Structure
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => handleSendAiMessage('Give me the direct solution to this task')}
+                    className="px-2.5 py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-amber-500 whitespace-nowrap border border-amber-500/20 flex items-center gap-1"
+                  >
+                    <Code className="w-3 h-3" /> Direct Solution
+                  </button>
+                )}
               </div>
 
               {/* Chat History Body */}
@@ -974,7 +1021,7 @@ export const AssessmentPage = () => {
                       ) : (
                         <div className="space-y-3">
                           {/* SECTION A: RAG NCTB TEXTBOOK GROUNDED ANSWER */}
-                          {(chatFilterMode === 'dual' || chatFilterMode === 'rag') && msg.rag_answer && (
+                          {isReasoningArm && (chatFilterMode === 'dual' || chatFilterMode === 'rag') && msg.rag_answer && (
                             <div className="bg-sky-500/10 border border-sky-500/30 rounded-xl p-3 space-y-1.5">
                               <div className="flex items-center justify-between">
                                 <span className="text-[11px] font-extrabold text-sky-400 font-mono flex items-center gap-1">
@@ -1013,7 +1060,7 @@ export const AssessmentPage = () => {
                           )}
 
                           {/* SECTION B: INDEPENDENT AI REASONING & CODE */}
-                          {(chatFilterMode === 'dual' || chatFilterMode === 'independent') && msg.independent_ai_answer && (
+                          {isReasoningArm && (chatFilterMode === 'dual' || chatFilterMode === 'independent') && msg.independent_ai_answer && (
                             <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-3 space-y-2">
                               <div className="flex items-center justify-between">
                                 <span className="text-[11px] font-extrabold text-purple-400 font-mono flex items-center gap-1">
@@ -1053,9 +1100,16 @@ export const AssessmentPage = () => {
                             </div>
                           )}
 
-                          {/* Fallback formatted message text */}
-                          {!msg.rag_answer && !msg.independent_ai_answer && (
-                            <p className={`leading-relaxed whitespace-pre-wrap ${msg.isError ? 'text-rose-400 font-mono' : ''}`}>{msg.text}</p>
+                          {/* Answer-only view (control arm) and any plain text reply */}
+                          {(msg.answer_only || (!msg.rag_answer && !msg.independent_ai_answer)) && (
+                            <div className="space-y-2">
+                              <p className={`leading-relaxed whitespace-pre-wrap ${msg.isError ? 'text-rose-400 font-mono' : ''}`}>{msg.text}</p>
+                              {msg.code_solution && (
+                                <div className="bg-slate-900 p-2.5 rounded-lg font-mono text-[11px] text-amber-300 overflow-x-auto">
+                                  <pre>{msg.code_solution}</pre>
+                                </div>
+                              )}
+                            </div>
                           )}
                         </div>
                       )}
@@ -1070,7 +1124,7 @@ export const AssessmentPage = () => {
                 {isAiLoading && (
                   <div className="flex items-center gap-2 text-xs text-primary font-mono animate-pulse p-2">
                     <Bot className="w-4 h-4 text-primary" />
-                    <span>TRACE AI is retrieving RAG passages & generating AI concept response...</span>
+                    <span>{isReasoningArm ? 'TRACE AI is retrieving RAG passages & generating AI concept response...' : 'TRACE AI is generating the direct solution...'}</span>
                   </div>
                 )}
               </div>
