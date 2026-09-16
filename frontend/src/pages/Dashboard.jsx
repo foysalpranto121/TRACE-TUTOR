@@ -503,13 +503,19 @@ export const Dashboard = () => {
               Workspace-এ কোড রান করুন বা AI টিউটরকে প্রশ্ন করুন — প্রতিটি কাজ এখানে লগ হবে।
             </EmptyState>
           ) : (
-            <ol className="relative border-l border-outline-variant/40 ml-3 space-y-3">
+            <ol className="border-l border-outline-variant/40 ml-3 space-y-3">
               {data.recent.map((ev, i) => {
                 const prob = ev.problem_id ? PROBLEM_BY_ID[ev.problem_id] : null;
                 const icon = (EVENT_ICON[ev.event_type] || (() => <Activity className="w-3.5 h-3.5 text-on-surface-variant" />))(ev.status);
                 return (
-                  <li key={i} className="ml-5 animate-fade-up" style={{ animationDelay: `${Math.min(i * 40, 320)}ms` }}>
-                    <span className="absolute -left-[13px] mt-0.5 w-6 h-6 rounded-full bg-surface-container-high border border-outline-variant/50 flex items-center justify-center">{icon}</span>
+                  // Each row is its own positioning context on purpose. The icon used to be
+                  // absolutely positioned against the <ol>, but the row's fade-up animation
+                  // applies a transform, which makes the <li> the containing block instead -
+                  // so the icon landed 11px into the text and hid the first character of
+                  // every entry ("rm Switch", "ogin"). Anchoring to the row is deterministic:
+                  // the 24px icon sits centred on the timeline line, the text starts 12px past it.
+                  <li key={i} className="relative pl-6 animate-fade-up" style={{ animationDelay: `${Math.min(i * 40, 320)}ms` }}>
+                    <span className="absolute -left-3 top-0.5 w-6 h-6 rounded-full bg-surface-container-high border border-outline-variant/50 flex items-center justify-center">{icon}</span>
                     <div className="text-xs text-on-surface font-medium">{ev.detail}</div>
                     <div className="text-[10px] font-mono text-on-surface-variant">
                       {timeAgo(ev.timestamp)}{prob ? ` · ${prob.title}` : ev.problem_id ? ` · ${ev.problem_id}` : ''}
