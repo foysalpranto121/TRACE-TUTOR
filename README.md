@@ -275,6 +275,27 @@ free API tier:
 `--reindex` empties the index before rebuilding, so on a metered key prefer a plain re-run: chunk ids
 are deterministic, so it upserts in place and never leaves you with less than you started with.
 
+### Observing the pipeline
+
+Every run and every page is recorded in PostgreSQL, so the state of the corpus can be queried
+rather than inferred from files. Two tables:
+
+- **`curriculum_ingestrun`**, one row per run: who started it and how (dashboard or command), the
+  documents and page range asked for, the options, progress counters, the vector count afterwards,
+  every warning, the error if it failed, the full log, and the embedding model, OCR model and code
+  commit that produced it. The live progress dict the status endpoint also shows is process
+  memory; this row is what survives a restart.
+- **`curriculum_ocrpage`**, one row per page of each source PDF: characters transcribed, whether
+  it came back blank, how many attempts it has had, which chapter it was filed under, how many of
+  its chunks are actually in the vector index, and when. `indexed_chunks` is counted from the vector
+  store, not from the passage rows, because a passage row is written before its embedding succeeds.
+
+Both are visible read-only in the Django admin at `/django-admin/`, and to staff through
+`GET /api/curriculum/runs/` (`?id=<n>` for one run with its log) and
+`GET /api/curriculum/pages/?document=<pdf>&thin=1|unindexed=1`. `GET /api/curriculum/status/` carries
+`last_run` and a per-document page summary from the same tables. To rebuild the page rows from the
+cache without running anything: `python manage.py ingest_rag --sync-pages`.
+
 Until the index is built the tutor still answers, using keyword retrieval over seed passages, and marks its answers as ungrounded.
 
 ---
@@ -325,14 +346,15 @@ All endpoints are prefixed `/api/`.
 | `GET` | `dashboard/` | Participant progress summary |
 | `POST` | `curriculum/search/` · `ingest/` | Retrieval and index building |
 | `GET` | `curriculum/status/` · `passages/` | Index inspection |
+| `GET` | `curriculum/runs/` · `pages/` | Every recorded ingestion run, and per-page transcription and indexing status |
 | `GET` `POST` | `expert/reviews/` · `rating/` | Content-validity survey |
 | `GET` | `admin/stats/` | Researcher aggregates, computed from the collected data |
 | `GET` | `admin/export/` | Streams the per-participant dataset as CSV |
 | `GET` | `admin/manifest/` | The configuration that produced the data: model, temperature, chain, policy, sandbox tier, item-bank hash, code revision |
 
-Everything except `accounts/register/` and `accounts/login/` requires a token. `curriculum/search/`
-and `curriculum/passages/` are staff-only; `curriculum/ingest/`, `admin/stats/` and `admin/export/`
-are researcher-only.
+Everything except `accounts/register/` and `accounts/login/` requires a token. `curriculum/search/`,
+`curriculum/passages/`, `curriculum/runs/` and `curriculum/pages/` are staff-only; `curriculum/ingest/`,
+`admin/stats/` and `admin/export/` are researcher-only.
 
 ---
 
@@ -502,7 +524,7 @@ Active research software, not a finished product.
 | Expert portal | Rating interface working; CVI computation in progress |
 | Researcher dashboard | Working — real aggregates, Welch's *t* and Cohen's *d* computed from the data |
 | Dataset export | Working — `GET /api/admin/export/` streams one pseudonymous row per participant |
-| Access control and rate limiting | Working; 401 backend tests cover the gates |
+| Access control and rate limiting | Working; 409 backend tests cover the gates |
 | Code-runner sandboxing | Working — container tier with rlimit fallback, and refuses to run unprotected |
 | Deployment | Working — one process serves the API, the built app and avatars; health probe; see [Deploying](#deploying) |
 

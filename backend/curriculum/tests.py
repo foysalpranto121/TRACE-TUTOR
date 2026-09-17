@@ -1,5 +1,9 @@
 """Corpus access and the input validation in front of the ingestion pipeline."""
+import json
+import shutil
+import tempfile
 import unicodedata
+from pathlib import Path
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
@@ -10,9 +14,10 @@ from rest_framework.test import APIClient
 from trace_backend.test_utils import ApiTestCase
 
 from accounts.models import ParticipantProfile
-from curriculum.ocr_ingest import (CHAPTER_NAMES, DEFAULT_CHAPTER, MIN_PAGE_CHARS,
-                                   chapter_spans, chapter_start, is_thin)
-from curriculum.rag_engine import RAGEngine, tokenize
+from curriculum.models import IngestRun, OcrPage
+from curriculum.ocr_ingest import (CHAPTER_NAMES, DEFAULT_CHAPTER, INGEST_STATE, MIN_PAGE_CHARS,
+                                   chapter_spans, chapter_start, is_thin, run_ingest, sync_pages)
+from curriculum.rag_engine import RAGEngine, rag_engine_instance, tokenize
 
 
 def enrol(username, role='STUDENT'):
@@ -231,3 +236,130 @@ class ThinPageTests(ApiTestCase):
 
     def test_a_real_page_is_not_thin(self):
         self.assertFalse(is_thin('ক' * (MIN_PAGE_CHARS + 1)))
+
+
+class IngestRecordTests(ApiTestCase):
+    """Every ingestion run and every page's status must land in PostgreSQL, because the live
+    progress dict is process memory and a restart erases it."""
+
+    # Enough text that no page is "thin", plus one that is.
+    PAGE_TEXT = 'চতুর্থ অধ্যায়\n\nওয়েব ডিজাইন পরিচিতি এবং HTML\n\n' + ('ওয়েব পেজ তৈরির জন্য HTML ব্যবহৃত হয়। ' * 20)
+
+    def setUp(self):
+        super().setUp()
+        self.tmp = tempfile.mkdtemp()
+        self.doc = 'HSC ICT (BV).pdf'
+        cache = Path(self.tmp) / 'HSC ICT (BV).jsonl'
+        with cache.open('w', encoding='utf-8') as fh:
+            fh.write(json.dumps({'page': 1, 'text': self.PAGE_TEXT}, ensure_ascii=False) + '\n')
+            fh.write(json.dumps({'page': 2, 'text': 'ক', 'attempt': 2}, ensure_ascii=False) + '\n')
+            fh.write(json.dumps({'page': 3, 'text': self.PAGE_TEXT}, ensure_ascii=False) + '\n')
+        self.patches = [
+            patch('curriculum.ocr_ingest.OCR_DIR', Path(self.tmp)),
+            patch.object(rag_engine_instance, 'existing_ids', side_effect=lambda ids: set()),
+            patch.object(rag_engine_instance, 'update_metadata', return_value=0),
+            patch.object(rag_engine_instance, 'index_passages', side_effect=lambda items: len(items)),
+            patch.object(rag_engine_instance, 'vector_count', return_value=7),
+            patch('curriculum.ocr_ingest._code_commit', return_value='abc123'),
+        ]
+        for p in self.patches:
+            p.start()
+        _, self.boss = enrol('boss', role='RESEARCHER_ADMIN')
+        _, self.student = enrol('stu')
+
+    def tearDown(self):
+        for p in self.patches:
+            p.stop()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+        super().tearDown()
+
+    def test_a_run_is_recorded_from_start_to_finish(self):
+        run_ingest(pdf_names=[self.doc], ocr=False, trigger='command')
+        run = IngestRun.objects.get()
+        self.assertEqual(run.status, 'done')
+        self.assertEqual(run.stage, 'done')
+        self.assertIsNotNone(run.finished_at)
+        self.assertEqual(run.documents, [self.doc])
+        self.assertFalse(run.ocr)
+        self.assertEqual(run.trigger, 'command')
+        self.assertEqual(run.code_commit, 'abc123')
+        self.assertEqual(run.vector_count_after, 7)
+        self.assertGreater(run.indexed_chunks, 0)
+        self.assertTrue(any('Ingestion complete' in line for line in run.log))
+        # The live dict points at the row while it runs and lets go afterwards.
+        self.assertEqual(INGEST_STATE['run_id'], run.pk)
+        self.assertFalse(INGEST_STATE['running'])
+
+    def test_a_failed_run_is_recorded_as_an_error_not_lost(self):
+        with patch('curriculum.ocr_ingest.index_pdf_cache', side_effect=RuntimeError('embedding quota')):
+            with self.assertRaises(RuntimeError):
+                run_ingest(pdf_names=[self.doc], ocr=False)
+        run = IngestRun.objects.get()
+        self.assertEqual(run.status, 'error')
+        self.assertIn('embedding quota', run.error)
+        self.assertIsNotNone(run.finished_at)
+
+    def test_every_page_gets_a_status_row(self):
+        run_ingest(pdf_names=[self.doc], ocr=False)
+        rows = {r.page: r for r in OcrPage.objects.filter(document=self.doc)}
+        self.assertEqual(set(rows), {1, 2, 3})
+        self.assertFalse(rows[1].thin)
+        self.assertTrue(rows[2].thin)
+        self.assertEqual(rows[2].attempts, 2)
+        self.assertEqual(rows[1].attempts, 1, 'a record written before attempts were tracked counts as one')
+        self.assertEqual(rows[1].chapter, CHAPTER_NAMES[4])
+        self.assertEqual(rows[3].chapter, CHAPTER_NAMES[4])
+        self.assertEqual(rows[1].last_run, IngestRun.objects.get())
+
+    def test_indexed_chunks_reflect_the_vector_store_not_the_relational_rows(self):
+        """A passage row is written before its embedding succeeds, so the vector store is the truth."""
+        run_ingest(pdf_names=[self.doc], ocr=False)
+        with patch.object(rag_engine_instance, 'existing_ids',
+                          side_effect=lambda ids: {i for i in ids if i.startswith('HSC_ICT_(BV)_p1_')}):
+            sync_pages(self.doc)
+        rows = {r.page: r for r in OcrPage.objects.filter(document=self.doc)}
+        self.assertGreater(rows[1].indexed_chunks, 0)
+        self.assertIsNotNone(rows[1].indexed_at)
+        self.assertEqual(rows[3].indexed_chunks, 0)
+        self.assertIsNone(rows[3].indexed_at)
+
+    def test_sync_is_idempotent(self):
+        run_ingest(pdf_names=[self.doc], ocr=False)
+        fields = ('page', 'chars', 'thin', 'attempts', 'chapter')
+        first = list(OcrPage.objects.values_list(*fields))
+        sync_pages(self.doc)
+        sync_pages(self.doc)
+        self.assertEqual(OcrPage.objects.count(), 3)
+        self.assertEqual(list(OcrPage.objects.values_list(*fields)), first)
+
+    def test_the_api_records_who_started_a_run(self):
+        with patch('curriculum.views.start_background_ingest', return_value=True) as start:
+            self.boss.post('/api/curriculum/ingest/', {'retry_empty': True}, format='json')
+        kwargs = start.call_args.kwargs
+        self.assertEqual(kwargs['trigger'], 'api')
+        self.assertEqual(kwargs['triggered_by_id'], User.objects.get(username='boss').pk)
+        self.assertTrue(kwargs['retry_empty'])
+
+    def test_status_reports_the_last_run_from_the_database(self):
+        run_ingest(pdf_names=[self.doc], ocr=False)
+        caches['default'].clear()
+        data = self.boss.get('/api/curriculum/status/').json()
+        self.assertEqual(data['runs_recorded'], 1)
+        self.assertEqual(data['last_run']['status'], 'done')
+        bv = next(d for d in data['documents'] if d['name'] == self.doc)
+        self.assertEqual(bv['pages']['pages_recorded'], 3)
+        self.assertEqual(bv['pages']['thin_pages'], [2])
+
+    def test_run_history_and_page_status_are_staff_only(self):
+        run_ingest(pdf_names=[self.doc], ocr=False)
+        self.assertEqual(self.student.get('/api/curriculum/runs/').status_code, 403)
+        self.assertEqual(self.student.get('/api/curriculum/pages/').status_code, 403)
+        runs = self.boss.get('/api/curriculum/runs/').json()
+        self.assertEqual(runs['count'], 1)
+        self.assertNotIn('log', runs['runs'][0], 'the list omits the log; ?id= returns it')
+        run_id = runs['runs'][0]['id']
+        one = self.boss.get('/api/curriculum/runs/?id=%d' % run_id).json()
+        self.assertIn('log', one)
+        self.assertEqual(self.boss.get('/api/curriculum/runs/?id=999999').status_code, 404)
+        pages = self.boss.get('/api/curriculum/pages/?document=%s&thin=1' % self.doc).json()
+        self.assertEqual([p['page'] for p in pages['pages']], [2])

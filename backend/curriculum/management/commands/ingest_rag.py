@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from curriculum.ocr_ingest import run_ingest, DOCS, RAG_DIR
+from curriculum.ocr_ingest import run_ingest, sync_pages, DOCS, RAG_DIR
 
 
 class Command(BaseCommand):
@@ -14,9 +14,17 @@ class Command(BaseCommand):
         parser.add_argument('--reindex', action='store_true', help='Drop the vector index before indexing')
         parser.add_argument('--retry-empty', action='store_true',
                             help='Re-OCR pages already cached as near-empty instead of counting them as done')
+        parser.add_argument('--sync-pages', action='store_true',
+                            help='Only refresh the per-page status rows (OcrPage) from the cache and the index; '
+                                 'no OCR, no embedding, no run recorded')
 
     def handle(self, *args, **opts):
         pdfs = opts['pdf'] or [n for n in DOCS if (RAG_DIR / n).exists()]
+        if opts['sync_pages']:
+            for name in pdfs:
+                n = sync_pages(name)
+                self.stdout.write(f'{name}: {n} page row(s) synced')
+            return
         page_range = None
         if opts['pages']:
             lo, hi = opts['pages'].split('-')

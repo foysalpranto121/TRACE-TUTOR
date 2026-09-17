@@ -6,14 +6,16 @@ import time
 import logging
 import threading
 import unicodedata
+from collections import Counter
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from django.conf import settings
 from django.db import close_old_connections
+from django.utils import timezone
 
 from trace_backend import gemini
-from .models import CurriculumPassage
+from .models import CurriculumPassage, IngestRun, OcrPage
 from .rag_engine import rag_engine_instance
 
 logger = logging.getLogger(__name__)
@@ -62,22 +64,67 @@ _ENGLISH_ORDINALS = {'first': 1, 'second': 2, 'third': 3, 'fourth': 4, 'fifth': 
 # "চতুর্থ অধ্যায়" and "Fourth Chapter" while excluding the prose that used to match.
 HEADING_MAX_CHARS = 60
 
+# Live view of the run in progress, for the status endpoint. It is process memory: a restart
+# wipes it and a second worker never sees it. The durable record is the IngestRun row that
+# _persist() mirrors it into from the ingest thread.
 INGEST_STATE = {
     'running': False, 'stage': 'idle', 'current_doc': '', 'done_pages': 0, 'total_pages': 0,
-    'indexed_chunks': 0, 'error': None, 'warnings': [], 'started_at': None, 'finished_at': None, 'log': [],
+    'indexed_chunks': 0, 'relabelled_chunks': 0, 'error': None, 'warnings': [], 'started_at': None,
+    'finished_at': None, 'log': [], 'run_id': None,
 }
 _state_lock = threading.Lock()
+_CURRENT_RUN = {'run': None, 'log': []}
+MAX_PERSISTED_LOG_LINES = 2000
 
 
 def _log(msg):
     logger.info(msg)
+    line = f'{time.strftime("%H:%M:%S")} {msg}'
     with _state_lock:
-        INGEST_STATE['log'] = (INGEST_STATE['log'] + [f'{time.strftime("%H:%M:%S")} {msg}'])[-40:]
+        INGEST_STATE['log'] = (INGEST_STATE['log'] + [line])[-40:]
+        if len(_CURRENT_RUN['log']) < MAX_PERSISTED_LOG_LINES:
+            _CURRENT_RUN['log'].append(line)
 
 
 def _set(**kw):
     with _state_lock:
         INGEST_STATE.update(kw)
+
+
+def _persist(**fields):
+    """Mirror the live state into the current IngestRun row.
+
+    Called only from the thread that owns the run (the one inside run_ingest), never from the
+    OCR worker threads, so the row is written by one connection and the workers stay free of
+    database access. Worker threads only append to the in-memory log under the lock.
+    """
+    run = _CURRENT_RUN['run']
+    if run is None:
+        return
+    with _state_lock:
+        snap = dict(INGEST_STATE)
+        run.log = list(_CURRENT_RUN['log'])
+    run.stage = (snap.get('stage') or '')[:80]
+    run.done_pages = snap.get('done_pages') or 0
+    run.total_pages = snap.get('total_pages') or 0
+    run.indexed_chunks = snap.get('indexed_chunks') or 0
+    run.relabelled_chunks = snap.get('relabelled_chunks') or 0
+    run.warnings = list(snap.get('warnings') or [])
+    run.error = snap.get('error') or ''
+    for name, value in fields.items():
+        setattr(run, name, value)
+    try:
+        run.save()
+    except Exception as e:  # the run itself must not die because its progress row could not be written
+        logger.warning(f'IngestRun #{run.pk} progress not saved: {e}')
+
+
+def _code_commit():
+    try:
+        from assessment.manifest import _git
+        return (_git('rev-parse', 'HEAD') or '')[:40]
+    except Exception:
+        return ''
 
 
 # ---------------------------------------------------------------- OCR cache
@@ -255,6 +302,7 @@ def ocr_pdf(pdf_name, page_range=None, workers=3, retry_empty=False):
                 failed.append(batch)
                 consecutive_failures += 1
                 _log(f'{pdf_name}: OCR pages {batch[0]}-{batch[-1]} FAILED: {str(e)[:160]}')
+                _persist()
                 if consecutive_failures >= 3:
                     _log(f'{pdf_name}: 3 consecutive OCR failures (quota or network) - pausing OCR for this document; cached pages will still be indexed. Re-run ingestion later to resume.')
                     pool.shutdown(wait=False, cancel_futures=True)
@@ -264,6 +312,7 @@ def ocr_pdf(pdf_name, page_range=None, workers=3, retry_empty=False):
             with _state_lock:
                 INGEST_STATE['done_pages'] += len(done_pages)
             _log(f'{pdf_name}: OCR pages {batch[0]}-{batch[-1]} done ({INGEST_STATE["done_pages"]}/{INGEST_STATE["total_pages"]})')
+            _persist()
     if failed:
         with _state_lock:
             INGEST_STATE['warnings'].append(f'{pdf_name}: {sum(len(b) for b in failed)} page(s) not OCRed yet')
@@ -274,6 +323,8 @@ def ocr_pdf(pdf_name, page_range=None, workers=3, retry_empty=False):
         _log(msg)
         with _state_lock:
             INGEST_STATE['warnings'].append(msg)
+    sync_pages(pdf_name)
+    _persist()
     return final
 
 
@@ -368,6 +419,66 @@ def detect_chapter(page_text, previous):
     return CHAPTER_NAMES[num] if num else previous
 
 
+# ---------------------------------------------------------------- page status rows
+def _chunk_page_number(chroma_id, prefix):
+    match = re.match(re.escape(prefix) + r'(\d+)_c\d+$', chroma_id or '')
+    return int(match.group(1)) if match else None
+
+
+def sync_pages(pdf_name):
+    """Mirror one document's page cache and its presence in the vector index into OcrPage rows.
+
+    Idempotent and cheap (one query per document, one bulk write), so it runs after every OCR
+    and indexing stage and can be re-run at any time to backfill. 'indexed_chunks' is counted from
+    what the vector store actually holds, not from the relational rows, because a passage row is
+    written before its embedding succeeds and the two can legitimately differ after a quota abort.
+    """
+    records = load_cache_records(pdf_name)
+    if not records:
+        return 0
+    pages = {p: r.get('text') or '' for p, r in records.items()}
+    chapters = chapter_spans(pages)
+    prefix = f'{Path(pdf_name).stem.replace(" ", "_")}_p'
+    candidate_ids = list(CurriculumPassage.objects.filter(chroma_id__startswith=prefix)
+                         .values_list('chroma_id', flat=True))
+    in_index = rag_engine_instance.existing_ids(candidate_ids) if candidate_ids else set()
+    per_page = Counter(n for n in (_chunk_page_number(cid, prefix) for cid in in_index) if n is not None)
+
+    now = timezone.now()
+    run = _CURRENT_RUN['run']
+    existing = {row.page: row for row in OcrPage.objects.filter(document=pdf_name)}
+    to_create, to_update = [], []
+    for page, rec in records.items():
+        text = rec.get('text') or ''
+        row = existing.get(page)
+        fresh = row is None
+        if fresh:
+            row = OcrPage(document=pdf_name, page=page)
+        attempts = int(rec.get('attempt') or 1)
+        indexed = per_page.get(page, 0)
+        changed = fresh or attempts != row.attempts or indexed != row.indexed_chunks
+        if fresh or attempts != row.attempts:
+            row.transcribed_at = now
+        if indexed != row.indexed_chunks:
+            row.indexed_at = now if indexed else None
+        row.chars = len(text.strip())
+        row.thin = is_thin(text)
+        row.attempts = attempts
+        row.chapter = chapters.get(page, DEFAULT_CHAPTER)
+        row.indexed_chunks = indexed
+        if changed and run is not None:
+            row.last_run = run
+        (to_create if fresh else to_update).append(row)
+    if to_create:
+        OcrPage.objects.bulk_create(to_create)
+    if to_update:
+        OcrPage.objects.bulk_update(
+            to_update,
+            ['chars', 'thin', 'attempts', 'chapter', 'indexed_chunks', 'transcribed_at', 'indexed_at', 'last_run'],
+        )
+    return len(to_create) + len(to_update)
+
+
 # ---------------------------------------------------------------- chunk + index
 
 
@@ -406,9 +517,12 @@ def index_pdf_cache(pdf_name, page_range=None, reindex=False):
             # Chapter labels are recomputed from the whole document on every run, so a chunk that is
             # already indexed can still be carrying a wrong one. Refreshing its metadata costs no
             # embedding call, so a resumed run repairs the pages it skips.
-            relabelled += rag_engine_instance.update_metadata([it for it in pending if it['id'] in already])
+            refreshed = rag_engine_instance.update_metadata([it for it in pending if it['id'] in already])
+            relabelled += refreshed
             skipped += len(already)
             pending = [it for it in pending if it['id'] not in already]
+            with _state_lock:
+                INGEST_STATE['relabelled_chunks'] += refreshed
         try:
             indexed += rag_engine_instance.index_passages(pending)
         except Exception as e:
@@ -416,10 +530,12 @@ def index_pdf_cache(pdf_name, page_range=None, reindex=False):
             with _state_lock:
                 INGEST_STATE['warnings'].append(f'{pdf_name}: indexing incomplete (embedding quota/network)')
             pending = []
+            _persist()
             return False
         with _state_lock:
             INGEST_STATE['indexed_chunks'] += len(pending)
         pending = []
+        _persist()
         return True
 
     for page in sorted(pages):
@@ -445,16 +561,32 @@ def index_pdf_cache(pdf_name, page_range=None, reindex=False):
                 'source_ref': source_ref, 'doc': info['doc'], 'page': page,
             }})
             if len(pending) >= 32 and not flush():
+                sync_pages(pdf_name)
                 return indexed
     flush()
     _log(f'{pdf_name}: indexed {indexed} new chunks ({skipped} already indexed, {relabelled} relabelled)')
+    sync_pages(pdf_name)
     return indexed
 
 
-def run_ingest(pdf_names=None, page_range=None, workers=3, ocr=True, reindex=False, retry_empty=False):
+def run_ingest(pdf_names=None, page_range=None, workers=3, ocr=True, reindex=False, retry_empty=False,
+               trigger='command', triggered_by_id=None):
     pdf_names = pdf_names or [n for n in DOCS if (RAG_DIR / n).exists()]
-    _set(running=True, stage='starting', error=None, warnings=[], started_at=time.time(), finished_at=None, indexed_chunks=0, done_pages=0, total_pages=0)
+    _set(running=True, stage='starting', error=None, warnings=[], started_at=time.time(), finished_at=None,
+         indexed_chunks=0, relabelled_chunks=0, done_pages=0, total_pages=0, run_id=None)
+    run = IngestRun.objects.create(
+        trigger=trigger, triggered_by_id=triggered_by_id,
+        documents=list(pdf_names), page_range=f'{page_range[0]}-{page_range[1]}' if page_range else '',
+        ocr=ocr, reindex=reindex, retry_empty=retry_empty, workers=workers,
+        embedding_model=gemini.embed_model_name(), ocr_model=gemini.model_name() or '',
+        code_commit=_code_commit(),
+    )
+    with _state_lock:
+        _CURRENT_RUN['run'] = run
+        _CURRENT_RUN['log'] = []
+        INGEST_STATE['run_id'] = run.pk
     total = 0
+    status = 'done'
     try:
         if reindex:
             rag_engine_instance.clear_index()
@@ -462,8 +594,10 @@ def run_ingest(pdf_names=None, page_range=None, workers=3, ocr=True, reindex=Fal
         for name in pdf_names:
             if ocr:
                 _set(stage=f'ocr:{name}')
+                _persist()
                 ocr_pdf(name, page_range=page_range, workers=workers, retry_empty=retry_empty)
             _set(stage=f'index:{name}')
+            _persist()
             total += index_pdf_cache(name, page_range=page_range, reindex=reindex)
         _set(stage='done')
         _log(f'Ingestion complete. Vector count now {rag_engine_instance.vector_count()}')
@@ -471,10 +605,13 @@ def run_ingest(pdf_names=None, page_range=None, workers=3, ocr=True, reindex=Fal
         logger.exception('Ingestion failed')
         _set(stage='error', error=str(e))
         _log(f'ERROR: {e}')
+        status = 'error'
         raise
     finally:
         _set(running=False, finished_at=time.time())
-        close_old_connections()
+        _persist(status=status, finished_at=timezone.now(), vector_count_after=rag_engine_instance.vector_count())
+        with _state_lock:
+            _CURRENT_RUN['run'] = None
     return total
 
 
@@ -489,6 +626,10 @@ def start_background_ingest(**kwargs):
             run_ingest(**kwargs)
         except Exception:
             pass
+        finally:
+            # The thread that opened the connection releases it. This must not happen inside
+            # run_ingest: on the main thread it would close the caller's own transaction.
+            close_old_connections()
 
     threading.Thread(target=target, daemon=True, name='rag-ingest').start()
     return True

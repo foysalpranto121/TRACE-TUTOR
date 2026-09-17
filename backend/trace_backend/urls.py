@@ -41,6 +41,8 @@ urlpatterns = [
     path('api/curriculum/ingest/', curriculum_views.ingest_curriculum, name='ingest_curriculum'),
     path('api/curriculum/status/', curriculum_views.rag_status, name='rag_status'),
     path('api/curriculum/passages/', curriculum_views.get_passages, name='get_passages'),
+    path('api/curriculum/runs/', curriculum_views.ingest_runs, name='ingest_runs'),
+    path('api/curriculum/pages/', curriculum_views.ocr_pages, name='ocr_pages'),
 
     # Assessment Suite & Expert CVI Ratings
     path('api/assessment/items/', assessment_views.get_items, name='get_items'),
