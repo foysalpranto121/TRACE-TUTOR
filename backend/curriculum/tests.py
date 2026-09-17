@@ -14,9 +14,11 @@ from rest_framework.test import APIClient
 from trace_backend.test_utils import ApiTestCase
 
 from accounts.models import ParticipantProfile
-from curriculum.models import IngestRun, OcrPage
-from curriculum.ocr_ingest import (CHAPTER_NAMES, DEFAULT_CHAPTER, INGEST_STATE, MIN_PAGE_CHARS,
-                                   chapter_spans, chapter_start, is_thin, run_ingest, sync_pages)
+from curriculum.models import CurriculumPassage, IngestRun, OcrPage
+from curriculum.ocr_ingest import (CHAPTER_NAMES, DEFAULT_CHAPTER, INGEST_STATE, MAX_OCR_ATTEMPTS, MIN_PAGE_CHARS,
+                                   _attempts_of, _parse_pages, chapter_by_section_number, chapter_by_title,
+                                   chapter_spans, chapter_start, chapters_resolved, corpus_version, index_pdf_cache,
+                                   is_thin, load_cache_records, ocr_pdf, run_ingest, sync_pages)
 from curriculum.rag_engine import RAGEngine, rag_engine_instance, tokenize
 
 
@@ -224,6 +226,253 @@ class ChapterStructureTests(ApiTestCase):
     def test_a_sentence_mentioning_a_chapter_number_is_not_an_opener(self):
         long_line = 'As we already explained back in chapter 6 of this book, a database stores rows.'
         self.assertIsNone(chapter_start(long_line))
+
+    def test_chapter_four_spelled_out_is_an_opener(self):
+        self.assertEqual(chapter_start('Chapter Four\nIntroduction to Web Design and HTML'), 4)
+
+    def test_a_contents_page_does_not_open_a_chapter(self):
+        """A page that names several chapters near its top is the table of contents. Taking it as
+        the opener of the first one would file the real opening page a few pages on as a repeat."""
+        toc = 'Contents\n\nপ্রথম অধ্যায় ......... ১\nদ্বিতীয় অধ্যায় ....... ৪২\nতৃতীয় অধ্যায় ........ ৭৮'
+        self.assertIsNone(chapter_start(toc))
+        spans = chapter_spans({1: toc, 2: 'preface', 3: 'প্রথম অধ্যায়\n\nতথ্য ও যোগাযোগ প্রযুক্তি', 4: 'body'})
+        self.assertEqual(spans[1], DEFAULT_CHAPTER)
+        self.assertEqual(spans[3], CHAPTER_NAMES[1])
+
+    def test_a_title_inside_a_bullet_does_not_open_a_chapter(self):
+        """The printed title must BE the heading, not merely occur inside a short line."""
+        self.assertIsNone(chapter_by_title('- see also: programming language\nmore text'))
+        self.assertEqual(chapter_by_title('Programming Language\nsome text'), 5)
+        self.assertEqual(chapter_by_title('৫.১ প্রোগ্রামিং ভাষা কী?\nsome text'), 5)
+
+    def test_section_numbering_names_its_chapter(self):
+        self.assertEqual(chapter_by_section_number('৫.১ প্রোগ্রামিং ভাষার ধারণা\nব্যাখ্যা'), 5)
+        self.assertEqual(chapter_by_section_number('4.2.1 HTML Tags\ntext'), 4)
+        self.assertIsNone(chapter_by_section_number('7.1 Not a chapter this book has'))
+        self.assertIsNone(chapter_by_section_number('5 marks\ntext'), 'a bare number is not a section heading')
+        self.assertIsNone(chapter_by_section_number('body text\n' * 9 + '৫.১ too far down'))
+
+    def test_a_chapter_whose_opening_page_came_back_blank_is_rescued(self):
+        """The failure that once emptied Chapter 6: an opener page transcribed to nothing used to
+        fold the whole chapter into its predecessor. Its section numbering brings it back."""
+        pages = {1: self.HTML_OPENER, 2: '৪.১ ওয়েব ডিজাইন\ntext', 3: '', 4: '৫.১ প্রোগ্রামিং ভাষার ধারণা\ntext',
+                 5: '৫.২ অ্যালগরিদম\ntext', 6: self.DB_OPENER, 7: '৬.১ ডেটাবেজ\ntext'}
+        spans = chapter_spans(pages)
+        self.assertEqual(chapters_resolved(spans), [4, 5, 6])
+        self.assertEqual(spans[4], CHAPTER_NAMES[5])
+        self.assertEqual(spans[5], CHAPTER_NAMES[5])
+        self.assertEqual(spans[3], CHAPTER_NAMES[4], 'the blank page itself stays with the previous chapter')
+
+    def test_a_rescue_cannot_contradict_the_openers(self):
+        """Section numbering for chapter 2 appearing after chapter 4 has opened is noise, not chapter 2."""
+        pages = {1: self.HTML_OPENER, 2: '২.১ নেটওয়ার্ক\ntext', 3: 'more html'}
+        spans = chapter_spans(pages)
+        self.assertEqual(spans[2], CHAPTER_NAMES[4])
+        self.assertEqual(chapters_resolved(spans), [4])
+
+    def test_an_unchaptered_document_gets_no_carry_over(self):
+        pages = {1: '৫.১ প্রোগ্রামিং ভাষা কী?\nquestion', 2: 'a question about nothing in particular', 3: self.DB_OPENER}
+        spans = chapter_spans(pages, chaptered=False)
+        self.assertEqual(spans[1], CHAPTER_NAMES[5])
+        self.assertEqual(spans[2], DEFAULT_CHAPTER, 'no chapter is carried onto a page that names none')
+        self.assertEqual(spans[3], CHAPTER_NAMES[6])
+
+
+class TranscriptionParsingTests(ApiTestCase):
+    def test_labelled_pages_are_taken_by_label(self):
+        text = '=== PAGE 65 ===\nsixty-five\n=== PAGE 104 ===\none-oh-four'
+        self.assertEqual(_parse_pages(text, [65, 104]), {65: 'sixty-five', 104: 'one-oh-four'})
+
+    def test_mislabelled_pages_are_taken_in_order_when_the_count_matches(self):
+        text = '=== PAGE 1 ===\nfirst\n=== PAGE 2 ===\nsecond'
+        self.assertEqual(_parse_pages(text, [65, 104]), {65: 'first', 104: 'second'})
+
+    def test_a_dropped_page_is_refused_rather_than_guessed(self):
+        """Three pages asked for, two bodies returned: positional assignment would file one page's
+        text under another page's number and nothing downstream could tell. Raising hands the
+        batch to the split-retry instead."""
+        text = '=== PAGE 1 ===\nfirst\n=== PAGE 2 ===\nsecond'
+        with self.assertRaises(ValueError):
+            _parse_pages(text, [65, 66, 104])
+
+    def test_a_torn_cache_line_loses_one_page_not_the_whole_cache(self):
+        tmp = tempfile.mkdtemp()
+        try:
+            path = Path(tmp) / 'HSC ICT (BV).jsonl'
+            path.write_text(json.dumps({'page': 1, 'text': 'one'}) + '\n' + '{"page": 2, "text": "tw', encoding='utf-8')
+            with patch('curriculum.ocr_ingest.OCR_DIR', Path(tmp)):
+                self.assertEqual(set(load_cache_records('HSC ICT (BV).pdf')), {1})
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+
+class RetryBudgetTests(ApiTestCase):
+    """--retry-empty must give every page the same number of paid attempts, whether or not it was
+    cached before attempts were tracked, and must not waste quota on an account-wide refusal."""
+
+    LONG = 'ক' * (MIN_PAGE_CHARS + 50)
+
+    def setUp(self):
+        super().setUp()
+        self.tmp = tempfile.mkdtemp()
+        self.doc = 'HSC ICT (BV).pdf'
+        self.path = Path(self.tmp) / 'HSC ICT (BV).jsonl'
+        self.patches = [
+            patch('curriculum.ocr_ingest.OCR_DIR', Path(self.tmp)),
+            patch('curriculum.ocr_ingest.RAG_DIR', Path(self.tmp)),
+            patch('curriculum.ocr_ingest.gemini.get_client', return_value=object()),
+            patch.object(rag_engine_instance, 'existing_ids', side_effect=lambda ids: set()),
+        ]
+        for p in self.patches:
+            p.start()
+        (Path(self.tmp) / self.doc).write_bytes(b'%PDF-1.4 stub')
+
+    def tearDown(self):
+        for p in self.patches:
+            p.stop()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+        super().tearDown()
+
+    def _write(self, *records):
+        with self.path.open('w', encoding='utf-8') as fh:
+            for rec in records:
+                fh.write(json.dumps(rec, ensure_ascii=False) + '\n')
+
+    def _run(self, transcribe, pages=3, **kw):
+        fake_reader = type('R', (), {'pages': [None] * pages})
+        with patch('pypdf.PdfReader', return_value=fake_reader), \
+             patch('curriculum.ocr_ingest._transcribe_batch', side_effect=transcribe):
+            return ocr_pdf(self.doc, retry_empty=True, workers=1, **kw)
+
+    def test_a_legacy_record_counts_as_one_attempt(self):
+        self.assertEqual(_attempts_of({'page': 1, 'text': ''}), 1)
+        self.assertEqual(_attempts_of({'page': 1, 'text': '', 'attempt': 2}), 2)
+        self.assertEqual(_attempts_of(None), 0)
+
+    def test_every_page_gets_exactly_max_attempts(self):
+        """A page cached before attempts were tracked and a page cached after must both stop at
+        MAX_OCR_ATTEMPTS; the read side and the write side used to disagree by one."""
+        self._write({'page': 1, 'text': ''}, {'page': 2, 'text': '', 'attempt': 1}, {'page': 3, 'text': self.LONG})
+        calls = []
+
+        def transcribe(client, pdf_path, page_numbers, lang):
+            calls.append(list(page_numbers))
+            return {p: '' for p in page_numbers}
+
+        self._run(transcribe)
+        self.assertEqual(sorted(p for batch in calls for p in batch), [1, 2], 'the full page is not retried')
+        records = load_cache_records(self.doc)
+        self.assertEqual(_attempts_of(records[1]), MAX_OCR_ATTEMPTS)
+        self.assertEqual(_attempts_of(records[2]), MAX_OCR_ATTEMPTS)
+        calls.clear()
+        self._run(transcribe)
+        self.assertEqual(calls, [], 'budget exhausted: nothing is sent again')
+
+    def test_a_worse_retry_keeps_the_better_transcription(self):
+        self._write({'page': 1, 'text': 'short but real'})
+        self._run(lambda client, pdf_path, page_numbers, lang: {p: '' for p in page_numbers})
+        rec = load_cache_records(self.doc)[1]
+        self.assertEqual(rec['text'], 'short but real')
+        self.assertEqual(_attempts_of(rec), 2)
+
+    def test_a_refused_batch_is_split_but_a_quota_refusal_is_not(self):
+        self._write({'page': 1, 'text': ''}, {'page': 2, 'text': ''}, {'page': 3, 'text': ''})
+        calls = []
+
+        def overloaded(client, pdf_path, page_numbers, lang):
+            calls.append(list(page_numbers))
+            if len(page_numbers) > 1:
+                raise RuntimeError('503 UNAVAILABLE high demand')
+            return {p: self.LONG for p in page_numbers}
+
+        self._run(overloaded)
+        self.assertEqual(calls[0], [1, 2, 3])
+        # [1,2,3] refused -> [1] ok, [2,3] refused -> [2] ok, [3] ok
+        self.assertEqual(sorted(len(c) for c in calls[1:]), [1, 1, 1, 2])
+        self.assertTrue(all(not is_thin(r['text']) for r in load_cache_records(self.doc).values()))
+
+        self._write({'page': 1, 'text': ''}, {'page': 2, 'text': ''}, {'page': 3, 'text': ''})
+        calls.clear()
+
+        def quota(client, pdf_path, page_numbers, lang):
+            calls.append(list(page_numbers))
+            raise RuntimeError('429 RESOURCE_EXHAUSTED quota exceeded')
+
+        self._run(quota)
+        self.assertEqual(calls, [[1, 2, 3]], 'one refusal, no splitting, no further batches')
+        self.assertTrue(any('quota' in w for w in INGEST_STATE['warnings']) or
+                        any('not OCRed yet' in w for w in INGEST_STATE['warnings']))
+
+
+class ReindexHygieneTests(ApiTestCase):
+    """A page transcribed again must replace its old vectors, not sit beside them."""
+
+    def setUp(self):
+        super().setUp()
+        self.tmp = tempfile.mkdtemp()
+        self.doc = 'HSC ICT (BV).pdf'
+        self.path = Path(self.tmp) / 'HSC ICT (BV).jsonl'
+        self.embedded, self.deleted, self.relabelled = [], [], []
+        self.in_index = set()
+        self.patches = [
+            patch('curriculum.ocr_ingest.OCR_DIR', Path(self.tmp)),
+            patch.object(rag_engine_instance, 'existing_ids', side_effect=lambda ids: {i for i in ids if i in self.in_index}),
+            patch.object(rag_engine_instance, 'update_metadata', side_effect=lambda items: (self.relabelled.extend(i['id'] for i in items), len(items))[1]),
+            patch.object(rag_engine_instance, 'index_passages', side_effect=self._embed),
+            patch.object(rag_engine_instance, 'delete_ids', side_effect=lambda ids: (self.deleted.extend(ids), len(ids))[1]),
+            patch.object(rag_engine_instance, 'vector_count', return_value=0),
+        ]
+        for p in self.patches:
+            p.start()
+
+    def _embed(self, items):
+        for it in items:
+            self.embedded.append(it['id'])
+            self.in_index.add(it['id'])
+        return len(items)
+
+    def tearDown(self):
+        for p in self.patches:
+            p.stop()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+        super().tearDown()
+
+    def _write_page(self, text):
+        self.path.write_text(json.dumps({'page': 1, 'text': text}, ensure_ascii=False) + '\n', encoding='utf-8')
+
+    def test_a_re_transcribed_page_is_re_embedded_and_its_orphans_removed(self):
+        para = lambda n: (f'অনুচ্ছেদ {n} ' + 'শব্দ ' * 160).strip()
+        self._write_page('\n\n'.join(para(i) for i in range(3)))
+        index_pdf_cache(self.doc)
+        self.assertEqual(sorted(self.embedded), ['HSC_ICT_(BV)_p1_c1', 'HSC_ICT_(BV)_p1_c2', 'HSC_ICT_(BV)_p1_c3'])
+        self.embedded.clear()
+
+        # Same text again: nothing re-embedded, everything relabelled in place.
+        index_pdf_cache(self.doc)
+        self.assertEqual(self.embedded, [])
+        self.assertEqual(len(self.relabelled), 3)
+
+        # Re-transcribed into two chunks with different text: both re-embedded, the third removed.
+        self._write_page('\n\n'.join(para(i + 10) for i in range(2)))
+        index_pdf_cache(self.doc)
+        self.assertEqual(sorted(self.embedded), ['HSC_ICT_(BV)_p1_c1', 'HSC_ICT_(BV)_p1_c2'])
+        self.assertEqual(self.deleted, ['HSC_ICT_(BV)_p1_c3'])
+        self.assertEqual(CurriculumPassage.objects.filter(chroma_id__startswith='HSC_ICT_(BV)_p1_').count(), 2)
+
+    def test_a_document_missing_a_chapter_is_reported(self):
+        self._write_page('চতুর্থ অধ্যায়\n\nওয়েব ডিজাইন\n\n' + 'শব্দ ' * 40)
+        INGEST_STATE['warnings'] = []
+        index_pdf_cache(self.doc)
+        self.assertTrue(any('only 1 of 6 chapters' in w for w in INGEST_STATE['warnings']), INGEST_STATE['warnings'])
+
+
+class CorpusVersionTests(ApiTestCase):
+    def test_the_corpus_version_is_the_last_completed_run(self):
+        self.assertEqual(corpus_version(), 0)
+        IngestRun.objects.create(status='error')
+        self.assertEqual(corpus_version(), 0, 'a failed run changed nothing')
+        done = IngestRun.objects.create(status='done')
+        self.assertEqual(corpus_version(), done.pk)
 
 
 class ThinPageTests(ApiTestCase):

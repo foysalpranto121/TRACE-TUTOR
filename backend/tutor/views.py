@@ -6,6 +6,7 @@ from rest_framework.response import Response
 
 from accounts.models import STAFF_ROLES, ParticipantProfile
 from assessment import sittings
+from curriculum.ocr_ingest import corpus_version
 from curriculum.rag_engine import rag_engine_instance
 from logging_app.models import InteractionLog
 from trace_backend import llm
@@ -93,6 +94,11 @@ def _passage_block(passages):
     return '\n\n'.join(lines)
 
 
+# Below this similarity the top passage is a keyword-overlap or seed-passage fallback, not a
+# retrieval hit, and the offline answer must not present it as textbook grounding.
+FALLBACK_GROUNDED_MIN_SIMILARITY = 0.5
+
+
 def _fallback_answer(prompt, code, passages, language):
     top = passages[0] if passages else None
     bn = language == 'bn'
@@ -101,7 +107,7 @@ def _fallback_answer(prompt, code, passages, language):
             'textbook_rule': top['chapter'] if top else ('পাঠ্যবই থেকে কোনো অনুচ্ছেদ পাওয়া যায়নি' if bn else 'No textbook passage retrieved'),
             'curriculum_citation': f"[1] {top['source_ref']}" if top else 'RAG index empty',
             'textbook_explanation': top['passage'][:700] if top else ('RAG ইনডেক্স এখনো তৈরি হয়নি।' if bn else 'The RAG index has not been built yet.'),
-            'grounded': bool(top),
+            'grounded': bool(top) and float(top.get('similarity_score') or 0) >= FALLBACK_GROUNDED_MIN_SIMILARITY,
         },
         'independent_ai_answer': {
             'chat_answer': '',
@@ -233,8 +239,10 @@ def query_tutor(request):
     # The same question about the same code with the same textbook passages gets the same answer, so
     # live answers are kept in the persistent (database) cache with the memory cache in front:
     # repeats are instant and spend no Gemini quota. Fallback answers are never cached.
-    # 'v2': answers now carry chat_answer, so anything cached under the old shape is stale.
-    answer_key = cache_key('tutor-answer', 'v2', language, prompt, code.strip(), problem_id, problem_title,
+    # 'v3': the key also carries the corpus version (the last completed ingestion run), so an
+    # answer built on passages whose text or labels have since been re-indexed is never reused.
+    corpus = corpus_version()
+    answer_key = cache_key('tutor-answer', 'v3', corpus, language, prompt, code.strip(), problem_id, problem_title,
                            problem_description, compiler_output, [p.get('id') or p.get('source_ref') for p in passages])
     result, tier = tiered_get_or_set(answer_key, generate, settings.TUTOR_ANSWER_CACHE_SECONDS,
                                      should_store=lambda r: r['ai_status'] == 'live')
@@ -270,7 +278,13 @@ def query_tutor(request):
 
     _log_tutor_event(request.user, 'HELP_REQUEST', arm, problem_id, prompt, code, language,
                      ai_status=ai_status, cache_tier=tier, model=model, view=view,
-                     exam_type=sittings.open_paper_of(request.user))
+                     exam_type=sittings.open_paper_of(request.user),
+                     # Which corpus state and which passages grounded this turn, so the answer a
+                     # participant saw can be reconstructed after the corpus has moved on.
+                     corpus_version=corpus,
+                     passage_ids=[p.get('id') or p.get('source_ref') for p in passages],
+                     retrieval_backend=rag_engine_instance.last_backend,
+                     grounded=bool(rag_answer.get('grounded')))
     response = Response(payload)
     response['X-Trace-Cache'] = 'miss' if tier == 'computed' else f'hit-{tier}'
     return response

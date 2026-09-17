@@ -52,6 +52,35 @@ def _versions():
     return out
 
 
+def _corpus():
+    """Which retrieval corpus the tutor was answering from: how many passages, over which
+    chapters, built by which run. Without this a tutor turn cannot be tied to a corpus state."""
+    from django.db.models import Count
+    from curriculum.models import CurriculumPassage, IngestRun, OcrPage
+    from curriculum.rag_engine import rag_engine_instance
+    last = IngestRun.objects.filter(status='done').order_by('-pk').first()
+    try:
+        vector_count = rag_engine_instance.vector_count()
+    except Exception:
+        vector_count = None
+    return {
+        'version': last.pk if last else 0,
+        'last_completed_run': {
+            'id': last.pk, 'finished_at': last.finished_at.isoformat() if last.finished_at else None,
+            'documents': last.documents, 'code_commit': last.code_commit,
+            'embedding_model': last.embedding_model, 'ocr_model': last.ocr_model,
+        } if last else None,
+        'vector_count': vector_count,
+        'passage_count': CurriculumPassage.objects.count(),
+        'passages_by_chapter': {
+            row['chapter']: row['n']
+            for row in CurriculumPassage.objects.values('chapter').annotate(n=Count('id')).order_by('chapter')
+        },
+        'pages_transcribed': OcrPage.objects.count(),
+        'pages_blank': OcrPage.objects.filter(thin=True).count(),
+    }
+
+
 def build():
     from tutor import sandbox
     from trace_backend import llm
@@ -89,5 +118,6 @@ def build():
             'debug': settings.DEBUG,
         },
         'item_bank': _item_bank(),
+        'corpus': _corpus(),
         'versions': _versions(),
     }

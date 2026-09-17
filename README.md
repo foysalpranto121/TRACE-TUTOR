@@ -264,13 +264,25 @@ Two things a resumed run repairs by itself, because a half-finished index is the
 free API tier:
 
 - **Chapter labels are recomputed from the whole document, not carried forward page by page.** A
-  chapter runs from the page that opens it to the page before the next one opens, so prose that
-  merely mentions another chapter's title cannot relabel everything after it. Chunks already in the
-  index have their metadata corrected on the next run, which costs no embedding call.
+  chapter runs from the page that opens it ("চতুর্থ অধ্যায়", "Chapter 4") to the page before the
+  next one opens, so prose that merely mentions another chapter's title cannot relabel everything
+  after it. A contents page naming several chapters is not an opener. A chapter whose opening page
+  came back blank is rescued from its section numbering ("৫.১ …"), which repeats on every page of
+  it, and a run that still resolves fewer than six chapters says so in its warnings. Chunks already
+  in the index have their labels corrected on the next run, which costs no embedding call; a chunk
+  whose text changed is re-embedded, and chunks a page no longer produces are removed from both
+  stores.
 - **Pages the model returned nothing for are visible and retryable.** They are reported as a warning
   rather than silently counting as done, and `--retry-empty` sends them back. A batch the API
   refuses as a whole is split and retried down to single pages, which is what recovers the heavier
-  scans; each page is retried at most twice so a genuinely blank page is not re-requested for ever.
+  scans; a quota refusal is not split, because it is account-wide and would only spend the rest of
+  the quota on the same answer. A page is sent to the model at most twice in total, a retry never
+  replaces a transcription with a shorter one, and a response that comes back with the wrong number
+  of pages is refused rather than guessed at.
+- **Citations use the PDF page index** until `printed_page_offset` in `DOCS`
+  (`backend/curriculum/ocr_ingest.py`) is set from the physical book. Open the PDF at a chapter's
+  opening page, subtract the number printed on it, and put the difference there; students can then
+  find a cited page. It is 0, meaning "cite the PDF index", until someone has checked.
 
 `--reindex` empties the index before rebuilding, so on a metered key prefer a plain re-run: chunk ids
 are deterministic, so it upserts in place and never leaves you with less than you started with.
@@ -295,6 +307,13 @@ Both are visible read-only in the Django admin at `/django-admin/`, and to staff
 `GET /api/curriculum/pages/?document=<pdf>&thin=1|unindexed=1`. `GET /api/curriculum/status/` carries
 `last_run` and a per-document page summary from the same tables. To rebuild the page rows from the
 cache without running anything: `python manage.py ingest_rag --sync-pages`.
+
+The id of the last completed run is the **corpus version**. Every tutor answer is cached under it,
+so an answer built on passages that have since been re-indexed is never reused; every
+`HELP_REQUEST` row records it, together with the ids of the passages that grounded the turn, the
+retrieval backend and the grounded flag; and the study manifest carries a `corpus` section with the
+version, the run that produced it, and the passage count per chapter. A tutor turn in the dataset
+can therefore be tied to the exact corpus state that produced it.
 
 Until the index is built the tutor still answers, using keyword retrieval over seed passages, and marks its answers as ungrounded.
 

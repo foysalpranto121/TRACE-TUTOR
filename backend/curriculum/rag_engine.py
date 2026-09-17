@@ -64,10 +64,27 @@ class RAGEngine:
             return 0
 
     def existing_ids(self, ids):
+        if not ids:
+            return set()
         try:
             return set(self.collection().get(ids=list(ids), include=[])['ids'])
-        except Exception:
+        except Exception as e:
+            # Returning "nothing is indexed" makes the caller re-embed everything, which is the
+            # expensive path. Make sure that at least shows up in the log.
+            logger.warning(f'Chroma lookup of {len(ids)} ids failed, treating them as not indexed: {e}')
             return set()
+
+    def delete_ids(self, ids):
+        """Remove chunks from the vector store. Returns how many were requested, 0 on failure."""
+        ids = list(ids)
+        if not ids:
+            return 0
+        try:
+            self.collection().delete(ids=ids)
+            return len(ids)
+        except Exception as e:
+            logger.warning(f'Chroma delete of {len(ids)} ids failed: {e}')
+            return 0
 
     def index_passages(self, items):
         """items: list of {id, text, metadata}. Embeds with Gemini and upserts into Chroma."""
