@@ -51,3 +51,7 @@ RAG/*.pdf
 !RAG/fig*.pdf
 backend/chroma_store/
 backend/data/ocr/
+
+# Study backups (participant data) - keep on another disk, never in git
+backups/
+backend/logs/

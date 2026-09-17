@@ -118,3 +118,45 @@ class ProductionLoggingTests(SimpleTestCase):
     def test_project_loggers_are_handled(self):
         # tutor.sandbox, assessment.grading and friends propagate to the root logger.
         self.assertTrue(logging.getLogger().handlers)
+
+
+class SystemStatusTests(TestCase):
+    """The staff status page must be locked down, must never 500 because one component is
+    down, and must name the problems an operator has to fix before a cohort."""
+
+    def _client(self, role):
+        from django.contrib.auth.models import User
+        from rest_framework.authtoken.models import Token
+        from rest_framework.test import APIClient
+        from accounts.models import ParticipantProfile
+        user = User.objects.create_user(username=f'u_{role.lower()}', password='Testpass!2345')
+        ParticipantProfile.objects.create(user=user, role=role, consent_given=True)
+        return APIClient(HTTP_AUTHORIZATION='Token ' + Token.objects.create(user=user).key)
+
+    def test_requires_a_staff_token(self):
+        self.assertIn(Client().get('/api/admin/status/').status_code, (401, 403))
+        self.assertEqual(self._client('STUDENT').get('/api/admin/status/').status_code, 403)
+
+    def test_reports_every_component_and_the_problems(self):
+        response = self._client('RESEARCHER_ADMIN').get('/api/admin/status/')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        for key in ('status', 'problems', 'database', 'sandbox', 'compiler', 'tutor', 'corpus', 'grading', 'logging', 'backup', 'disk'):
+            self.assertIn(key, data)
+        self.assertEqual(data['database'], 'ok')
+        self.assertIsInstance(data['problems'], list)
+        self.assertIn(data['status'], ('ok', 'degraded', 'down'))
+        self.assertEqual(response['Cache-Control'], 'no-store')
+
+    def test_a_missing_backup_is_named_as_a_problem(self):
+        with tempfile.TemporaryDirectory() as tmp, override_settings(BACKUP_DIR=Path(tmp) / 'none'):
+            data = self._client('EXPERT_TEACHER').get('/api/admin/status/').json()
+        self.assertTrue(any('backup' in p for p in data['problems']), data['problems'])
+        self.assertIsNone(data['backup']['latest'])
+
+    def test_a_broken_component_does_not_break_the_page(self):
+        from unittest.mock import patch
+        with patch('tutor.sandbox.status', side_effect=RuntimeError('docker exploded')):
+            response = self._client('RESEARCHER_ADMIN').get('/api/admin/status/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['sandbox'], {})

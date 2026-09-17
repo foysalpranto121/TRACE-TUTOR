@@ -1,0 +1,13 @@
+# One backup run. Triggered by trace-tutor-backup.timer; run once by hand with
+#   sudo systemctl start trace-tutor-backup
+[Unit]
+Description=TRACE Tutor daily backup (database dump + file stores)
+After=postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=oneshot
+User=tracetutor
+Group=tracetutor
+WorkingDirectory=/opt/trace-tutor/backend
+ExecStart=/opt/trace-tutor/backend/.venv/bin/python manage.py backup_study

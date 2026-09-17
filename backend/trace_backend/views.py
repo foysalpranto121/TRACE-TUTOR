@@ -36,6 +36,131 @@ def health(request):
     return response
 
 
+def _latest_backup():
+    """The newest backup folder's manifest, or None. Cheap: one directory listing."""
+    import json
+    root = settings.BACKUP_DIR
+    try:
+        candidates = sorted((p for p in root.iterdir() if p.is_dir() and (p / 'manifest.json').exists()),
+                            key=lambda p: p.name, reverse=True)
+    except OSError:
+        return None
+    for folder in candidates[:1]:
+        try:
+            data = json.loads((folder / 'manifest.json').read_text(encoding='utf-8'))
+            data['folder'] = str(folder)
+            return data
+        except (OSError, ValueError):
+            return {'folder': str(folder), 'error': 'manifest unreadable'}
+    return None
+
+
+def system_status(request):
+    """Everything an operator needs to know a deployment is actually fit to serve a cohort.
+
+    The public /api/health/ probe answers one question - is the process up and can it reach
+    the database - and reveals nothing else. This is the staff-only view behind it: sandbox
+    tier, corpus state, tutor model, grading queue, backups and disk. Wired up in urls.py
+    with a DRF permission; it is a plain view so it can be imported without DRF's decorators.
+    """
+    import shutil
+    from django.db.models import Count
+    from django.utils import timezone
+    from assessment.models import ExamSubmission
+    from assessment.manifest import _git
+    from curriculum.models import IngestRun, OcrPage
+    from curriculum.ocr_ingest import DOCS, INGEST_STATE, RAG_DIR, corpus_version
+    from curriculum.rag_engine import rag_engine_instance
+    from tutor import runner, sandbox
+    from trace_backend import gemini, llm
+
+    def safe(fn, default=None):
+        try:
+            return fn()
+        except Exception as e:  # a status page must never 500 because one component is down
+            logger.warning('system status: %s failed: %s', getattr(fn, '__name__', 'component'), e)
+            return default
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT 1')
+        database = 'ok'
+    except Exception:
+        database = 'unreachable'
+
+    last_run = safe(lambda: IngestRun.objects.order_by('-pk').first())
+    grading = safe(lambda: {row['grading_status']: row['n'] for row in
+                            ExamSubmission.objects.values('grading_status').annotate(n=Count('id'))}, {})
+    pages = safe(lambda: {
+        'transcribed': OcrPage.objects.count(),
+        'blank': OcrPage.objects.filter(thin=True).count(),
+        'unindexed': OcrPage.objects.filter(thin=False, indexed_chunks=0).count(),
+    }, {})
+    disk = safe(lambda: shutil.disk_usage(settings.BASE_DIR))
+    backup = safe(_latest_backup)
+    problems = []
+    box = safe(sandbox.status, {})
+    if not box.get('allowed', True):
+        problems.append('code execution is refused: sandbox below the required tier')
+    if not safe(llm.configured, False):
+        problems.append('tutor model is not configured')
+    if safe(rag_engine_instance.vector_count, 0) == 0:
+        problems.append('vector index is empty: the tutor is answering from seed passages')
+    if grading.get('failed'):
+        problems.append(f"{grading['failed']} submission(s) failed grading")
+    if backup is None:
+        problems.append('no backup has ever been taken (run: python manage.py backup_study)')
+    elif backup.get('taken_at'):
+        try:
+            age_h = (timezone.now() - timezone.datetime.fromisoformat(backup['taken_at'])).total_seconds() / 3600
+            if age_h > 26:
+                problems.append(f'last backup is {age_h / 24:.1f} days old')
+        except (TypeError, ValueError):
+            pass
+    if disk and disk.free < 2 * 1024 ** 3:
+        problems.append(f'less than 2 GB free on the application disk ({disk.free / 1024 ** 3:.1f} GB)')
+    if settings.DEBUG:
+        problems.append('DEBUG is on')
+
+    data = {
+        'status': 'ok' if database == 'ok' and not problems else ('degraded' if database == 'ok' else 'down'),
+        'problems': problems,
+        'checked_at': timezone.now().isoformat(),
+        'database': database,
+        'debug': settings.DEBUG,
+        'code_commit': safe(lambda: _git('rev-parse', '--short', 'HEAD')),
+        'sandbox': box,
+        'compiler': safe(runner.compiler_status, {}),
+        'tutor': {
+            'provider': safe(llm.provider), 'model': safe(llm.model_name), 'chain': safe(llm.model_chain, []),
+            'configured': safe(llm.configured, False), 'temperature': safe(llm.generation_temperature),
+            'parameters_rejected_by_model': safe(llm.rejected_parameters, []),
+            'embedding_model': safe(gemini.embed_model_name), 'gemini_configured': safe(gemini.api_key) is not None,
+        },
+        'corpus': {
+            'version': safe(corpus_version, 0),
+            'vector_count': safe(rag_engine_instance.vector_count, 0),
+            'pages': pages,
+            'documents': [{'name': n, 'present': (RAG_DIR / n).exists(),
+                           'pages_recorded': safe(lambda n=n: OcrPage.objects.filter(document=n).count(), 0)}
+                          for n in DOCS],
+            'ingest_running': bool(INGEST_STATE.get('running')),
+            'last_run': {
+                'id': last_run.pk, 'status': last_run.status, 'started_at': last_run.started_at.isoformat(),
+                'finished_at': last_run.finished_at.isoformat() if last_run.finished_at else None,
+                'warnings': len(last_run.warnings or []), 'error': last_run.error,
+            } if last_run else None,
+        },
+        'grading': {'mode': settings.GRADING_MODE, 'queue': grading},
+        'logging': {'level': settings.LOG_LEVEL, 'file': settings.LOG_FILE or None},
+        'backup': {'directory': str(settings.BACKUP_DIR), 'latest': backup},
+        'disk': {'free_gb': round(disk.free / 1024 ** 3, 1), 'total_gb': round(disk.total / 1024 ** 3, 1)} if disk else None,
+    }
+    response = JsonResponse(data)
+    response['Cache-Control'] = 'no-store'
+    return response
+
+
 @csrf_exempt  # nothing to protect: require_safe rejects every write with 405 before CSRF's 403
 @require_safe
 def spa_index(request):

@@ -375,6 +375,13 @@ LANG_COOKIE_AGE = 60 * 60 * 24 * 365
 # instead, with a timestamp, for the terminal or the process supervisor to keep.
 # ---------------------------------------------------------------------------
 LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO').strip().upper() or 'INFO'
+# LOG_FILE: also write the same log to this file, rotated at LOG_FILE_MAX_MB with
+# LOG_FILE_BACKUPS older copies kept. On a lab server the console is whatever the process
+# supervisor captured, if anything; a file is what you can actually read a week later.
+LOG_FILE = os.environ.get('LOG_FILE', '').strip()
+LOG_FILE_MAX_MB = int(os.environ.get('LOG_FILE_MAX_MB', '10'))
+LOG_FILE_BACKUPS = int(os.environ.get('LOG_FILE_BACKUPS', '10'))
+_LOG_HANDLERS = ['console'] + (['file'] if LOG_FILE else [])
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -386,13 +393,35 @@ LOGGING = {
     },
     'handlers': {
         'console': {'class': 'logging.StreamHandler', 'formatter': 'standard'},
+        **({'file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'formatter': 'standard',
+            'filename': LOG_FILE,
+            'maxBytes': LOG_FILE_MAX_MB * 1024 * 1024,
+            'backupCount': LOG_FILE_BACKUPS,
+            'encoding': 'utf-8',
+        }} if LOG_FILE else {}),
     },
     # The project's own loggers (tutor.sandbox, assessment.grading, ...) propagate here.
-    'root': {'handlers': ['console'], 'level': LOG_LEVEL},
+    'root': {'handlers': _LOG_HANDLERS, 'level': LOG_LEVEL},
     'loggers': {
         # Replaces Django's console+mail_admins pair: no DEBUG gate, no email. django.request
         # (500 tracebacks) and django.security (DisallowedHost - the usual "why can't I reach
         # the server" answer) both propagate to this one.
-        'django': {'handlers': ['console'], 'level': LOG_LEVEL, 'propagate': False},
+        'django': {'handlers': _LOG_HANDLERS, 'level': LOG_LEVEL, 'propagate': False},
     },
 }
+if LOG_FILE:
+    Path(LOG_FILE).parent.mkdir(parents=True, exist_ok=True)
+
+# ---------------------------------------------------------------------------
+# Backups. `python manage.py backup_study` writes one timestamped folder here holding a
+# pg_dump of the database plus the file-based stores (transcription cache, vector index,
+# avatars). Keep this on a different disk from the database. BACKUP_KEEP is how many of
+# the most recent backups survive pruning; 0 keeps everything.
+# ---------------------------------------------------------------------------
+BACKUP_DIR = Path(os.environ.get('BACKUP_DIR') or BASE_DIR.parent / 'backups').resolve()
+BACKUP_KEEP = int(os.environ.get('BACKUP_KEEP', '14'))
+# Directory holding pg_dump / pg_restore / createdb / dropdb. Empty means: search PATH, then
+# the usual PostgreSQL install locations.
+PG_BIN = os.environ.get('PG_BIN', '').strip()

@@ -161,5 +161,13 @@ export const apiService = {
   // failed retrieval surfaces as an error, never as plausible-looking sample passages.
   searchCurriculum: (query, language) => fetchApi('/curriculum/search/', { method: 'POST', body: JSON.stringify({ query, language }) }),
   ingestCurriculum: (opts = {}) => fetchApi('/curriculum/ingest/', { method: 'POST', body: JSON.stringify(opts) }),
+  // Ingestion history and per-page status, from PostgreSQL rather than the process's memory,
+  // so they survive a restart. Staff only.
+  getIngestRuns: (limit = 20) => fetchApi(`/curriculum/runs/?limit=${limit}`),
+  getIngestRun: (id) => fetchApi(`/curriculum/runs/?id=${id}`),
+  getOcrPages: (document, { thin, unindexed } = {}) =>
+    fetchApi(`/curriculum/pages/?document=${encodeURIComponent(document)}${thin ? '&thin=1' : ''}${unindexed ? '&unindexed=1' : ''}`),
+  // Everything behind the public health probe: sandbox, corpus, model, grading, backups, disk.
+  getSystemStatus: () => fetchApi('/admin/status/'),
   getPassages: (language) => fetchApi(`/curriculum/passages/${language ? `?language=${language}` : ''}`),
 };

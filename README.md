@@ -149,6 +149,10 @@ Copy `backend/.env.example` to `backend/.env` and fill it in. **Never commit `.e
 | `SERVE_MEDIA` | `= DEBUG` | Let Django serve `backend/media/` (avatars). Set `1` on a lab server; it works with `DEBUG=0`. |
 | `FRONTEND_DIST` | `../frontend/dist` | The built React app, which Django serves itself (see [Deploying](#deploying)) |
 | `LOG_LEVEL` | `INFO` | Verbosity of the log on stderr. Request errors are logged with their traceback whatever `DEBUG` is. |
+| `LOG_FILE` | *(empty)* | Also write the log to this file, rotated at `LOG_FILE_MAX_MB` (10) keeping `LOG_FILE_BACKUPS` (10) old copies. Set it on a lab server. |
+| `BACKUP_DIR` | `../backups` | Where `manage.py backup_study` writes. Put it on a different disk from the database. |
+| `BACKUP_KEEP` | `14` | Newest backups to keep; `0` keeps all |
+| `PG_BIN` | *(PATH)* | Directory of `pg_dump` / `pg_restore` / `createdb` / `dropdb` when they are not on the PATH |
 | `CSRF_TRUSTED_ORIGINS` | `http://localhost:3000,...` | Comma-separated. The site's own origin once Django serves the app. |
 | `CORS_ALLOWED_ORIGINS` | *(= CSRF origins)* | Ignored when `DEBUG=1`, which allows all origins |
 | `DB_NAME` | `trace_tutor_db` | PostgreSQL database name (the only supported engine) |
@@ -336,6 +340,7 @@ Until the index is built the tutor still answers, using keyword retrieval over s
 │       ├── context/    # auth, theme
 │       ├── pages/      # workspace, dashboard, assessment, expert, admin
 │       └── services/   # API client
+├── deploy/             # supervisor configs: NSSM/startup-task installer (Windows), systemd units + backup timer (Linux)
 ├── docs/               # architecture figures
 └── RAG/                # source PDFs (not committed)
 ```
@@ -369,7 +374,8 @@ All endpoints are prefixed `/api/`.
 | `GET` `POST` | `expert/reviews/` · `rating/` | Content-validity survey |
 | `GET` | `admin/stats/` | Researcher aggregates, computed from the collected data |
 | `GET` | `admin/export/` | Streams the per-participant dataset as CSV |
-| `GET` | `admin/manifest/` | The configuration that produced the data: model, temperature, chain, policy, sandbox tier, item-bank hash, code revision |
+| `GET` | `admin/manifest/` | The configuration that produced the data: model, temperature, chain, policy, sandbox tier, item-bank hash, code revision, corpus state |
+| `GET` | `admin/status/` | Staff-only deployment status: sandbox tier, compiler, tutor model, corpus, grading queue, last backup, disk, and a list of problems to fix |
 
 Everything except `accounts/register/` and `accounts/login/` requires a token. `curriculum/search/`,
 `curriculum/passages/`, `curriculum/runs/` and `curriculum/pages/` are staff-only; `curriculum/ingest/`,
@@ -494,9 +500,53 @@ cohort in; if Docker was not running, the endpoint refuses to execute code rathe
 it unprotected. The site is at `http://lab-server.school.edu:8000/`. The Django admin is at
 `/django-admin/`, because the app itself owns `/admin`.
 
-Run waitress under something that restarts it and keeps its stderr: NSSM or a Scheduled
-Task on Windows, systemd on Linux. Every request error is logged there with its traceback,
-timestamped, whatever `DEBUG` is set to; `LOG_LEVEL` controls the rest.
+### 3b. Keep it running
+
+Run waitress under a supervisor so it starts at boot and restarts if it dies. Ready-made
+configs are in `deploy/`:
+
+```powershell
+# Windows, from an elevated PowerShell. Uses NSSM (https://nssm.cc) if it is on the PATH or
+# next to the script; otherwise registers a startup task. Also schedules the nightly backup.
+.\deploy\windows\install-service.ps1            # -Uninstall to remove
+```
+
+```bash
+# Linux. Edit User/WorkingDirectory/python path in the units first.
+sudo cp deploy/linux/trace-tutor.service deploy/linux/trace-tutor-backup.* /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now trace-tutor trace-tutor-backup.timer
+```
+
+Set `LOG_FILE` in `backend/.env` so every request error lands, with its traceback and a
+timestamp, in a rotated file you can read later, whatever `DEBUG` is set to; the console
+still gets a copy. `LOG_LEVEL` controls the rest.
+
+### 3c. Backups
+
+The database is the only copy of participant data. One command backs up everything the
+study depends on and another proves the backup restores:
+
+```bash
+python manage.py backup_study             # -> BACKUP_DIR/<timestamp>/: db.dump + ocr/ + chroma_store/ + media/ + manifest.json
+python manage.py backup_study --list      # what is there, and which ones have been verified
+python manage.py backup_study --verify    # restore the newest into a scratch database, compare row counts, drop it
+```
+
+The manifest records row counts per table, sizes, the code commit and the study manifest
+at the time, so a restored copy can be checked against what was taken. `BACKUP_KEEP`
+prunes old folders. The supervisor configs above schedule it nightly at 02:30; run
+`--verify` once after installing so the first thing you learn about a bad dump is not on
+the day you need it. Keep `BACKUP_DIR` on a different disk, and copy it off the machine.
+
+### 3d. Watch it
+
+`GET /api/admin/status/` (staff token) is the page behind the health probe: sandbox tier
+and whether execution is allowed, compiler, tutor model and whether it is configured, corpus
+version and blank pages, grading queue, last backup and whether it was verified, disk free,
+and a `problems` list naming exactly what to fix. The researcher dashboard shows it at the
+top; the RAG inspector shows every recorded ingestion run with its log. The Django admin at
+`/django-admin/` gives a read-only view of every research table.
 
 ### 4. TLS
 
@@ -545,7 +595,8 @@ Active research software, not a finished product.
 | Dataset export | Working — `GET /api/admin/export/` streams one pseudonymous row per participant |
 | Access control and rate limiting | Working; 427 backend tests cover the gates |
 | Code-runner sandboxing | Working — container tier with rlimit fallback, and refuses to run unprotected |
-| Deployment | Working — one process serves the API, the built app and avatars; health probe; see [Deploying](#deploying) |
+| Deployment | Working — one process serves the API, the built app and avatars; health probe; supervisor configs; see [Deploying](#deploying) |
+| Operations | Working — verified backups (`backup_study --verify`), rotated log file, staff status page, read-only admin over every research table |
 
 ---
 

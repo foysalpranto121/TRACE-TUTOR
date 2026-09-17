@@ -1,0 +1,27 @@
+# systemd unit for TRACE Tutor. Install:
+#   sudo cp deploy/linux/trace-tutor.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now trace-tutor
+# Adjust User, WorkingDirectory and the python path to the server. The app reads backend/.env
+# itself; set LOG_FILE there so tracebacks land in a rotated file as well as the journal.
+[Unit]
+Description=TRACE Tutor research platform (Django + built React app via waitress)
+After=network-online.target postgresql.service docker.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=tracetutor
+Group=tracetutor
+WorkingDirectory=/opt/trace-tutor/backend
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/trace-tutor/backend/.venv/bin/python -m waitress --listen=0.0.0.0:8000 --threads=8 trace_backend.wsgi:application
+Restart=always
+RestartSec=5
+# The code sandbox talks to the Docker daemon; the service user must be in the docker group.
+SupplementaryGroups=docker
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -51,6 +51,74 @@ const StatCard = ({ label, value, sub, icon, tone = 'text-on-surface' }) => (
   </div>
 );
 
+// Whether the deployment is fit to serve a cohort: sandbox tier, corpus, model, grading queue,
+// backups and disk, from the staff-only /api/admin/status/. The public health probe only says
+// the process is up; this is everything behind it.
+const DeploymentStatus = ({ reloadToken }) => {
+  const [sys, setSys] = useState(null);
+  const [err, setErr] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    apiService.getSystemStatus()
+      .then((d) => { if (alive) { setSys(d); setErr(null); } })
+      .catch((e) => { if (alive) setErr(e.message); });
+    return () => { alive = false; };
+  }, [reloadToken]);
+
+  if (err) {
+    return (
+      <div className="bg-rose-500/10 border border-rose-500/30 p-4 rounded-xl text-xs text-rose-600 dark:text-rose-400 font-mono flex items-center gap-2">
+        <AlertTriangle className="w-4 h-4 shrink-0" /> Deployment status unavailable: {err}
+      </div>
+    );
+  }
+  if (!sys) return null;
+
+  // Full class strings, because Tailwind only emits classes it can read verbatim.
+  const TONES = {
+    ok: { box: 'bg-emerald-500/5 border-emerald-500/30', icon: 'text-emerald-500', badge: 'text-emerald-600 dark:text-emerald-400 border-emerald-500/40' },
+    degraded: { box: 'bg-amber-500/5 border-amber-500/30', icon: 'text-amber-500', badge: 'text-amber-600 dark:text-amber-400 border-amber-500/40' },
+    down: { box: 'bg-rose-500/5 border-rose-500/30', icon: 'text-rose-500', badge: 'text-rose-600 dark:text-rose-400 border-rose-500/40' },
+  };
+  const tone = TONES[sys.status] || TONES.down;
+  const backup = sys.backup?.latest;
+  const cells = [
+    ['Sandbox', sys.sandbox?.tier || '-', sys.sandbox?.allowed ? (sys.sandbox?.isolated ? 'isolated' : 'partial') : 'REFUSED', !sys.sandbox?.allowed],
+    ['Tutor model', `${sys.tutor?.provider || '-'} ${sys.tutor?.model || ''}`.trim(), sys.tutor?.configured ? 'configured' : 'NOT CONFIGURED', !sys.tutor?.configured],
+    ['Corpus', `${sys.corpus?.vector_count ?? 0} vectors`, `v${sys.corpus?.version ?? 0} · ${sys.corpus?.pages?.blank ?? 0} blank page(s)`, (sys.corpus?.vector_count ?? 0) === 0],
+    ['Grading', sys.grading?.mode || '-', Object.entries(sys.grading?.queue || {}).map(([k, v]) => `${v} ${k}`).join(', ') || 'queue empty', !!sys.grading?.queue?.failed],
+    ['Last backup', backup ? new Date(backup.taken_at).toLocaleString() : 'never', backup ? `${(backup.total_bytes / 1048576).toFixed(1)} MB${backup.verified_at ? ' · verified' : ' · unverified'}` : 'run backup_study', !backup],
+    ['Disk free', sys.disk ? `${sys.disk.free_gb} GB` : '-', sys.logging?.file ? `log → ${sys.logging.file.split(/[\\/]/).pop()}` : 'console log only', sys.disk ? sys.disk.free_gb < 2 : false],
+  ];
+
+  return (
+    <div className={`border rounded-2xl p-4 space-y-3 ${tone.box}`}>
+      <div className="flex flex-wrap items-center gap-3 text-xs">
+        <ShieldCheck className={`w-4 h-4 ${tone.icon}`} />
+        <span className="font-extrabold text-on-surface uppercase tracking-wider text-[10px]">Deployment status</span>
+        <span className={`px-2 py-0.5 rounded border font-mono font-bold text-[10px] ${tone.badge}`}>{sys.status}</span>
+        <span className="text-[10px] font-mono text-on-surface-variant">
+          {sys.debug ? 'DEBUG on · ' : ''}{sys.code_commit ? `code ${sys.code_commit} · ` : ''}checked {new Date(sys.checked_at).toLocaleTimeString()}
+        </span>
+      </div>
+      {sys.problems?.length > 0 && (
+        <ul className="text-[11px] font-mono text-amber-700 dark:text-amber-400 space-y-0.5">
+          {sys.problems.map((p, i) => <li key={i}>- {p}</li>)}
+        </ul>
+      )}
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
+        {cells.map(([label, value, sub, bad]) => (
+          <div key={label} className={`rounded-xl p-3 border ${bad ? 'border-rose-500/40 bg-rose-500/5' : 'border-outline-variant/30 bg-surface-container'}`}>
+            <span className="text-[9px] font-mono uppercase text-on-surface-variant block">{label}</span>
+            <span className="text-xs font-extrabold text-on-surface block truncate" title={String(value)}>{value}</span>
+            <span className={`text-[10px] font-mono block truncate ${bad ? 'text-rose-600 dark:text-rose-400' : 'text-on-surface-variant'}`} title={String(sub)}>{sub}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const OutcomeRow = ({ spec, data }) => {
   const treatment = data?.treatment;
   const control = data?.control;
@@ -257,6 +325,8 @@ export const AdminDashboard = () => {
           Loading study aggregates…
         </div>
       )}
+
+      <DeploymentStatus reloadToken={reloadToken} />
 
       {stats && (
         <>

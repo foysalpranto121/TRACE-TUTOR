@@ -6,6 +6,11 @@ from tutor import views as tutor_views
 from logging_app import views as logging_views
 from assessment import views as assessment_views
 from curriculum import views as curriculum_views
+from rest_framework.decorators import api_view, permission_classes
+from accounts.permissions import IsStaffRole
+
+# The staff status page is a plain view; give it DRF's token authentication and role gate here.
+system_status = api_view(['GET'])(permission_classes([IsStaffRole])(site_views.system_status))
 
 urlpatterns = [
     # Not at admin/: the React app owns /admin (researcher dashboard) and /admin/rag.
@@ -13,6 +18,8 @@ urlpatterns = [
 
     # Liveness probe for a supervisor or uptime monitor; the one unauthenticated GET.
     path('api/health/', site_views.health, name='health'),
+    # Everything behind it - sandbox, corpus, model, grading queue, backups, disk. Staff only.
+    path('api/admin/status/', system_status, name='system_status'),
 
     # Accounts, authentication & research profile
     path('api/accounts/register/', accounts_views.register_view, name='register'),

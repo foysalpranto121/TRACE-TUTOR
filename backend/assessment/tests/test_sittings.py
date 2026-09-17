@@ -1,12 +1,16 @@
 """Server-side protocol enforcement: no tutor during no-AI papers, one sitting per
 paper, time-on-paper recorded, a manifest of the configuration, and a clean reset."""
 import io
+import json
+import shutil
+import tempfile
 from datetime import timedelta
+from pathlib import Path
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.core.management import call_command
-from django.test import override_settings
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
@@ -219,3 +223,48 @@ class ResetStudyDataTests(ApiTestCase):
         self.assertTrue(User.objects.filter(username='tea').exists())
         self.assertTrue(InteractionLog.objects.filter(user=self.teacher).exists())
         self.assertEqual(ExpertRating.objects.count(), 1, 'expert ratings are not participant data')
+
+
+class BackupCommandTests(TestCase):
+    """A backup that cannot be restored is not a backup. The command dumps the database and
+    the file stores, writes a manifest of row counts, and --verify proves the dump restores
+    into a scratch database with the same counts."""
+
+    def setUp(self):
+        from assessment.management.commands.backup_study import pg_tool
+        try:
+            pg_tool('pg_dump')
+        except Exception as e:
+            self.skipTest(f'PostgreSQL client tools not available: {e}')
+        self.tmp = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_take_list_verify_and_prune(self):
+        from io import StringIO
+        from django.core.management import call_command
+        User.objects.create_user('someone', password='Testpass!2345')
+        with override_settings(BACKUP_DIR=Path(self.tmp), BACKUP_KEEP=1):
+            out = StringIO()
+            first = call_command('backup_study', '--no-files', stdout=out)
+            manifest = json.loads((Path(first) / 'manifest.json').read_text(encoding='utf-8'))
+            self.assertIn('accounts_participantprofile', manifest['row_counts'])
+            self.assertTrue((Path(first) / 'db.dump').stat().st_size > 0)
+            self.assertIn('study_manifest', manifest)
+
+            listed = StringIO()
+            call_command('backup_study', '--list', stdout=listed)
+            self.assertIn(Path(first).name, listed.getvalue())
+            self.assertIn('unverified', listed.getvalue())
+
+            verified = StringIO()
+            call_command('backup_study', '--verify', stdout=verified)
+            self.assertIn('restores cleanly', verified.getvalue())
+            manifest = json.loads((Path(first) / 'manifest.json').read_text(encoding='utf-8'))
+            self.assertIn('verified_at', manifest)
+
+            # A second backup with --keep 1 prunes the first.
+            second = call_command('backup_study', '--no-files', stdout=StringIO())
+            self.assertFalse(Path(first).exists())
+            self.assertTrue(Path(second).exists())

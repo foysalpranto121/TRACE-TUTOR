@@ -1,0 +1,14 @@
+# Install alongside the service:
+#   sudo cp deploy/linux/trace-tutor-backup.{service,timer} /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now trace-tutor-backup.timer
+#   systemctl list-timers trace-tutor-backup.timer
+[Unit]
+Description=Run the TRACE Tutor backup every night
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+Persistent=true
+RandomizedDelaySec=10m
+
+[Install]
+WantedBy=timers.target

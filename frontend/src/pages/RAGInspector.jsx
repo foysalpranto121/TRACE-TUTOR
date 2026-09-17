@@ -1,6 +1,64 @@
 import { useState, useEffect, useRef } from 'react';
 import { apiService } from '../services/api';
-import { BookOpen, Search, RefreshCw, Sparkles, CheckCircle2, FileText, AlertTriangle, Database, Cpu } from 'lucide-react';
+import { BookOpen, Search, RefreshCw, Sparkles, CheckCircle2, FileText, AlertTriangle, Database, Cpu, History, ChevronDown, ChevronRight } from 'lucide-react';
+
+const fmtWhen = (iso) => (iso ? new Date(iso).toLocaleString() : '-');
+const fmtDuration = (startIso, endIso) => {
+  if (!startIso || !endIso) return '';
+  const s = Math.round((new Date(endIso) - new Date(startIso)) / 1000);
+  return s < 90 ? `${s}s` : `${Math.round(s / 60)} min`;
+};
+const RUN_TONE = {
+  done: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
+  running: 'text-primary bg-primary/10 border-primary/30',
+  error: 'text-rose-400 bg-rose-500/10 border-rose-500/30',
+};
+
+// One recorded run, from PostgreSQL. Expands to its full log on demand.
+const RunRow = ({ run }) => {
+  const [open, setOpen] = useState(false);
+  const [detail, setDetail] = useState(null);
+  const toggle = async () => {
+    setOpen((o) => !o);
+    if (!detail) {
+      try { setDetail(await apiService.getIngestRun(run.id)); } catch (err) { setDetail({ log: [`Could not load log: ${err.message}`] }); }
+    }
+  };
+  return (
+    <div className="border border-outline-variant/30 rounded-xl bg-surface-container-lowest">
+      <button type="button" onClick={toggle} className="w-full flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-left text-[11px] font-mono">
+        {open ? <ChevronDown className="w-3 h-3 shrink-0" /> : <ChevronRight className="w-3 h-3 shrink-0" />}
+        <span className={`px-2 py-0.5 rounded border font-bold ${RUN_TONE[run.status] || ''}`}>{run.status}</span>
+        <span className="text-on-surface">#{run.id}</span>
+        <span className="text-on-surface-variant">{fmtWhen(run.started_at)}{run.finished_at ? ` (${fmtDuration(run.started_at, run.finished_at)})` : ''}</span>
+        <span className="text-on-surface-variant">{run.trigger === 'api' ? `dashboard${run.triggered_by ? ` by ${run.triggered_by}` : ''}` : 'command line'}</span>
+        <span className="text-on-surface-variant truncate">{(run.documents || []).join(', ')}{run.page_range ? ` p.${run.page_range}` : ''}</span>
+        <span className="text-on-surface-variant">
+          {[run.options?.ocr ? 'ocr' : 'index-only', run.options?.retry_empty && 'retry-empty', run.options?.reindex && 'reindex'].filter(Boolean).join(' ')}
+        </span>
+        <span className="ml-auto text-on-surface">
+          {run.done_pages}/{run.total_pages} pages - {run.indexed_chunks} new - {run.relabelled_chunks} relabelled - {run.vector_count_after ?? '?'} vectors
+        </span>
+        {run.warnings?.length > 0 && <span className="text-amber-400">{run.warnings.length} warning{run.warnings.length > 1 ? 's' : ''}</span>}
+      </button>
+      {open && (
+        <div className="px-4 pb-4 space-y-2 text-[10px] font-mono">
+          {run.error && <div className="text-rose-400 whitespace-pre-wrap">Error: {run.error}</div>}
+          {run.warnings?.length > 0 && (
+            <ul className="text-amber-400 space-y-0.5">{run.warnings.map((w, i) => <li key={i}>- {w}</li>)}</ul>
+          )}
+          <div className="text-on-surface-variant">
+            {run.ocr_model && <span>OCR {run.ocr_model} - </span>}{run.embedding_model && <span>embeddings {run.embedding_model} - </span>}
+            {run.code_commit && <span>code {run.code_commit.slice(0, 10)}</span>}
+          </div>
+          <pre className="text-on-surface-variant max-h-48 overflow-y-auto whitespace-pre-wrap bg-surface-container p-3 rounded-lg">
+            {detail ? (detail.log?.length ? detail.log.join('\n') : '(no log lines recorded)') : 'Loading log...'}
+          </pre>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const RAGInspector = () => {
   const [searchQuery, setSearchQuery] = useState('for loop C programming');
@@ -11,7 +69,13 @@ export const RAGInspector = () => {
   const [statusError, setStatusError] = useState(null);
   const [searchError, setSearchError] = useState(null);
   const [ingestMessage, setIngestMessage] = useState(null);
+  const [runs, setRuns] = useState(null);
+  const [showRuns, setShowRuns] = useState(false);
   const pollRef = useRef(null);
+
+  const refreshRuns = async () => {
+    try { setRuns(await apiService.getIngestRuns(20)); } catch { setRuns(null); }
+  };
 
   const refreshStatus = async () => {
     try {
@@ -45,7 +109,7 @@ export const RAGInspector = () => {
 
   useEffect(() => {
     // Wrapped so state is written after an await rather than during the effect.
-    (async () => { await Promise.all([refreshStatus(), handleSearch()]); })();
+    (async () => { await Promise.all([refreshStatus(), refreshRuns(), handleSearch()]); })();
     return () => clearInterval(pollRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -67,6 +131,7 @@ export const RAGInspector = () => {
         if (s && !s.ingest.running) {
           clearInterval(pollRef.current);
           setIngestMessage(s.ingest.error ? `Ingestion failed: ${s.ingest.error}` : `Ingestion finished. ${s.engine.vector_count} chunks are now searchable.`);
+          refreshRuns();
           handleSearch();
         }
       }, 3000);
@@ -75,19 +140,24 @@ export const RAGInspector = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running]);
 
-  const handleIngestBooks = async () => {
+  const startIngest = async (opts, startedText) => {
     setIngestMessage(null);
     try {
-      const res = await apiService.ingestCurriculum({ workers: 3 });
-      setIngestMessage(res.status === 'started' ? 'Started Gemini OCR + embedding of the RAG/ PDFs in the background. This takes a while for full books; progress updates below.' : 'Ingestion is already running.');
+      const res = await apiService.ingestCurriculum({ workers: 3, ...opts });
+      setIngestMessage(res.status === 'started' ? startedText : 'Ingestion is already running.');
       refreshStatus();
+      refreshRuns();
     } catch (err) {
       setIngestMessage(`Could not start ingestion: ${err.message}`);
     }
   };
+  const handleIngestBooks = () => startIngest({}, 'Started Gemini OCR + embedding of the RAG/ PDFs in the background. This takes a while for full books; progress updates below.');
+  const handleIndexOnly = () => startIngest({ index_only: true }, 'Indexing whatever is already transcribed. No vision-model calls; only new chunks are embedded.');
+  const handleRetryBlank = (docName) => startIngest({ pdfs: [docName], retry_empty: true }, `Re-transcribing the blank pages of ${docName}. Each page is sent at most twice in total.`);
 
   const ingest = status?.ingest;
   const engine = status?.engine;
+  const lastRun = status?.last_run;
   const progressPct = ingest?.total_pages ? Math.round((ingest.done_pages / ingest.total_pages) * 100) : 0;
 
   return (
@@ -102,14 +172,25 @@ export const RAGInspector = () => {
           </p>
         </div>
 
-        <button
-          onClick={handleIngestBooks}
-          disabled={running}
-          className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-bold text-xs flex items-center gap-2 shadow-lg shadow-primary/20 transition-all disabled:opacity-50"
-        >
-          <RefreshCw className={`w-4 h-4 ${running ? 'animate-spin' : ''}`} />
-          {running ? `Ingesting... ${progressPct}%` : 'OCR + Index RAG Folder PDFs'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleIndexOnly}
+            disabled={running}
+            title="Embed whatever is already transcribed and repair labels. No vision-model calls."
+            className="px-4 py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold text-xs border border-outline-variant/30 disabled:opacity-50"
+          >
+            Index only
+          </button>
+          <button
+            onClick={handleIngestBooks}
+            disabled={running}
+            className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-bold text-xs flex items-center gap-2 shadow-lg shadow-primary/20 transition-all disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${running ? 'animate-spin' : ''}`} />
+            {running ? `Ingesting... ${progressPct}%` : 'OCR + Index RAG Folder PDFs'}
+          </button>
+        </div>
       </div>
 
       {statusError && (
@@ -141,19 +222,85 @@ export const RAGInspector = () => {
         </div>
       )}
 
+      {/* The last run as PostgreSQL recorded it. Unlike the live progress box below, this
+          survives a server restart and is what an operator checks the morning after. */}
+      {status && (
+        <div className="bg-surface-container p-4 rounded-xl border border-outline-variant/30 text-[11px] font-mono flex flex-wrap items-center gap-x-4 gap-y-2">
+          <span className="text-[10px] uppercase text-on-surface-variant flex items-center gap-1"><History className="w-3 h-3" /> Last recorded run</span>
+          {lastRun ? (
+            <>
+              <span className={`px-2 py-0.5 rounded border font-bold ${RUN_TONE[lastRun.status] || ''}`}>{lastRun.status}</span>
+              <span className="text-on-surface">#{lastRun.id} - {fmtWhen(lastRun.finished_at || lastRun.started_at)}</span>
+              <span className="text-on-surface-variant">{lastRun.trigger === 'api' ? `dashboard${lastRun.triggered_by ? ` by ${lastRun.triggered_by}` : ''}` : 'command line'}</span>
+              <span className="text-on-surface-variant">{lastRun.indexed_chunks} new, {lastRun.relabelled_chunks} relabelled, {lastRun.vector_count_after ?? '?'} vectors after</span>
+              {lastRun.error && <span className="text-rose-400 truncate max-w-md" title={lastRun.error}>error: {lastRun.error}</span>}
+              {lastRun.warnings?.length > 0 && (
+                <span className="text-amber-400" title={lastRun.warnings.join('\n')}>{lastRun.warnings.length} warning{lastRun.warnings.length > 1 ? 's' : ''}</span>
+              )}
+              <button type="button" onClick={() => setShowRuns((v) => !v)} className="ml-auto text-primary hover:underline">
+                {showRuns ? 'Hide history' : `History (${status.runs_recorded ?? 0})`}
+              </button>
+            </>
+          ) : (
+            <span className="text-on-surface-variant">No run has been recorded yet.</span>
+          )}
+        </div>
+      )}
+
+      {showRuns && (
+        <div className="space-y-2">
+          {runs?.runs?.length ? runs.runs.map((run) => <RunRow key={run.id} run={run} />) : (
+            <div className="text-xs text-on-surface-variant italic">No recorded runs.</div>
+          )}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {(status?.documents || []).map((doc) => (
-          <div key={doc.name} className="bg-surface-container p-4 rounded-xl border border-outline-variant/30 flex items-start gap-3">
-            <FileText className={`w-8 h-8 shrink-0 mt-0.5 ${doc.exists ? (doc.language === 'bn' ? 'text-emerald-400' : 'text-primary') : 'text-rose-400'}`} />
-            <div className="min-w-0">
-              <span className="text-xs font-bold text-on-surface block truncate">{doc.name}</span>
-              <span className="text-[10px] font-mono text-on-surface-variant">{doc.exists ? `${doc.size_mb} MB` : 'missing'} - {doc.language === 'bn' ? 'Bangla' : 'English'}</span>
-              <span className="text-[10px] text-on-surface-variant block mt-1">
-                OCR pages cached: <strong className="text-on-surface">{doc.ocr_pages_cached}</strong> - indexed chunks: <strong className="text-on-surface">{doc.db_chunks}</strong>
-              </span>
+        {(status?.documents || []).map((doc) => {
+          const pages = doc.pages || {};
+          const blank = pages.thin_pages || [];
+          const unindexed = pages.unindexed_pages || [];
+          const chapters = (pages.chapters || []).filter((c) => c.chunks > 0);
+          return (
+            <div key={doc.name} className="bg-surface-container p-4 rounded-xl border border-outline-variant/30 space-y-2">
+              <div className="flex items-start gap-3">
+                <FileText className={`w-8 h-8 shrink-0 mt-0.5 ${doc.exists ? (doc.language === 'bn' ? 'text-emerald-400' : 'text-primary') : 'text-rose-400'}`} />
+                <div className="min-w-0">
+                  <span className="text-xs font-bold text-on-surface block truncate">{doc.name}</span>
+                  <span className="text-[10px] font-mono text-on-surface-variant">{doc.exists ? `${doc.size_mb} MB` : 'missing'} - {doc.language === 'bn' ? 'Bangla' : 'English'}</span>
+                  <span className="text-[10px] text-on-surface-variant block mt-1">
+                    Transcribed: <strong className="text-on-surface">{doc.ocr_pages_cached}</strong> pages - indexed: <strong className="text-on-surface">{pages.pages_indexed ?? '-'}</strong> pages, <strong className="text-on-surface">{doc.db_chunks}</strong> chunks
+                  </span>
+                </div>
+              </div>
+              {chapters.length > 0 && (
+                <ul className="text-[10px] font-mono text-on-surface-variant space-y-0.5 pl-1">
+                  {chapters.map((c) => (
+                    <li key={c.chapter} className="flex justify-between gap-2">
+                      <span className="truncate">{c.chapter.replace(/^Chapter (\d+):.*/, 'Ch $1')}{/^Chapter/.test(c.chapter) ? '' : ' (front matter)'}</span>
+                      <span className="shrink-0">{c.pages} p / {c.chunks} chunks</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {(blank.length > 0 || unindexed.length > 0) && (
+                <div className="text-[10px] font-mono space-y-1">
+                  {blank.length > 0 && (
+                    <div className="flex items-center justify-between gap-2 text-amber-400">
+                      <span title={blank.join(', ')}>{blank.length} blank page{blank.length > 1 ? 's' : ''}: {blank.slice(0, 8).join(', ')}{blank.length > 8 ? '...' : ''}</span>
+                      <button type="button" onClick={() => handleRetryBlank(doc.name)} disabled={running} className="shrink-0 px-2 py-1 rounded-lg border border-amber-500/40 hover:bg-amber-500/10 disabled:opacity-50">
+                        Retry blank
+                      </button>
+                    </div>
+                  )}
+                  {unindexed.length > 0 && (
+                    <div className="text-rose-400" title={unindexed.join(', ')}>{unindexed.length} transcribed page{unindexed.length > 1 ? 's' : ''} not in the index - run Index only</div>
+                  )}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {(ingestMessage || running || ingest?.error) && (
@@ -167,6 +314,9 @@ export const RAGInspector = () => {
               <div className="flex justify-between text-[10px] mb-1"><span>{ingest.stage} - {ingest.current_doc}</span><span>{ingest.done_pages}/{ingest.total_pages} pages, {ingest.indexed_chunks} chunks</span></div>
               <div className="h-2 rounded-full bg-surface-container overflow-hidden"><div className="h-full bg-emerald-500 transition-all" style={{ width: `${progressPct}%` }} /></div>
             </div>
+          )}
+          {ingest?.warnings?.length > 0 && (
+            <ul className="text-[10px] text-amber-400 space-y-0.5">{ingest.warnings.map((w, i) => <li key={i}>- {w}</li>)}</ul>
           )}
           {ingest?.log?.length > 0 && (
             <pre className="text-[10px] text-on-surface-variant max-h-32 overflow-y-auto whitespace-pre-wrap">{ingest.log.slice(-8).join('\n')}</pre>
