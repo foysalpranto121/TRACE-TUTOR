@@ -593,7 +593,7 @@ Active research software, not a finished product.
 | Expert portal | Rating interface working; CVI computation in progress |
 | Researcher dashboard | Working — real aggregates, Welch's *t* and Cohen's *d* computed from the data |
 | Dataset export | Working — `GET /api/admin/export/` streams one pseudonymous row per participant |
-| Access control and rate limiting | Working; 427 backend tests cover the gates |
+| Access control and rate limiting | Working; 432 backend tests cover the gates |
 | Code-runner sandboxing | Working — container tier with rlimit fallback, and refuses to run unprotected |
 | Deployment | Working — one process serves the API, the built app and avatars; health probe; supervisor configs; see [Deploying](#deploying) |
 | Operations | Working — verified backups (`backup_study --verify`), rotated log file, staff status page, read-only admin over every research table |
