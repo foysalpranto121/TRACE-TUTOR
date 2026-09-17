@@ -5,6 +5,7 @@ import re
 import time
 import logging
 import threading
+import unicodedata
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -21,20 +22,45 @@ RAG_DIR = Path(settings.BASE_DIR).parent / 'RAG'
 OCR_DIR = Path(settings.BASE_DIR) / 'data' / 'ocr'
 PAGES_PER_CALL = 8
 
+# A page transcribed to less than this is treated as an OCR miss rather than a short page, and
+# `--retry-empty` sends it back to the model. MAX_OCR_ATTEMPTS stops a genuinely blank page
+# (a divider, a full-page figure) from being re-requested on every run for ever.
+MIN_PAGE_CHARS = 200
+MAX_OCR_ATTEMPTS = 2
+
 DOCS = {
     'HSC ICT (BV).pdf': {'language': 'bn', 'doc': 'NCTB HSC ICT Textbook (Bangla Version)', 'short': 'NCTB HSC ICT (BV)'},
     'HSC ICT (EV).pdf': {'language': 'en', 'doc': 'NCTB HSC ICT Textbook (English Version)', 'short': 'NCTB HSC ICT (EV)'},
     'HSC ICT QB 26.pdf': {'language': 'bn', 'doc': 'HSC ICT Board Question Bank 2026', 'short': 'HSC ICT QB 2026'},
 }
 
-CHAPTERS = [
-    ('Chapter 1: ICT - World & Bangladesh Perspective', ['বিশ্ব ও বাংলাদেশ প্রেক্ষিত', 'world and bangladesh perspective']),
-    ('Chapter 2: Communication Systems & Networking', ['কমিউনিকেশন সিস্টেমস ও নেটওয়ার্কিং', 'communication systems and networking']),
-    ('Chapter 3: Number Systems & Digital Devices', ['সংখ্যা পদ্ধতি ও ডিজিটাল ডিভাইস', 'number systems and digital devices']),
-    ('Chapter 4: Web Design & HTML', ['ওয়েব ডিজাইন পরিচিতি এবং html', 'ওয়েব ডিজাইন পরিচিতি', 'introduction to web design and html', 'web design and html']),
-    ('Chapter 5: Programming Language (C)', ['প্রোগ্রামিং ভাষা', 'programming language']),
-    ('Chapter 6: Database Management System', ['ডেটাবেজ ম্যানেজমেন্ট সিস্টেম', 'ডাটাবেজ ম্যানেজমেন্ট সিস্টেম', 'database management system']),
-]
+DEFAULT_CHAPTER = 'NCTB HSC ICT'
+
+CHAPTER_NAMES = {
+    1: 'Chapter 1: ICT - World & Bangladesh Perspective',
+    2: 'Chapter 2: Communication Systems & Networking',
+    3: 'Chapter 3: Number Systems & Digital Devices',
+    4: 'Chapter 4: Web Design & HTML',
+    5: 'Chapter 5: Programming Language (C)',
+    6: 'Chapter 6: Database Management System',
+}
+
+# Fallback only, for a document whose pages carry no "<ordinal> chapter" opener anywhere.
+CHAPTER_TITLE_KEYS = {
+    1: ['বিশ্ব ও বাংলাদেশ প্রেক্ষিত', 'world and bangladesh perspective'],
+    2: ['কমিউনিকেশন সিস্টেমস ও নেটওয়ার্কিং', 'communication systems and networking'],
+    3: ['সংখ্যা পদ্ধতি ও ডিজিটাল ডিভাইস', 'number systems and digital devices'],
+    4: ['ওয়েব ডিজাইন পরিচিতি এবং html', 'ওয়েব ডিজাইন পরিচিতি', 'introduction to web design and html', 'web design and html'],
+    5: ['প্রোগ্রামিং ভাষা', 'programming language'],
+    6: ['ডেটাবেজ ম্যানেজমেন্ট সিস্টেম', 'ডাটাবেজ ম্যানেজমেন্ট সিস্টেম', 'database management system'],
+}
+
+_BANGLA_ORDINALS = {'প্রথম': 1, 'দ্বিতীয়': 2, 'তৃতীয়': 3, 'চতুর্থ': 4, 'পঞ্চম': 5, 'ষষ্ঠ': 6}
+_ENGLISH_ORDINALS = {'first': 1, 'second': 2, 'third': 3, 'fourth': 4, 'fifth': 5, 'sixth': 6}
+
+# A chapter opener is a short heading line, never a sentence. 60 characters comfortably fits
+# "চতুর্থ অধ্যায়" and "Fourth Chapter" while excluding the prose that used to match.
+HEADING_MAX_CHARS = 60
 
 INGEST_STATE = {
     'running': False, 'stage': 'idle', 'current_doc': '', 'done_pages': 0, 'total_pages': 0,
@@ -59,16 +85,27 @@ def cache_path(pdf_name):
     return OCR_DIR / (Path(pdf_name).stem + '.jsonl')
 
 
-def load_cache(pdf_name):
+def load_cache_records(pdf_name):
+    """page -> its most recent cache record. The cache is append-only, so a page that is
+    transcribed again simply appends and the newer record wins."""
     path = cache_path(pdf_name)
-    pages = {}
+    records = {}
     if path.exists():
         for line in path.read_text(encoding='utf-8').splitlines():
             if not line.strip():
                 continue
             rec = json.loads(line)
-            pages[int(rec['page'])] = rec['text']
-    return pages
+            records[int(rec['page'])] = rec
+    return records
+
+
+def load_cache(pdf_name):
+    return {page: rec.get('text') or '' for page, rec in load_cache_records(pdf_name).items()}
+
+
+def is_thin(text):
+    """True when a page transcribed to too little text to be a real page of the book."""
+    return len((text or '').strip()) < MIN_PAGE_CHARS
 
 
 def _append_cache(pdf_name, records, lock):
@@ -125,8 +162,11 @@ def _transcribe_batch(client, pdf_path, page_numbers, doc_language):
             f'Transcribe EVERY page verbatim in {lang_hint}, exactly as printed: headings, paragraphs, bullet lists, '
             'tables (as plain text rows), and all program code / HTML exactly. Do not summarize, translate, or add commentary. '
             'Skip page headers/footers, watermarks and website URLs. '
-            f'Label the pages sequentially as "=== PAGE {page_numbers[0]} ===" through "=== PAGE {page_numbers[-1]} ===" '
-            '(one label line before each page, in the given order, ignoring any printed page numbers). Output plain text only.'
+            # The labels are enumerated rather than given as a range because a retry batch collects
+            # scattered pages, so "PAGE 1 through PAGE 104" would describe 104 pages, not eight.
+            'Label each page with its own line, in this exact order: '
+            + ', '.join(f'"=== PAGE {p} ==="' for p in page_numbers) + '. '
+            'Ignore any page number printed on the page itself. Output plain text only.'
         )
         try:
             resp, model = gemini.generate_content([uploaded, prompt], {'temperature': 0.0})
@@ -140,8 +180,12 @@ def _transcribe_batch(client, pdf_path, page_numbers, doc_language):
             pass
 
 
-def ocr_pdf(pdf_name, page_range=None, workers=3):
-    """OCR the pages of one PDF that are not cached yet. Returns dict page->text for the whole cache."""
+def ocr_pdf(pdf_name, page_range=None, workers=3, retry_empty=False):
+    """OCR the pages of one PDF that are not cached yet. Returns dict page->text for the whole cache.
+
+    With retry_empty, pages already cached as near-empty are sent back to the model instead of
+    counting as done - without it a page the model returned nothing for stays blank for ever.
+    """
     from pypdf import PdfReader
     pdf_path = RAG_DIR / pdf_name
     if not pdf_path.exists():
@@ -152,10 +196,16 @@ def ocr_pdf(pdf_name, page_range=None, workers=3):
 
     total = len(PdfReader(str(pdf_path)).pages)
     lo, hi = (1, total) if not page_range else (max(1, page_range[0]), min(total, page_range[1]))
-    cached = load_cache(pdf_name)
-    todo = [p for p in range(lo, hi + 1) if p not in cached]
+    records = load_cache_records(pdf_name)
+    cached = {p: rec.get('text') or '' for p, rec in records.items()}
+    thin = set()
+    if retry_empty:
+        thin = {p for p, rec in records.items()
+                if is_thin(rec.get('text')) and int(rec.get('attempt') or 1) < MAX_OCR_ATTEMPTS}
+    todo = [p for p in range(lo, hi + 1) if p not in cached or p in thin]
     _set(current_doc=pdf_name, total_pages=hi - lo + 1, done_pages=(hi - lo + 1) - len(todo))
-    _log(f'{pdf_name}: {total} pages, {len(cached)} cached, {len(todo)} to OCR')
+    _log(f'{pdf_name}: {total} pages, {len(cached)} cached, {len(todo)} to OCR'
+         + (f' ({len(thin)} cached-but-empty being retried)' if thin else ''))
     if not todo:
         return cached
 
@@ -164,8 +214,34 @@ def ocr_pdf(pdf_name, page_range=None, workers=3):
     lock = threading.Lock()
 
     def work(batch):
-        pages = _transcribe_batch(client, pdf_path, batch, lang)
-        _append_cache(pdf_name, [{'page': p, 'text': pages[p]} for p in batch], lock)
+        """Transcribe one batch, halving it and retrying if the request is rejected as a whole.
+
+        Some scanned pages are heavy enough that a batch containing them is refused with 503 while
+        the same pages succeed one at a time. Splitting recovers them instead of leaving them blank,
+        and returns the pages actually transcribed so a partial recovery is not counted as a loss.
+        """
+        try:
+            pages = _transcribe_batch(client, pdf_path, batch, lang)
+        except Exception:
+            if len(batch) == 1:
+                raise
+            mid = len(batch) // 2
+            done, errors = [], []
+            for half in (batch[:mid], batch[mid:]):
+                try:
+                    done.extend(work(half))
+                except Exception as sub_error:
+                    errors.append(sub_error)
+            if not done:
+                raise errors[0]
+            if errors:
+                _log(f'{pdf_name}: pages {batch[0]}-{batch[-1]} partly recovered by splitting ({len(done)}/{len(batch)})')
+            return done
+        _append_cache(pdf_name, [{
+            'page': p,
+            'text': pages[p],
+            'attempt': int(records.get(p, {}).get('attempt') or 0) + 1,
+        } for p in batch], lock)
         return batch
 
     failed, consecutive_failures = [], 0
@@ -174,7 +250,7 @@ def ocr_pdf(pdf_name, page_range=None, workers=3):
         for fut in as_completed(futures):
             batch = futures[fut]
             try:
-                fut.result()
+                done_pages = fut.result()
             except Exception as e:
                 failed.append(batch)
                 consecutive_failures += 1
@@ -186,21 +262,113 @@ def ocr_pdf(pdf_name, page_range=None, workers=3):
                 continue
             consecutive_failures = 0
             with _state_lock:
-                INGEST_STATE['done_pages'] += len(batch)
+                INGEST_STATE['done_pages'] += len(done_pages)
             _log(f'{pdf_name}: OCR pages {batch[0]}-{batch[-1]} done ({INGEST_STATE["done_pages"]}/{INGEST_STATE["total_pages"]})')
     if failed:
         with _state_lock:
             INGEST_STATE['warnings'].append(f'{pdf_name}: {sum(len(b) for b in failed)} page(s) not OCRed yet')
-    return load_cache(pdf_name)
+    final = load_cache(pdf_name)
+    still_thin = sorted(p for p in range(lo, hi + 1) if p in final and is_thin(final[p]))
+    if still_thin:
+        msg = f'{pdf_name}: {len(still_thin)} page(s) transcribed to almost nothing: {still_thin[:12]}'
+        _log(msg)
+        with _state_lock:
+            INGEST_STATE['warnings'].append(msg)
+    return final
+
+
+# ---------------------------------------------------------------- chapter structure
+def _norm(text):
+    """NFC, lowercased, with markdown decoration stripped.
+
+    The model returns Bangla in whichever normalisation it likes: 'য়' arrives both precomposed
+    (U+09DF) and decomposed (U+09AF U+09BC), and it sometimes wraps a heading in asterisks. Raw
+    string comparison therefore misses real headings, which is how chapters 4-6 lost their labels.
+    """
+    text = unicodedata.normalize('NFC', text or '').lower()
+    return re.sub(r'[*_#`>|]+', ' ', text)
+
+
+def _build_openers():
+    pats = []
+    for word, num in _BANGLA_ORDINALS.items():
+        pats.append((num, re.compile(_norm(word) + r'\s+' + _norm('অধ্যায়'))))
+    for word, num in _ENGLISH_ORDINALS.items():
+        pats.append((num, re.compile(r'\b' + word + r'\s+chapter\b')))
+    for num in CHAPTER_NAMES:
+        pats.append((num, re.compile(r'\bchapter\s*[-:–]?\s*0?' + str(num) + r'\b')))
+    return pats
+
+
+_CHAPTER_OPENERS = _build_openers()
+
+
+def _heading_lines(page_text, limit=6):
+    for raw in (page_text or '').splitlines()[:limit]:
+        line = _norm(raw).strip()
+        if line and len(line) <= HEADING_MAX_CHARS:
+            yield line
+
+
+def chapter_start(page_text):
+    """The chapter number this page opens, or None.
+
+    Only a short heading line counts. Page 122 of the Bangla book calls Javascript "the most
+    popular programming language" in the middle of a paragraph; that must not open Chapter 5.
+    """
+    for line in _heading_lines(page_text):
+        for num, pattern in _CHAPTER_OPENERS:
+            if pattern.search(line):
+                return num
+    return None
+
+
+def chapter_by_title(page_text):
+    """The chapter whose printed title heads this page, or None."""
+    for line in _heading_lines(page_text, limit=5):
+        for num, keys in CHAPTER_TITLE_KEYS.items():
+            if any(_norm(k) in line for k in keys):
+                return num
+    return None
+
+
+def chapter_spans(pages):
+    """Map every cached page number to its chapter name, resolved over the document as a whole.
+
+    A chapter runs from the page that opens it to the page before the next one opens, so a page is
+    labelled by the structure of the book rather than by whatever the preceding page happened to
+    mention. Chapter numbers only move forward: a cross-reference cannot reopen a chapter that has
+    already been seen, and cannot wind the book back to an earlier one.
+    """
+    ordered = sorted(p for p in pages if isinstance(p, int))
+    starts = []
+    for finder in (chapter_start, chapter_by_title):
+        seen, highest = set(), 0
+        for p in ordered:
+            num = finder(pages[p])
+            if num is None or num in seen or num < highest:
+                continue
+            starts.append((p, num))
+            seen.add(num)
+            highest = num
+        if starts:
+            break
+    spans, idx, current = {}, 0, DEFAULT_CHAPTER
+    for p in ordered:
+        while idx < len(starts) and starts[idx][0] <= p:
+            current = CHAPTER_NAMES[starts[idx][1]]
+            idx += 1
+        spans[p] = current
+    return spans
+
+
+def detect_chapter(page_text, previous):
+    """Single-page fallback kept for callers that have no whole-document view."""
+    num = chapter_start(page_text) or chapter_by_title(page_text)
+    return CHAPTER_NAMES[num] if num else previous
 
 
 # ---------------------------------------------------------------- chunk + index
-def detect_chapter(page_text, previous):
-    head = '\n'.join(page_text.splitlines()[:4]).lower()
-    for name, keys in CHAPTERS:
-        if any(k in head for k in keys):
-            return name
-    return previous
 
 
 def chunk_page(text, max_words=170, overlap_words=25):
@@ -226,15 +394,19 @@ def index_pdf_cache(pdf_name, page_range=None, reindex=False):
     if not pages:
         return 0
     stem = Path(pdf_name).stem.replace(' ', '_')
-    chapter = 'NCTB HSC ICT'
-    pending, indexed, skipped = [], 0, 0
+    chapters = chapter_spans(pages)
+    pending, indexed, skipped, relabelled = [], 0, 0, 0
 
     def flush():
-        nonlocal pending, indexed, skipped
+        nonlocal pending, indexed, skipped, relabelled
         if not pending:
             return True
         if not reindex:
             already = rag_engine_instance.existing_ids([it['id'] for it in pending])
+            # Chapter labels are recomputed from the whole document on every run, so a chunk that is
+            # already indexed can still be carrying a wrong one. Refreshing its metadata costs no
+            # embedding call, so a resumed run repairs the pages it skips.
+            relabelled += rag_engine_instance.update_metadata([it for it in pending if it['id'] in already])
             skipped += len(already)
             pending = [it for it in pending if it['id'] not in already]
         try:
@@ -254,7 +426,7 @@ def index_pdf_cache(pdf_name, page_range=None, reindex=False):
         if page_range and not (page_range[0] <= page <= page_range[1]):
             continue
         text = pages[page]
-        chapter = detect_chapter(text, chapter)
+        chapter = chapters.get(page, DEFAULT_CHAPTER)
         for idx, chunk in enumerate(chunk_page(text)):
             chroma_id = f'{stem}_p{page}_c{idx + 1}'
             source_ref = f'{info["short"]} p.{page}'
@@ -275,11 +447,11 @@ def index_pdf_cache(pdf_name, page_range=None, reindex=False):
             if len(pending) >= 32 and not flush():
                 return indexed
     flush()
-    _log(f'{pdf_name}: indexed {indexed} new chunks ({skipped} already indexed)')
+    _log(f'{pdf_name}: indexed {indexed} new chunks ({skipped} already indexed, {relabelled} relabelled)')
     return indexed
 
 
-def run_ingest(pdf_names=None, page_range=None, workers=3, ocr=True, reindex=False):
+def run_ingest(pdf_names=None, page_range=None, workers=3, ocr=True, reindex=False, retry_empty=False):
     pdf_names = pdf_names or [n for n in DOCS if (RAG_DIR / n).exists()]
     _set(running=True, stage='starting', error=None, warnings=[], started_at=time.time(), finished_at=None, indexed_chunks=0, done_pages=0, total_pages=0)
     total = 0
@@ -290,7 +462,7 @@ def run_ingest(pdf_names=None, page_range=None, workers=3, ocr=True, reindex=Fal
         for name in pdf_names:
             if ocr:
                 _set(stage=f'ocr:{name}')
-                ocr_pdf(name, page_range=page_range, workers=workers)
+                ocr_pdf(name, page_range=page_range, workers=workers, retry_empty=retry_empty)
             _set(stage=f'index:{name}')
             total += index_pdf_cache(name, page_range=page_range, reindex=reindex)
         _set(stage='done')

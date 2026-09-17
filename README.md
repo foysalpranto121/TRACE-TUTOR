@@ -254,10 +254,26 @@ cd backend
 python manage.py ingest_rag                       # everything
 python manage.py ingest_rag --pages 140-170       # a page range
 python manage.py ingest_rag --index-only          # skip OCR, index the cache
+python manage.py ingest_rag --retry-empty         # re-OCR pages that transcribed to nothing
 python manage.py ingest_rag --reindex             # rebuild the vector index
 ```
 
 OCR output is cached per page in `backend/data/ocr/*.jsonl`, so a run that stops — quota, network, restart — resumes where it left off rather than re-spending API calls. Progress is visible at `/admin/rag` in the app, or via `GET /api/curriculum/status/`.
+
+Two things a resumed run repairs by itself, because a half-finished index is the normal state on a
+free API tier:
+
+- **Chapter labels are recomputed from the whole document, not carried forward page by page.** A
+  chapter runs from the page that opens it to the page before the next one opens, so prose that
+  merely mentions another chapter's title cannot relabel everything after it. Chunks already in the
+  index have their metadata corrected on the next run, which costs no embedding call.
+- **Pages the model returned nothing for are visible and retryable.** They are reported as a warning
+  rather than silently counting as done, and `--retry-empty` sends them back. A batch the API
+  refuses as a whole is split and retried down to single pages, which is what recovers the heavier
+  scans; each page is retried at most twice so a genuinely blank page is not re-requested for ever.
+
+`--reindex` empties the index before rebuilding, so on a metered key prefer a plain re-run: chunk ids
+are deterministic, so it upserts in place and never leaves you with less than you started with.
 
 Until the index is built the tutor still answers, using keyword retrieval over seed passages, and marks its answers as ungrounded.
 
@@ -486,7 +502,7 @@ Active research software, not a finished product.
 | Expert portal | Rating interface working; CVI computation in progress |
 | Researcher dashboard | Working — real aggregates, Welch's *t* and Cohen's *d* computed from the data |
 | Dataset export | Working — `GET /api/admin/export/` streams one pseudonymous row per participant |
-| Access control and rate limiting | Working; 214 backend tests cover the gates |
+| Access control and rate limiting | Working; 401 backend tests cover the gates |
 | Code-runner sandboxing | Working — container tier with rlimit fallback, and refuses to run unprotected |
 | Deployment | Working — one process serves the API, the built app and avatars; health probe; see [Deploying](#deploying) |
 

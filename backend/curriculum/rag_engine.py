@@ -82,6 +82,24 @@ class RAGEngine:
         )
         return len(items)
 
+    def update_metadata(self, items):
+        """Refresh the metadata of chunks that are already indexed, leaving their vectors alone.
+
+        Chroma's update accepts metadata without embeddings, so correcting a label costs no API
+        call - which is what makes it safe to repair the index on a resumed run.
+        """
+        if not items:
+            return 0
+        try:
+            self.collection().update(
+                ids=[it['id'] for it in items],
+                metadatas=[it['metadata'] for it in items],
+            )
+            return len(items)
+        except Exception as e:
+            logger.warning(f'Metadata refresh failed for {len(items)} chunks: {e}')
+            return 0
+
     def clear_index(self):
         try:
             import chromadb
