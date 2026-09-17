@@ -1,7 +1,6 @@
 from django.contrib import admin
-from django.urls import path
-from django.conf import settings
-from django.conf.urls.static import static
+from django.urls import path, re_path
+from trace_backend import views as site_views
 from accounts import views as accounts_views
 from tutor import views as tutor_views
 from logging_app import views as logging_views
@@ -9,8 +8,12 @@ from assessment import views as assessment_views
 from curriculum import views as curriculum_views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    
+    # Not at admin/: the React app owns /admin (researcher dashboard) and /admin/rag.
+    path('django-admin/', admin.site.urls),
+
+    # Liveness probe for a supervisor or uptime monitor; the one unauthenticated GET.
+    path('api/health/', site_views.health, name='health'),
+
     # Accounts, authentication & research profile
     path('api/accounts/register/', accounts_views.register_view, name='register'),
     path('api/accounts/login/', accounts_views.login_view, name='login'),
@@ -56,7 +59,17 @@ urlpatterns = [
     path('api/expert/certification/', assessment_views.certification_report, name='certification_report'),
 ]
 
-# Avatars. Django serves them itself in development, and in a single-site lab
-# deployment that sets SERVE_MEDIA=1; put a real file server in front otherwise.
-if settings.SERVE_MEDIA:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Avatars. Django serves them itself in development, and in a single-site lab deployment
+# that sets SERVE_MEDIA=1; put a real file server in front otherwise. The view checks the
+# flag per request (django.conf.urls.static.static() is a no-op whenever DEBUG is off).
+urlpatterns += [re_path(r'^media/(?P<path>.*)$', site_views.media_file, name='media')]
+
+# Everything that is not the API, the admin, a static file or an upload is a client-side
+# route of the React app: return its shell and let the router take it from there. A path
+# with a file extension is a missing file, not a route, and stays a 404 so a stale bundle
+# name fails loudly instead of being answered with HTML. The extension test tolerates a
+# trailing slash, or APPEND_SLASH would redirect /favicon.svg to /favicon.svg/ and serve it.
+urlpatterns += [
+    re_path(r'^(?!api/|django-admin/|media/|static/|assets/)(?!.*\.[A-Za-z0-9]+/?$).*$',
+            site_views.spa_index, name='spa'),
+]

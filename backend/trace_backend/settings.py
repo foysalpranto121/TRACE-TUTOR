@@ -52,8 +52,11 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    # whitenoise serves static files under runserver too, so development and the deployed
+    # server take the same path. Must precede django.contrib.staticfiles.
+    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-    
+
     # Third party apps
     'rest_framework',
     'rest_framework.authtoken',
@@ -70,6 +73,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'trace_backend.middleware.TraceCookiesMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -99,47 +103,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'trace_backend.wsgi.application'
 
-# Database Setup: PostgreSQL with fallback to SQLite
-DB_NAME = os.environ.get('DB_NAME', 'trace_tutor_db')
-DB_USER = os.environ.get('DB_USER', 'postgres')
-DB_PASSWORD = os.environ.get('DB_PASSWORD', 'postgres')
-DB_HOST = os.environ.get('DB_HOST', 'localhost')
-DB_PORT = os.environ.get('DB_PORT', '5432')
-
-if os.environ.get('USE_POSTGRES') == '1':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': DB_NAME,
-            'USER': DB_USER,
-            'PASSWORD': DB_PASSWORD,
-            'HOST': DB_HOST,
-            'PORT': DB_PORT,
-            # Reuse connections across requests; fail fast if the server is down instead of hanging a request.
-            'CONN_MAX_AGE': 60,
-            'CONN_HEALTH_CHECKS': True,
-            'OPTIONS': {'connect_timeout': 10},
-        }
+# Database: PostgreSQL, and nothing else. Registration takes a row lock to keep the arms
+# balanced (accounts/models.py), grading runs on background threads while a whole cohort
+# submits inside the same minute, and the RAG ingest writes while requests read. The
+# earlier SQLite fallback lost rows under that load, so there is no fallback: the same
+# engine in development, in tests and for a live cohort.
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME', 'trace_tutor_db'),
+        'USER': os.environ.get('DB_USER', 'postgres'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
+        # Reuse connections across requests; fail fast if the server is down instead of hanging a request.
+        'CONN_MAX_AGE': 60,
+        'CONN_HEALTH_CHECKS': True,
+        'OPTIONS': {'connect_timeout': 10},
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-            'OPTIONS': {'timeout': 30},
-        }
-    }
-
-    # WAL lets the background RAG ingest write while request threads read, instead of "database is locked".
-    from django.db.backends.signals import connection_created
-
-    def _sqlite_pragmas(sender, connection, **kwargs):
-        if connection.vendor == 'sqlite':
-            with connection.cursor() as cursor:
-                cursor.execute('PRAGMA journal_mode=WAL;')
-                cursor.execute('PRAGMA busy_timeout=30000;')
-
-    connection_created.connect(_sqlite_pragmas)
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 8}},
@@ -180,6 +162,28 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# ---------------------------------------------------------------------------
+# Serving the site. One process serves everything: whitenoise (in MIDDLEWARE) hands out
+# Django's own static files from STATIC_ROOT (`manage.py collectstatic`) and the
+# production build of the React app (`npm run build` in frontend/), and the catch-all
+# route in urls.py returns the app's index.html for every client-side path. No separate
+# web server is needed; put one in front only to terminate TLS.
+# ---------------------------------------------------------------------------
+FRONTEND_DIST = Path(os.environ.get('FRONTEND_DIST') or BASE_DIR.parent / 'frontend' / 'dist').resolve()
+# whitenoise warns at every start about a directory that does not exist, so only point
+# it at the build once there is one.
+WHITENOISE_ROOT = FRONTEND_DIST if FRONTEND_DIST.is_dir() else None
+
+
+def _is_immutable_asset(path, url):
+    # Vite writes a content hash into every bundle name (index-DKiTGwjo.js), so anything
+    # under /assets/ may be cached forever: a new build gets new names, and index.html
+    # itself is served by the catch-all view with no-cache so it always points at them.
+    return url.startswith('/assets/')
+
+
+WHITENOISE_IMMUTABLE_FILE_TEST = _is_immutable_asset
+
 # Uploaded files (profile avatars). Django serves these itself in DEBUG. A single-site
 # lab deployment can keep doing so with SERVE_MEDIA=1; anything internet-facing should
 # put a real file server in front instead.
@@ -217,6 +221,8 @@ if env_flag('BEHIND_TLS_PROXY', default=False):
 
 if HTTPS_ONLY:
     SECURE_SSL_REDIRECT = True
+    # A supervisor or uptime probe on the box itself speaks plain http to the port.
+    SECURE_REDIRECT_EXEMPT = [r'^api/health/$']
     SECURE_HSTS_SECONDS = 60 * 60 * 24 * 365
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
@@ -361,3 +367,32 @@ DEVICE_COOKIE_NAME = 'trace_device'
 DEVICE_COOKIE_AGE = 60 * 60 * 24 * 365
 LANG_COOKIE_NAME = 'trace_lang'
 LANG_COOKIE_AGE = 60 * 60 * 24 * 365
+
+# ---------------------------------------------------------------------------
+# Logging. Django's default configuration prints to the console only while DEBUG is on
+# and otherwise emails tracebacks to ADMINS, which are not configured, so with DEBUG=0 a
+# 500 during a live session would leave no trace anywhere. Everything goes to stderr
+# instead, with a timestamp, for the terminal or the process supervisor to keep.
+# ---------------------------------------------------------------------------
+LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO').strip().upper() or 'INFO'
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s %(levelname)s %(name)s: %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'standard'},
+    },
+    # The project's own loggers (tutor.sandbox, assessment.grading, ...) propagate here.
+    'root': {'handlers': ['console'], 'level': LOG_LEVEL},
+    'loggers': {
+        # Replaces Django's console+mail_admins pair: no DEBUG gate, no email. django.request
+        # (500 tracebacks) and django.security (DisallowedHost - the usual "why can't I reach
+        # the server" answer) both propagate to this one.
+        'django': {'handlers': ['console'], 'level': LOG_LEVEL, 'propagate': False},
+    },
+}

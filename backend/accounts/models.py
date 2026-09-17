@@ -96,10 +96,9 @@ class ParticipantProfile(models.Model):
         """Allocate a new student to the arm with fewer participants (ties broken at random).
 
         Call this inside a transaction (register_view does). The existing student rows
-        are locked for the duration where the database supports it, so two sign-ups
-        arriving together cannot both read the same counts and pick the same arm - which
-        would quietly skew the allocation the study depends on. SQLite has no row locks
-        but serialises write transactions outright, which gives the same guarantee.
+        are locked for the duration (SELECT ... FOR UPDATE), so two sign-ups arriving
+        together cannot both read the same counts and pick the same arm - which would
+        quietly skew the allocation the study depends on.
         """
         queryset = ParticipantProfile.objects.filter(role='STUDENT')
         if connection.features.has_select_for_update:

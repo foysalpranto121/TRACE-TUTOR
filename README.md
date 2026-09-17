@@ -28,6 +28,7 @@ It is built for the Bangladesh NCTB Higher Secondary ICT syllabus (Chapter 4 —
 - [API reference](#api-reference)
 - [Research design](#research-design)
 - [Security and deployment](#security-and-deployment)
+- [Deploying](#deploying)
 - [Project status](#project-status)
 - [Citation](#citation)
 
@@ -66,7 +67,7 @@ It is built for the Bangladesh NCTB Higher Secondary ICT syllabus (Chapter 4 —
 | Layer | Choice | Why |
 | --- | --- | --- |
 | API | Django 5 + Django REST Framework | Token auth, admin, ORM and migrations out of the box |
-| Database | PostgreSQL (SQLite fallback) | Concurrent writes during background ingestion; self-hosted so participant data stays local |
+| Database | PostgreSQL | Row locks for balanced allocation, concurrent writes during grading and background ingestion; self-hosted so participant data stays local |
 | Vector store | ChromaDB, embedded | No server to run, on-disk persistence, metadata filtering — right-sized for a few thousand passages |
 | LLM | Gemini Flash tier | Reliable JSON-mode output, strong Bangla, long context, version-pinnable |
 | Embeddings | `gemini-embedding-001`, 768-d | Bilingual coverage without a local GPU; query vectors cached 30 days |
@@ -83,7 +84,7 @@ It is built for the Bangladesh NCTB Higher Secondary ICT syllabus (Chapter 4 —
 
 - Python 3.11+
 - Node.js 18+
-- PostgreSQL 16+ *(optional — set `USE_POSTGRES=0` to use SQLite)*
+- PostgreSQL 16+
 - A Gemini API key
 
 ### 1. Backend
@@ -98,10 +99,11 @@ pip install -r requirements.txt
 pip install Pillow              # required for avatar uploads
 ```
 
-Create `backend/.env` from the template (see [Configuration](#configuration)), then:
+Create an empty PostgreSQL database (`createdb trace_tutor_db`, or pgAdmin), then create
+`backend/.env` from the template (see [Configuration](#configuration)) and run:
 
 ```bash
-cp .env.example .env            # then fill in GEMINI_API_KEY and STAFF_ACCESS_CODE
+cp .env.example .env            # fill in GEMINI_API_KEY, STAFF_ACCESS_CODE and the DB_* credentials
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver 8000
@@ -144,11 +146,12 @@ Copy `backend/.env.example` to `backend/.env` and fill it in. **Never commit `.e
 | `ALLOWED_HOSTS` | `localhost,127.0.0.1` | Comma-separated hostnames Django will answer to |
 | `HTTPS_ONLY` | `not DEBUG` | TLS-only cookies + http→https redirect. **Set `0` for a plain-http lab server** or nobody can log in. |
 | `BEHIND_TLS_PROXY` | `0` | Set when a reverse proxy terminates TLS and forwards `X-Forwarded-Proto` |
-| `SERVE_MEDIA` | `= DEBUG` | Let Django serve `backend/media/` (avatars) |
-| `CSRF_TRUSTED_ORIGINS` | `http://localhost:3000,...` | Comma-separated |
+| `SERVE_MEDIA` | `= DEBUG` | Let Django serve `backend/media/` (avatars). Set `1` on a lab server; it works with `DEBUG=0`. |
+| `FRONTEND_DIST` | `../frontend/dist` | The built React app, which Django serves itself (see [Deploying](#deploying)) |
+| `LOG_LEVEL` | `INFO` | Verbosity of the log on stderr. Request errors are logged with their traceback whatever `DEBUG` is. |
+| `CSRF_TRUSTED_ORIGINS` | `http://localhost:3000,...` | Comma-separated. The site's own origin once Django serves the app. |
 | `CORS_ALLOWED_ORIGINS` | *(= CSRF origins)* | Ignored when `DEBUG=1`, which allows all origins |
-| `USE_POSTGRES` | `0` | `1` for PostgreSQL, `0` for the SQLite fallback |
-| `DB_NAME` | `trace_tutor_db` | Database name |
+| `DB_NAME` | `trace_tutor_db` | PostgreSQL database name (the only supported engine) |
 | `DB_USER` / `DB_PASSWORD` | `postgres` / `postgres` | Credentials |
 | `DB_HOST` / `DB_PORT` | `localhost` / `5432` | Connection |
 | `GEMINI_MODEL` | `gemini-3.6-flash` | Generation model. Pin this for a study. |
@@ -201,11 +204,12 @@ The Submit latency there is the *test harness* - Django's single-process develop
 server serving 60 simultaneous requests; a do-nothing endpoint costs the same 4.6 s
 under that burst. Two deployment rules follow:
 
-- **Run a live cohort on PostgreSQL, not the SQLite fallback.** SQLite is fine for
-  development; under 30 concurrent submissions it lost rows.
-- **Serve with several web workers** (e.g. `gunicorn -w 4`, or `waitress --threads=8` on
-  Windows) and, on a shared server, `GRADING_MODE=worker` with the grading command in its
-  own process so compiles never contend with requests.
+- **PostgreSQL is the only database.** An earlier SQLite fallback lost rows under 30
+  concurrent submissions, so it was removed rather than left as a trap.
+- **Serve with several web threads or workers** (see [Deploying](#deploying): `waitress`
+  with `--threads=8`, or `gunicorn -w 4` on Linux) and, with several worker processes,
+  `GRADING_MODE=worker` with the grading command in its own process so compiles never
+  contend with requests.
 
 ### Before the real cohort
 
@@ -363,6 +367,107 @@ These are enforced server-side and covered by tests (`python manage.py test`):
 
 ---
 
+## Deploying
+
+One process serves the whole site. Django answers the API, serves the production build of
+the React app (whitenoise hands out the hashed bundles under `/assets/` with immutable
+caching, and a catch-all route returns the app shell for every client-side path) and, with
+`SERVE_MEDIA=1`, the uploaded avatars. A lab server therefore needs Python, Node for the
+build, PostgreSQL, and Docker for the code sandbox, and nothing else. Put a reverse proxy
+in front only to terminate TLS.
+
+### 1. Build
+
+```bash
+cd frontend && npm ci && npm run build                 # -> frontend/dist
+cd ../backend && pip install -r requirements.txt
+docker build -f tutor/sandbox.Dockerfile -t trace-tutor-runner:1 tutor
+```
+
+### 2. Configure
+
+Only `backend/.env` should exist on the server (a `.env` at the repository root is read
+too, and the backend one wins wherever both set a key). The minimum for a plain-http lab
+network:
+
+```ini
+DEBUG=0
+SECRET_KEY=...                  # python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+GEMINI_API_KEY=...
+STAFF_ACCESS_CODE=...
+ALLOWED_HOSTS=lab-server.school.edu,192.168.1.50,127.0.0.1
+CSRF_TRUSTED_ORIGINS=http://lab-server.school.edu:8000,http://192.168.1.50:8000
+HTTPS_ONLY=0                    # closed network without TLS; see step 4 otherwise
+SERVE_MEDIA=1
+DB_NAME=trace_tutor_db
+DB_USER=...
+DB_PASSWORD=...
+```
+
+Keep `127.0.0.1` in `ALLOWED_HOSTS` so the health probe below works from the box itself.
+
+### 3. Prepare and start
+
+```bash
+cd backend
+python manage.py migrate                    # also creates the persistent cache table
+python manage.py collectstatic --noinput    # admin and DRF assets -> backend/staticfiles/
+python manage.py check --deploy             # must report no issues
+python -m waitress --listen=0.0.0.0:8000 --threads=8 trace_backend.wsgi:application
+```
+
+`waitress` behaves the same on Windows and Linux. `gunicorn -w 4 trace_backend.wsgi` is
+fine on Linux too; with several worker processes set `GRADING_MODE=worker` and run
+`python manage.py grade_submissions` alongside so every compile happens in one place.
+
+Then, from the server:
+
+```bash
+curl http://127.0.0.1:8000/api/health/      # {"status": "ok", "database": "ok"}
+```
+
+Sign in and confirm that `GET /api/code/status/` reports the `docker` tier before letting a
+cohort in; if Docker was not running, the endpoint refuses to execute code rather than run
+it unprotected. The site is at `http://lab-server.school.edu:8000/`. The Django admin is at
+`/django-admin/`, because the app itself owns `/admin`.
+
+Run waitress under something that restarts it and keeps its stderr: NSSM or a Scheduled
+Task on Windows, systemd on Linux. Every request error is logged there with its traceback,
+timestamped, whatever `DEBUG` is set to; `LOG_LEVEL` controls the rest.
+
+### 4. TLS
+
+For anything beyond a closed lab network, put [Caddy](https://caddyserver.com/) in front;
+it obtains and renews certificates itself:
+
+```caddyfile
+lab-server.school.edu {
+    reverse_proxy 127.0.0.1:8000
+}
+```
+
+In `backend/.env` drop `HTTPS_ONLY=0`, set `BEHIND_TLS_PROXY=1` and switch
+`CSRF_TRUSTED_ORIGINS` to the `https://` origin. Start waitress trusting the proxy,
+otherwise it strips the forwarded headers and every request is redirected to https forever:
+
+```bash
+python -m waitress --listen=127.0.0.1:8000 --threads=8 --trusted-proxy=127.0.0.1 --trusted-proxy-headers="x-forwarded-for x-forwarded-proto" trace_backend.wsgi:application
+```
+
+### Updating
+
+`git pull`, rebuild the frontend, `pip install -r requirements.txt`, then `migrate`,
+`collectstatic` and restart waitress. Bundle names change with every build and the app
+shell is never cached, so browsers pick up the new version on their next load.
+
+### Development is unchanged
+
+`runserver` plus the Vite dev server on port 3000 work as in [Quick start](#quick-start):
+the dev server proxies `/api` and `/media` and serves the app itself. With no build
+present, `http://localhost:8000/` answers with a note saying so.
+
+---
+
 ## Project status
 
 Active research software, not a finished product.
@@ -377,6 +482,7 @@ Active research software, not a finished product.
 | Dataset export | Working — `GET /api/admin/export/` streams one pseudonymous row per participant |
 | Access control and rate limiting | Working; 214 backend tests cover the gates |
 | Code-runner sandboxing | Working — container tier with rlimit fallback, and refuses to run unprotected |
+| Deployment | Working — one process serves the API, the built app and avatars; health probe; see [Deploying](#deploying) |
 
 ---
 

@@ -14,7 +14,7 @@ django-cors-headers==4.9.0
 python-dotenv==1.2.2
 
 # --- database ----------------------------------------------------------------
-psycopg2-binary==2.9.12        # PostgreSQL driver; unused when USE_POSTGRES=0
+psycopg2-binary==2.9.12        # PostgreSQL driver (the only database engine)
 
 # --- model client, retrieval -------------------------------------------------
 google-genai==2.23.0           # tutor generation, OCR transcription, embeddings
@@ -30,3 +30,7 @@ beautifulsoup4==4.15.0         # CSS-selector checks against submitted HTML
 
 # --- media -------------------------------------------------------------------
 pillow==12.2.0                 # avatar upload: EXIF transpose, square crop, WebP encode
+
+# --- serving -----------------------------------------------------------------
+waitress==3.0.2                # production WSGI server; Windows and Linux alike (see README, Deploying)
+whitenoise==6.12.0             # serves the built React app and Django's own static files
