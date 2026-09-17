@@ -7,6 +7,8 @@ single opt-in test that skips when no toolchain is installed.
 import os
 import shutil
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.test import SimpleTestCase
@@ -17,7 +19,7 @@ from trace_backend.test_utils import ApiTestCase
 
 from accounts.models import ParticipantProfile
 from logging_app.models import InteractionLog
-from trace_backend import gemini
+from trace_backend import gemini, llm
 from tutor import runner
 
 
@@ -270,6 +272,189 @@ class ModelConfigTests(SimpleTestCase):
         self.assertEqual(gemini.generation_temperature(), 0.0)
 
 
+class GeminiJsonTests(SimpleTestCase):
+    """A tutor turn used to degrade to the textbook-only fallback whenever the model's
+    JSON was off by one character - typically a quote inside a printf. The model is now
+    held to a schema, and what still slips through is repaired rather than discarded."""
+
+    def test_clean_json_is_parsed_as_is(self):
+        self.assertEqual(gemini.parse_json_response('{"a": 1}'), {'a': 1})
+
+    def test_a_code_fence_around_the_object_is_ignored(self):
+        self.assertEqual(gemini.parse_json_response('```json\n{"a": 1}\n```'), {'a': 1})
+
+    def test_an_unescaped_quote_inside_a_program_is_repaired(self):
+        raw = '{"code_solution": "printf("Sum = %d\\n", sum);", "direct_answer": "ok"}'
+        parsed = gemini.parse_json_response(raw)
+        self.assertEqual(parsed['code_solution'], 'printf("Sum = %d\n", sum);')
+        self.assertEqual(parsed['direct_answer'], 'ok')
+
+    def test_a_quote_before_a_variable_that_looks_like_a_json_literal_is_repaired(self):
+        # `n` could begin `null` and `5` could be a number: neither is, so the quote
+        # before them is part of the program, not the end of the JSON string.
+        raw = '{"code": "scanf("%d", &n); printf("%d", n); printf("%d", 5);", "k": true}'
+        parsed = gemini.parse_json_response(raw)
+        self.assertEqual(parsed['code'], 'scanf("%d", &n); printf("%d", n); printf("%d", 5);')
+        self.assertIs(parsed['k'], True)
+
+    def test_a_raw_newline_inside_a_string_is_repaired(self):
+        raw = '{"code_solution": "int main() {\n  return 0;\n}"}'
+        parsed = gemini.parse_json_response(raw)
+        self.assertEqual(parsed['code_solution'], 'int main() {\n  return 0;\n}')
+
+    def test_a_trailing_comma_and_surrounding_prose_are_repaired(self):
+        raw = 'Here you go:\n{"a": [1, 2,], "b": "x",}\nHope this helps.'
+        self.assertEqual(gemini.parse_json_response(raw), {'a': [1, 2], 'b': 'x'})
+
+    def test_something_that_is_not_json_at_all_is_reported(self):
+        with self.assertRaises(ValueError):
+            gemini.parse_json_response('The answer is 42.')
+
+    def test_an_empty_reply_is_reported(self):
+        with self.assertRaises(RuntimeError):
+            gemini.parse_json_response('')
+
+    def test_generate_json_holds_the_model_to_the_schema(self):
+        seen = {}
+
+        def fake_generate_content(contents, config, retries_per_model=2):
+            seen.update(config)
+            return SimpleNamespace(text='{"x": 1}'), 'pinned-model'
+
+        with patch.object(gemini, 'generate_content', fake_generate_content):
+            parsed, model = gemini.generate_json('sys', 'user', schema={'type': 'object'})
+        self.assertEqual((parsed, model), ({'x': 1}, 'pinned-model'))
+        self.assertEqual(seen['response_json_schema'], {'type': 'object'})
+        self.assertEqual(seen['response_mime_type'], 'application/json')
+
+    def test_the_tutor_schema_is_one_the_sdk_accepts(self):
+        from google.genai import types
+        from tutor.views import TUTOR_RESPONSE_SCHEMA
+        config = types.GenerateContentConfig(response_json_schema=TUTOR_RESPONSE_SCHEMA,
+                                             response_mime_type='application/json')
+        self.assertEqual(config.response_json_schema['required'],
+                         ['rag_answer', 'independent_ai_answer', 'direct_answer'])
+        self.assertIn('chat_answer', config.response_json_schema['properties']['independent_ai_answer']['required'])
+
+
+class _ApiError(Exception):
+    """Stands in for the OpenAI SDK's status errors: a message plus a status_code."""
+
+    def __init__(self, message, status_code):
+        super().__init__(message)
+        self.status_code = status_code
+
+
+def _completion(text, refusal=None):
+    return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=text, refusal=refusal))])
+
+
+class LlmProviderTests(SimpleTestCase):
+    """The tutor can be served by OpenAI or Gemini behind one call. The provider, the
+    model and the temperature are study configuration, so they are decided by the
+    environment alone, and the OpenAI path holds the model to the same schema."""
+
+    def _client(self, create):
+        return patch.object(llm, '_openai_client',
+                            SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create))))
+
+    def test_auto_picks_openai_only_when_its_key_is_configured(self):
+        with patch.dict(os.environ, {'LLM_PROVIDER': 'auto', 'OPENAI_API_KEY': 'sk-test'}):
+            self.assertEqual(llm.provider(), 'openai')
+        with patch.dict(os.environ, {'LLM_PROVIDER': 'auto', 'OPENAI_API_KEY': ''}):
+            self.assertEqual(llm.provider(), 'gemini')
+
+    def test_an_explicit_provider_wins_over_the_key(self):
+        with patch.dict(os.environ, {'LLM_PROVIDER': 'gemini', 'OPENAI_API_KEY': 'sk-test'}):
+            self.assertEqual(llm.provider(), 'gemini')
+
+    def test_the_openai_model_is_pinned_by_the_environment(self):
+        with patch.dict(os.environ, {'LLM_PROVIDER': 'openai', 'OPENAI_MODEL': 'gpt-pinned',
+                                     'OPENAI_FALLBACK_MODELS': 'gpt-backup, gpt-pinned'}):
+            self.assertEqual(llm.model_name(), 'gpt-pinned')
+            self.assertEqual(llm.model_chain(), ['gpt-pinned', 'gpt-backup'])
+
+    def test_strict_schema_closes_every_object_without_touching_the_original(self):
+        from tutor.views import TUTOR_RESPONSE_SCHEMA
+        strict = llm.strict_schema(TUTOR_RESPONSE_SCHEMA)
+        self.assertIs(strict['additionalProperties'], False)
+        self.assertIs(strict['properties']['independent_ai_answer']['additionalProperties'], False)
+        self.assertNotIn('additionalProperties', TUTOR_RESPONSE_SCHEMA)
+        self.assertEqual(strict['properties']['rag_answer']['required'],
+                         list(TUTOR_RESPONSE_SCHEMA['properties']['rag_answer']['properties']))
+
+    def test_openai_is_held_to_the_schema_and_its_json_is_parsed(self):
+        seen = {}
+
+        def create(**kwargs):
+            seen.update(kwargs)
+            return _completion('{"x": 1}')
+
+        with patch.dict(os.environ, {'LLM_PROVIDER': 'openai', 'OPENAI_API_KEY': 'sk-test',
+                                     'OPENAI_MODEL': 'gpt-pinned', 'LLM_TEMPERATURE': '0'}), self._client(create):
+            parsed, model = llm.generate_json('sys', 'user', schema={'type': 'object', 'properties': {'x': {'type': 'integer'}}})
+        self.assertEqual((parsed, model), ({'x': 1}, 'gpt-pinned'))
+        self.assertEqual(seen['messages'], [{'role': 'system', 'content': 'sys'}, {'role': 'user', 'content': 'user'}])
+        self.assertEqual(seen['temperature'], 0.0)
+        fmt = seen['response_format']
+        self.assertEqual(fmt['type'], 'json_schema')
+        self.assertIs(fmt['json_schema']['strict'], True)
+        self.assertIs(fmt['json_schema']['schema']['additionalProperties'], False)
+
+    def test_a_model_that_rejects_temperature_is_retried_without_it_and_remembered(self):
+        calls = []
+
+        def create(**kwargs):
+            calls.append(dict(kwargs))
+            if 'temperature' in kwargs:
+                raise _ApiError("Unsupported parameter: 'temperature' is not supported with this model.", 400)
+            return _completion('{"ok": true}')
+
+        with patch.dict(os.environ, {'LLM_PROVIDER': 'openai', 'OPENAI_API_KEY': 'sk-test', 'LLM_TEMPERATURE': '0',
+                                     'OPENAI_MODEL': 'gpt-no-temp'}), \
+                self._client(create), patch.dict(llm._rejected_params, {}, clear=True):
+            parsed, _ = llm.generate_json('sys', 'user', schema={'type': 'object'})
+            llm.generate_json('sys', 'user again', schema={'type': 'object'})
+            self.assertEqual(llm.rejected_parameters(), {'gpt-no-temp': ['temperature']},
+                             'the manifest must say the configured temperature was not applied')
+        self.assertEqual(parsed, {'ok': True})
+        self.assertEqual(len(calls), 3, 'first call: reject + retry; second call: no retry needed')
+        self.assertNotIn('temperature', calls[1])
+        self.assertNotIn('temperature', calls[2])
+
+    def test_quota_errors_move_to_the_next_model_and_then_fail_honestly(self):
+        calls = []
+
+        def create(**kwargs):
+            calls.append(kwargs['model'])
+            raise _ApiError('rate_limit_exceeded', 429)
+
+        with patch.dict(os.environ, {'LLM_PROVIDER': 'openai', 'OPENAI_API_KEY': 'sk-test', 'OPENAI_MODEL': 'gpt-a',
+                                     'OPENAI_FALLBACK_MODELS': 'gpt-b'}), self._client(create), \
+                patch.object(llm.time, 'sleep', lambda s: None):
+            with self.assertRaises(RuntimeError):
+                llm.generate_json('sys', 'user', schema={'type': 'object'})
+        self.assertEqual(calls, ['gpt-a', 'gpt-a', 'gpt-b', 'gpt-b'])
+
+    def test_a_refusal_is_an_error_not_an_answer(self):
+        with patch.dict(os.environ, {'LLM_PROVIDER': 'openai', 'OPENAI_API_KEY': 'sk-test'}), \
+                self._client(lambda **kw: _completion(None, refusal='I cannot help with that.')):
+            with self.assertRaises(RuntimeError):
+                llm.generate_json('sys', 'user', schema={'type': 'object'})
+
+    def test_the_gemini_provider_still_goes_through_gemini(self):
+        seen = {}
+
+        def fake(system_instruction, contents, temperature=None, schema=None):
+            seen.update(schema=schema, temperature=temperature)
+            return {'g': 1}, 'gemini-pinned'
+
+        with patch.dict(os.environ, {'LLM_PROVIDER': 'gemini', 'LLM_TEMPERATURE': '0'}), \
+                patch.object(gemini, 'generate_json', fake):
+            self.assertEqual(llm.generate_json('sys', 'user', schema={'type': 'object'}), ({'g': 1}, 'gemini-pinned'))
+        self.assertEqual(seen, {'schema': {'type': 'object'}, 'temperature': 0.0})
+
+
 class TutorArmTests(ApiTestCase):
     """The tutor is the manipulation. The control arm must never receive the reasoning
     trace or the retrieved passages, and the server - not the request body - decides which
@@ -326,3 +511,51 @@ class TutorArmTests(ApiTestCase):
                               format='json').json()
         self.assertEqual(answer['mode'], 'ANSWER_ONLY')
         self.assertNotIn('independent_ai_answer', answer)
+
+    # A reply in the shape the schema holds the model to - with the quote inside the
+    # printf left unescaped, which is exactly what used to sink the whole turn.
+    MODEL_REPLY = (
+        '{"rag_answer": {"textbook_rule": "A for loop repeats a block.", "curriculum_citation": "[1] p.1",'
+        ' "textbook_explanation": "The book says so.", "grounded": true},'
+        ' "independent_ai_answer": {"chat_answer": "Sure! Use a `for` loop:\\n\\n```c\\nfor (i = 1; i <= n; i++) sum += i;\\n```",'
+        ' "concept_applied": "for loop", "problem_breakdown": ["Read n", "Loop 1..n"],'
+        ' "pedagogical_justification": "Accumulate.",'
+        ' "code_solution": "#include <stdio.h>\\nint main() { printf("Sum = %d\\n", 15); return 0; }"},'
+        ' "direct_answer": "Loop from 1 to n and add."}'
+    )
+
+    def _with_model_reply(self, text):
+        """Serve `text` as the model's reply through the Gemini path, whatever provider
+        the local .env selects - the parse and repair steps are shared by both."""
+        def fake_generate_content(contents, config, retries_per_model=2):
+            return SimpleNamespace(text=text), 'pinned-model'
+        stack = patch.dict(os.environ, {'LLM_PROVIDER': 'gemini'})
+        stack.start()
+        self.addCleanup(stack.stop)
+        return patch.object(gemini, 'generate_content', fake_generate_content)
+
+    def test_the_treatment_arm_receives_the_free_ai_answer_with_the_structured_reasoning(self):
+        with self._with_model_reply(self.MODEL_REPLY):
+            answer = self.ask(self.treat_c).json()
+        self.assertEqual(answer['ai_status'], 'live')
+        indep = answer['independent_ai_answer']
+        self.assertTrue(indep['chat_answer'].startswith('Sure! Use a `for` loop'))
+        self.assertEqual(indep['problem_breakdown'], ['Read n', 'Loop 1..n'])
+        self.assertEqual(indep['code_solution'],
+                         '#include <stdio.h>\nint main() { printf("Sum = %d\n", 15); return 0; }',
+                         'an unescaped quote in the program no longer costs the turn')
+
+    def test_the_control_arm_never_sees_the_free_ai_answer(self):
+        with self._with_model_reply(self.MODEL_REPLY):
+            answer = self.ask(self.control_c).json()
+        self.assertEqual(answer['ai_status'], 'live')
+        self.assertNotIn('chat_answer', str(answer))
+        self.assertEqual(answer['direct_answer'], 'Loop from 1 to n and add.')
+
+    def test_the_view_the_student_asked_from_is_recorded(self):
+        with self._with_model_reply(self.MODEL_REPLY):
+            self.ask(self.treat_c, view='independent')
+            self.ask(self.treat_c, prompt='again', view='not-a-view')
+        views = [row.payload.get('view') for row in
+                 InteractionLog.objects.filter(user=self.treat, event_type='HELP_REQUEST').order_by('pk')]
+        self.assertEqual(views, ['independent', None])

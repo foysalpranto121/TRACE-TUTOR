@@ -90,7 +90,9 @@ export const Workspace = () => {
     });
   }, [arm, user, activeProblem.id]);
 
-  const handleRequestHelp = async (queryText) => {
+  // `extra` carries anything the panel knows that the server should record with the
+  // turn - today the view (dual / rag / independent) the question was asked from.
+  const handleRequestHelp = async (queryText, extra = {}) => {
     setTutorState({ isLoading: true, traceData: null, groundedPassage: null, error: null });
 
     // HELP_REQUEST is logged server-side in query_tutor now (with arm, paper, ai_status
@@ -106,6 +108,7 @@ export const Workspace = () => {
         problem_title: activeProblem.title,
         problem_description: activeProblem.description_en,
         compiler_output: compilerOutput,
+        ...extra,
       });
       setTutorState({ isLoading: false, traceData: res, groundedPassage: res.grounded_passage, error: null });
     } catch (err) {

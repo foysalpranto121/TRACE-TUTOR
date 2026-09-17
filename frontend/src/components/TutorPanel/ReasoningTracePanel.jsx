@@ -1,6 +1,13 @@
 import { useState } from 'react';
-import { Brain, BookOpen, Sparkles, CheckCircle2, Copy, Check, ChevronDown, ChevronUp, Layers, HelpCircle, ShieldCheck, AlertTriangle, FileText, Lock } from 'lucide-react';
+import { Brain, BookOpen, Sparkles, CheckCircle2, Copy, Check, ChevronDown, ChevronUp, Layers, HelpCircle, ShieldCheck, AlertTriangle, FileText, Lock, MessageSquare } from 'lucide-react';
 import { apiService } from '../../services/api';
+import { ChatMarkdown } from './ChatMarkdown';
+
+const PLACEHOLDERS = {
+  dual: 'Ask about your code, an error, or an NCTB concept...',
+  rag: 'Ask what the NCTB textbook says about this...',
+  independent: 'Ask the AI anything about your code or ICT - it answers on its own...',
+};
 
 export const ReasoningTracePanel = ({
   traceData,
@@ -27,7 +34,9 @@ export const ReasoningTracePanel = ({
   const handleHelpSubmit = (e) => {
     e.preventDefault();
     if (!queryText.trim()) return;
-    if (onRequestHelp) onRequestHelp(queryText);
+    // The view the question was asked from travels with it: the server records whether
+    // the student reached for the textbook answer or the free AI answer.
+    if (onRequestHelp) onRequestHelp(queryText, { view: viewTab });
     setQueryText('');
   };
 
@@ -109,7 +118,11 @@ export const ReasoningTracePanel = ({
 
         {!isLoading && !error && !traceData && (
           <div className="text-xs text-on-surface-variant italic py-6 text-center">
-            Ask a question about your code or an NCTB concept. You will get a textbook-grounded answer (with page citations) and an independent AI explanation.
+            {viewTab === 'independent'
+              ? 'Ask the AI anything, like a chat assistant. It answers from its own knowledge, with a worked solution for your code.'
+              : viewTab === 'rag'
+                ? 'Ask what the textbook says. You will get an answer grounded in the NCTB passages, with page citations.'
+                : 'Ask a question about your code or an NCTB concept. You will get a textbook-grounded answer (with page citations) and an independent AI explanation.'}
           </div>
         )}
 
@@ -175,6 +188,18 @@ export const ReasoningTracePanel = ({
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30">{modelLabel}</span>
                 </div>
 
+                {/* The free-form answer: what the model would say in a chat, from its own
+                    knowledge, not held to the textbook. The structured breakdown below it
+                    is the same answer shown as reasoning steps. */}
+                {indepData.chat_answer && (
+                  <div className="bg-surface-container p-3.5 rounded-xl border border-outline-variant/30 space-y-1.5">
+                    <span className="text-[10px] font-mono uppercase text-purple-400 font-extrabold flex items-center gap-1">
+                      <MessageSquare className="w-3.5 h-3.5" /> AI Answer
+                    </span>
+                    <ChatMarkdown text={indepData.chat_answer} className="text-xs text-on-surface font-medium" />
+                  </div>
+                )}
+
                 {indepData.concept_applied && (
                   <div className="bg-surface-container p-3 rounded-xl border border-outline-variant/30 flex items-start gap-2.5">
                     <Layers className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
@@ -238,7 +263,7 @@ export const ReasoningTracePanel = ({
           type="text"
           value={queryText}
           onChange={(e) => setQueryText(e.target.value)}
-          placeholder="Ask about your code, an error, or an NCTB concept..."
+          placeholder={PLACEHOLDERS[viewTab] || PLACEHOLDERS.dual}
           aria-label="Ask the tutor about your code, an error, or an NCTB concept"
           className="flex-1 bg-surface-container text-on-surface text-xs rounded-xl px-3.5 py-2 border border-outline-variant/30 outline-none focus:border-primary"
         />

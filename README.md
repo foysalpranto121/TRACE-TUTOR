@@ -154,7 +154,13 @@ Copy `backend/.env.example` to `backend/.env` and fill it in. **Never commit `.e
 | `DB_NAME` | `trace_tutor_db` | PostgreSQL database name (the only supported engine) |
 | `DB_USER` / `DB_PASSWORD` | `postgres` / `postgres` | Credentials |
 | `DB_HOST` / `DB_PORT` | `localhost` / `5432` | Connection |
-| `GEMINI_MODEL` | `gemini-3.6-flash` | Generation model. Pin this for a study. |
+| `LLM_PROVIDER` | `auto` | Who generates tutor answers: `openai`, `gemini`, or `auto` (OpenAI whenever `OPENAI_API_KEY` is set). Embeddings and OCR stay on Gemini. |
+| `OPENAI_API_KEY` | — | Required for the OpenAI provider |
+| `OPENAI_MODEL` | `gpt-5-mini` | OpenAI generation model. Pin this for a study. |
+| `OPENAI_FALLBACK_MODELS` | *(empty)* | Tried on quota or availability errors, like `GEMINI_FALLBACK_MODELS` |
+| `OPENAI_REASONING_EFFORT` | *(model default)* | `minimal` / `low` / `medium` / `high` for GPT-5-class models |
+| `LLM_TEMPERATURE` | `= GEMINI_TEMPERATURE` | Sampling temperature for the active provider. GPT-5-class models accept only their default and are retried without it. |
+| `GEMINI_MODEL` | `gemini-3.6-flash` | Gemini generation model. Pin this for a study. |
 | `GEMINI_FALLBACK_MODELS` | *(empty)* | Tried on quota or availability errors. Empty by default so no participant is silently served a different model. |
 | `GEMINI_TEMPERATURE` | `0` | Sampling temperature for tutor turns. Zero keeps the manipulation identical across participants. |
 | `GEMINI_EMBED_MODEL` | `gemini-embedding-001` | Embedding model |

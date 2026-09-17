@@ -17,7 +17,8 @@ python-dotenv==1.2.2
 psycopg2-binary==2.9.12        # PostgreSQL driver (the only database engine)
 
 # --- model client, retrieval -------------------------------------------------
-google-genai==2.23.0           # tutor generation, OCR transcription, embeddings
+openai==2.50.0                 # tutor generation when LLM_PROVIDER=openai (structured JSON output)
+google-genai==2.23.0           # tutor generation when LLM_PROVIDER=gemini; OCR transcription; embeddings
 chromadb==1.5.9                # embedded vector store for the curriculum index
 
 # --- ingestion ---------------------------------------------------------------

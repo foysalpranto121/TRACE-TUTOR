@@ -8,7 +8,7 @@ from accounts.models import STAFF_ROLES, ParticipantProfile
 from assessment import sittings
 from curriculum.rag_engine import rag_engine_instance
 from logging_app.models import InteractionLog
-from trace_backend import gemini
+from trace_backend import llm
 from trace_backend.cache import cache_key, tiered_get_or_set
 from trace_backend.throttles import CodeRunThrottle, TutorThrottle
 from . import runner
@@ -30,6 +30,7 @@ You produce a DUAL answer for every student message:
    - grounded: true only if the passages actually support the answer.
 
 2. "independent_ai_answer" - YOUR OWN independent reasoning, not limited to the textbook.
+   - chat_answer: answer the student's message the way a top AI chat assistant would, using your full knowledge and ignoring the passages. A natural, complete, direct reply in Markdown: short paragraphs, bullet points where they help, fenced code blocks (```c or ```html) for code, no headings. Address the student's exact question and their code first, then anything else they need to know.
    - concept_applied: the concept name.
    - problem_breakdown: 3-6 numbered steps that answer the student's SPECIFIC question. If student code is supplied, examine it line by line and point out any bug with the line number.
    - pedagogical_justification: why this logic is correct and the common mistakes to avoid.
@@ -40,6 +41,43 @@ You produce a DUAL answer for every student message:
 Language rule: write all prose in {lang_name}. Keep code, identifiers, keywords and error messages in English.
 Never return generic templates; every field must be specific to this question, task and code.
 Return ONLY a JSON object with keys: rag_answer, independent_ai_answer, direct_answer."""
+
+# The shape the model is held to. Gemini decodes against this schema, so a quote in a
+# printf or a newline in a program can no longer leave the reply unparseable - which used
+# to turn the whole tutor turn into the textbook-only fallback.
+TUTOR_RESPONSE_SCHEMA = {
+    'type': 'object',
+    'properties': {
+        'rag_answer': {
+            'type': 'object',
+            'properties': {
+                'textbook_rule': {'type': 'string'},
+                'curriculum_citation': {'type': 'string'},
+                'textbook_explanation': {'type': 'string'},
+                'grounded': {'type': 'boolean'},
+            },
+            'required': ['textbook_rule', 'curriculum_citation', 'textbook_explanation', 'grounded'],
+        },
+        'independent_ai_answer': {
+            'type': 'object',
+            'properties': {
+                'chat_answer': {'type': 'string'},
+                'concept_applied': {'type': 'string'},
+                'problem_breakdown': {'type': 'array', 'items': {'type': 'string'}},
+                'pedagogical_justification': {'type': 'string'},
+                'code_solution': {'type': 'string'},
+            },
+            'required': ['chat_answer', 'concept_applied', 'problem_breakdown',
+                         'pedagogical_justification', 'code_solution'],
+        },
+        'direct_answer': {'type': 'string'},
+    },
+    'required': ['rag_answer', 'independent_ai_answer', 'direct_answer'],
+}
+
+# Which panel view the student asked from. Kept in the HELP_REQUEST payload: whether a
+# participant reaches for the textbook answer or the free AI answer is behavioural data.
+TUTOR_VIEWS = ('dual', 'rag', 'independent')
 
 
 def _lang_name(code):
@@ -66,9 +104,10 @@ def _fallback_answer(prompt, code, passages, language):
             'grounded': bool(top),
         },
         'independent_ai_answer': {
+            'chat_answer': '',
             'concept_applied': prompt[:60] or 'C programming',
             'problem_breakdown': [
-                ('Gemini API উত্তর দিতে পারেনি, তাই এখানে কেবল পাঠ্যবইয়ের অনুচ্ছেদ দেখানো হচ্ছে।' if bn else 'The Gemini API did not respond, so only the textbook passage is shown.'),
+                ('AI মডেল উত্তর দিতে পারেনি, তাই এখানে কেবল পাঠ্যবইয়ের অনুচ্ছেদ দেখানো হচ্ছে।' if bn else 'The AI model did not respond, so only the textbook passage is shown.'),
                 ('আপনার কোডটি কম্পাইল করে Problems ট্যাবে ত্রুটিগুলো দেখুন।' if bn else 'Compile your code and review the Problems tab for errors.'),
             ],
             'pedagogical_justification': '',
@@ -148,6 +187,7 @@ def query_tutor(request):
     problem_title = data.get('problem_title') or ''
     problem_description = data.get('problem_description') or ''
     compiler_output = data.get('compiler_output') or ''
+    view = data.get('view') if data.get('view') in TUTOR_VIEWS else None
 
     if not prompt:
         return Response({'error': 'prompt is required'}, status=400)
@@ -180,19 +220,21 @@ def query_tutor(request):
 
     def generate():
         try:
-            parsed, model = gemini.generate_json(SYSTEM_INSTRUCTION.replace('{lang_name}', _lang_name(language)), user_message)
+            parsed, model = llm.generate_json(SYSTEM_INSTRUCTION.replace('{lang_name}', _lang_name(language)),
+                                              user_message, schema=TUTOR_RESPONSE_SCHEMA)
             if not isinstance(parsed, dict) or 'independent_ai_answer' not in parsed:
-                raise ValueError('Gemini returned an unexpected JSON shape')
+                raise ValueError('The model returned an unexpected JSON shape')
             return {'parsed': parsed, 'model': model, 'ai_status': 'live', 'error': None}
         except Exception as e:
-            logger.warning(f'Gemini tutor call failed: {e}')
-            return {'parsed': _fallback_answer(prompt, code, passages, language), 'model': gemini.model_name(),
+            logger.warning(f'Tutor model call ({llm.provider()}) failed: {e}')
+            return {'parsed': _fallback_answer(prompt, code, passages, language), 'model': llm.model_name(),
                     'ai_status': 'fallback', 'error': str(e)[:400]}
 
     # The same question about the same code with the same textbook passages gets the same answer, so
     # live answers are kept in the persistent (database) cache with the memory cache in front:
     # repeats are instant and spend no Gemini quota. Fallback answers are never cached.
-    answer_key = cache_key('tutor-answer', 'v1', language, prompt, code.strip(), problem_id, problem_title,
+    # 'v2': answers now carry chat_answer, so anything cached under the old shape is stale.
+    answer_key = cache_key('tutor-answer', 'v2', language, prompt, code.strip(), problem_id, problem_title,
                            problem_description, compiler_output, [p.get('id') or p.get('source_ref') for p in passages])
     result, tier = tiered_get_or_set(answer_key, generate, settings.TUTOR_ANSWER_CACHE_SECONDS,
                                      should_store=lambda r: r['ai_status'] == 'live')
@@ -205,6 +247,7 @@ def query_tutor(request):
     if isinstance(breakdown, str):
         breakdown = [breakdown]
     indep['problem_breakdown'] = [line.strip() for item in breakdown for line in str(item).split('\n') if line.strip()]
+    indep['chat_answer'] = str(indep.get('chat_answer') or '').strip()
     direct = parsed.get('direct_answer') or ''
 
     payload = {
@@ -226,7 +269,7 @@ def query_tutor(request):
         payload = answer_only_payload(payload)
 
     _log_tutor_event(request.user, 'HELP_REQUEST', arm, problem_id, prompt, code, language,
-                     ai_status=ai_status, cache_tier=tier, model=model,
+                     ai_status=ai_status, cache_tier=tier, model=model, view=view,
                      exam_type=sittings.open_paper_of(request.user))
     response = Response(payload)
     response['X-Trace-Cache'] = 'miss' if tier == 'computed' else f'hit-{tier}'

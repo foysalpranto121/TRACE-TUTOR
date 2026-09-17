@@ -4,7 +4,7 @@ from pathlib import Path
 
 from django.conf import settings
 
-from trace_backend import gemini
+from trace_backend import gemini, llm
 from .models import CurriculumPassage
 
 from django.conf import settings
@@ -212,7 +212,9 @@ class RAGEngine:
             'vector_count': self.vector_count(),
             'db_passage_count': db_count,
             'embedding_model': gemini.embed_model_name(),
-            'llm_model': gemini.model_name(),
+            'llm_provider': llm.provider(),
+            'llm_model': llm.model_name(),
+            'llm_configured': llm.configured(),
             'gemini_configured': gemini.api_key() is not None,
             'last_retrieval_backend': self.last_backend,
         }

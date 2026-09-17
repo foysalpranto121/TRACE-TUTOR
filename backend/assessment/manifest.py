@@ -54,6 +54,7 @@ def _versions():
 
 def build():
     from tutor import sandbox
+    from trace_backend import llm
     dirty = _git('status', '--porcelain')
     return {
         'generated_at': timezone.now().isoformat(),
@@ -63,9 +64,13 @@ def build():
             'uncommitted_changes': bool(dirty) if dirty is not None else None,
         },
         'tutor': {
-            'model': gemini.model_name(),
-            'model_chain': gemini.model_chain(),
-            'temperature': gemini.generation_temperature(),
+            'provider': llm.provider(),
+            'model': llm.model_name(),
+            'model_chain': llm.model_chain(),
+            'temperature': llm.generation_temperature(),
+            # Parameters the model refused in this process (GPT-5-class models reject
+            # temperature): the configured value above was NOT applied for those models.
+            'parameters_rejected_by_model': llm.rejected_parameters(),
             'embedding_model': gemini.embed_model_name(),
             'embedding_dimensions': gemini.EMBED_DIMENSIONS,
             'answer_cache_seconds': settings.TUTOR_ANSWER_CACHE_SECONDS,
