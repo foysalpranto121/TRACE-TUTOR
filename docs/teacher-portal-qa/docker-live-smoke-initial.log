@@ -1,0 +1,462 @@
+python.exe : Creating test database for alias 'default' ('test_trace_teacher_qa_20261009')...
+At line:2 char:1
++ & 'E:\projects\anaconda\envs\trace_tutor\python.exe' docs/teacher-por ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Creating test d...a_20261009')...:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+Operations to perform:
+  Synchronize unmigrated apps: corsheaders, messages, rest_framework, runserver_nostatic, staticfiles, tutor
+  Apply all migrations: accounts, admin, assessment, auth, authtoken, contenttypes, curriculum, logging_app, sessions
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying auth.0001_initial... OK
+  Applying logging_app.0001_initial... OK
+  Applying logging_app.0002_alter_interactionlog_options_and_more... OK
+  Applying accounts.0001_initial... OK
+  Applying accounts.0002_participantprofile_academic_group_and_more... OK
+  Applying accounts.0003_participantprofile_avatar... OK
+  Applying accounts.0004_participant_withdrawal... OK
+  Applying accounts.0005_participantprofile_enrolled_arm... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying assessment.0001_initial... OK
+  Applying assessment.0002_expertrating_item_key_alter_expertrating_item_and_more... OK
+  Applying assessment.0003_alter_examsubmission_options_and_more... OK
+  Applying assessment.0004_submission_background_grading... OK
+  Applying assessment.0005_examsubmission_arm... OK
+  Applying assessment.0006_papersitting... OK
+  Applying assessment.0007_examsubmission_claimed_at... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying authtoken.0001_initial... OK
+  Applying authtoken.0002_auto_20160226_1747... OK
+  Applying authtoken.0003_tokenproxy... OK
+  Applying authtoken.0004_alter_tokenproxy_options... OK
+  Applying curriculum.0001_initial... OK
+  Applying curriculum.0002_ingestrun_ocrpage... OK
+test_browser_real_requests (__main__.LiveSmoke.test_browser_real_requests) ... 2026-10-09 23:10:41 INFO django.server: 
+- Broken pipe from ('127.0.0.1', 57154)
+2026-10-09 23:10:42 INFO django.server: - Broken pipe from ('127.0.0.1', 61523)
+2026-10-09 23:11:27 INFO django.server: - Broken pipe from ('127.0.0.1', 58742)
+2026-10-09 23:11:27 WARNING django.request: Forbidden: /api/expert/reviews/
+2026-10-09 23:11:27 WARNING django.request: Forbidden: /api/expert/submissions/
+2026-10-09 23:11:28 WARNING django.request: Forbidden: /api/expert/certification/
+2026-10-09 23:11:28 WARNING django.request: Forbidden: /api/expert/rating/
+2026-10-09 23:11:28 ERROR django.request: Internal Server Error: /api/dashboard/
+Traceback (most recent call last):
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\django\core\handlers\base.py", line 197, in 
+_get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\django\views\decorators\csrf.py", line 65, in 
+_view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\rest_framework\views.py", line 526, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\rest_framework\views.py", line 474, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\rest_framework\views.py", line 485, in 
+raise_uncaught_exception
+    raise exc
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\rest_framework\views.py", line 523, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiha\ML-Projects\trace\Trace Tutor AI ( system Design)\Trace Tutor AI ( system 
+Design)\backend\logging_app\views.py", line 101, in dashboard_summary
+    data = _build_dashboard(user)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiha\ML-Projects\trace\Trace Tutor AI ( system Design)\Trace Tutor AI ( system 
+Design)\backend\logging_app\views.py", line 190, in _build_dashboard
+    a['best_score'] = max(a['best_score'], s.score_pct)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: '>' not supported between instances of 'NoneType' and 'int'
+2026-10-09 23:11:28 WARNING django.request: Forbidden: /api/expert/grade/
+2026-10-09 23:11:28 ERROR django.request: Internal Server Error: /api/dashboard/
+Traceback (most recent call last):
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\django\core\handlers\base.py", line 197, in 
+_get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\django\views\decorators\csrf.py", line 65, in 
+_view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\rest_framework\views.py", line 526, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\rest_framework\views.py", line 474, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\rest_framework\views.py", line 485, in 
+raise_uncaught_exception
+    raise exc
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\rest_framework\views.py", line 523, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\rest_framework\decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiha\ML-Projects\trace\Trace Tutor AI ( system Design)\Trace Tutor AI ( system 
+Design)\backend\logging_app\views.py", line 101, in dashboard_summary
+    data = _build_dashboard(user)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiha\ML-Projects\trace\Trace Tutor AI ( system Design)\Trace Tutor AI ( system 
+Design)\backend\logging_app\views.py", line 190, in _build_dashboard
+    a['best_score'] = max(a['best_score'], s.score_pct)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: '>' not supported between instances of 'NoneType' and 'int'
+2026-10-09 23:11:28 INFO django.server: - Broken pipe from ('127.0.0.1', 61114)
+ok
+
+----------------------------------------------------------------------
+Ran 1 test in 54.450s
+
+OK
+Destroying test database for alias 'default' ('test_trace_teacher_qa_20261009')...
+
+  Applying sessions.0001_initial... OK
+[
+  {
+    "name": "desktop",
+    "realLogin": true,
+    "cviPersistence": true,
+    "independentDrafts": true,
+    "gradeUpdate": true,
+    "realRefresh": true,
+    "nullAndZero": true,
+    "search": true,
+    "actualDockerRun": "SUCCESS",
+    "runResults": [
+      {
+        "id": 1,
+        "input": "5",
+        "expected": "Sum = 15",
+        "actual": "Sum = 15",
+        "stderr": "",
+        "exit_code": 0,
+        "timed_out": false,
+        "time_ms": 385,
+        "passed": true
+      },
+      {
+        "id": 2,
+        "input": "10",
+        "expected": "Sum = 55",
+        "actual": "Sum = 55",
+        "stderr": "",
+        "exit_code": 0,
+        "timed_out": false,
+        "time_ms": 380,
+        "passed": true
+      }
+    ],
+    "cviAxe": [],
+    "markingAxe": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/accounts/login/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/reviews/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/submissions/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/rating/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/reviews/",
+        "status": 200
+      },
+      {
+        "path": "/api/accounts/me/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/reviews/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/submissions/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/grade/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/submissions/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/submissions/",
+        "status": 200
+      },
+      {
+        "path": "/api/accounts/me/",
+        "status": 200
+      },
+      {
+        "path": "/api/accounts/me/",
+        "status": 200
+      },
+      {
+        "path": "/api/dashboard/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/status/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/status/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/run/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/run/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/run/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/dashboard/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/run/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/dashboard/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/run/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "name": "mobile",
+    "realLogin": true,
+    "cviPersistence": true,
+    "independentDrafts": true,
+    "gradeUpdate": true,
+    "realRefresh": true,
+    "nullAndZero": true,
+    "search": true,
+    "actualDockerRun": "SUCCESS",
+    "runResults": [
+      {
+        "id": 1,
+        "input": "5",
+        "expected": "Sum = 15",
+        "actual": "Sum = 15",
+        "stderr": "",
+        "exit_code": 0,
+        "timed_out": false,
+        "time_ms": 360,
+        "passed": true
+      },
+      {
+        "id": 2,
+        "input": "10",
+        "expected": "Sum = 55",
+        "actual": "Sum = 55",
+        "stderr": "",
+        "exit_code": 0,
+        "timed_out": false,
+        "time_ms": 383,
+        "passed": true
+      }
+    ],
+    "cviAxe": [],
+    "markingAxe": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/accounts/login/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/reviews/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/submissions/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/rating/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/reviews/",
+        "status": 200
+      },
+      {
+        "path": "/api/accounts/me/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/reviews/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/submissions/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/grade/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/submissions/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/submissions/",
+        "status": 200
+      },
+      {
+        "path": "/api/accounts/me/",
+        "status": 200
+      },
+      {
+        "path": "/api/curriculum/status/",
+        "status": 200
+      },
+      {
+        "path": "/api/dashboard/",
+        "status": 200
+      },
+      {
+        "path": "/api/accounts/me/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/status/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/status/",
+        "status": 200
+      },
+      {
+        "path": "/api/dashboard/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/run/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/run/",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "name": "mobile-student",
+    "realLogin": true,
+    "frontendAndBackendRoleIsolation": true
+  }
+]
+
+

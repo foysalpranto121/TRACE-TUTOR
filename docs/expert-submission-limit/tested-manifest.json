@@ -1,0 +1,5 @@
+{
+  "original_sha256": "d7a4323706f38ebf21b199308235541bc086ccd6d46366bc1299269f59b2880f",
+  "candidate_sha256": "2cefdc3eea08dcecbafe9caf6326449473804238e17f5fa7dfdf75429b0490d1",
+  "tests": "PASS: teacher portal suite, including 105 submissions and tied timestamps"
+}

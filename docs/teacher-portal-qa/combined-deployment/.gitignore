@@ -1,0 +1,9 @@
+candidate/
+linux-dependencies/
+*.log
+server-source.json
+release.json
+candidate.tar.gz
+production-audit.json
+fixture-private.json
+screenshots/

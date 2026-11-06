@@ -83,6 +83,25 @@ class SittingLifecycleTests(ApiTestCase):
         self.assertEqual(body['sitting']['status'], 'completed')
         self.assertEqual(body['sitting']['submission_id'], first.json()['submission_id'])
 
+    def test_retake_reopens_sitting_and_allows_subsequent_submission(self):
+        first = submit(self.client_, 'pre')
+        body = self.client_.post('/api/assessment/retake/', {'exam_type': 'pre'}, format='json').json()
+        self.assertEqual(body['sitting']['status'], 'open')
+        sitting = PaperSitting.objects.get(student=self.user, exam_type='pre')
+        self.assertTrue(sitting.is_open)
+        # Now submission of retake succeeds
+        second = submit(self.client_, 'pre')
+        self.assertIn(second.status_code, (200, 202))
+        self.assertEqual(ExamSubmission.objects.count(), 2)
+        # Double submission after retake is still blocked
+        again = submit(self.client_, 'pre')
+        self.assertEqual(again.status_code, 409)
+
+    def test_get_items_with_retake_query_param_reopens_sitting(self):
+        submit(self.client_, 'pre')
+        body = self.client_.get('/api/assessment/items/?type=pre&retake=1').json()
+        self.assertEqual(body['sitting']['status'], 'open')
+
     def test_staff_browsing_the_bank_get_no_sittings(self):
         _, teacher = enrol('tea', role='EXPERT_TEACHER')
         body = teacher.get('/api/assessment/items/?type=withdrawal').json()
@@ -107,6 +126,9 @@ class TutorGatingTests(ApiTestCase):
         self.user, self.client_ = enrol('stu')
         for exam_type in ('pre', 'post', 'transfer'):
             ExamSubmission.objects.create(student=self.user, exam_type=exam_type, score_pct=50, answers={})
+        # These fixtures have completed the new fourteen-day transfer wait.
+        ExamSubmission.objects.filter(student=self.user, exam_type='transfer').update(
+            submitted_at=timezone.now() - timedelta(days=15))
 
     def ask(self, client=None):
         return (client or self.client_).post('/api/tutor/query/', {'prompt': 'why?', 'problem_id': 'p1'}, format='json')
@@ -134,6 +156,28 @@ class TutorGatingTests(ApiTestCase):
         ExamSubmission.objects.create(student=user, exam_type='pre', score_pct=50, answers={})
         client.get('/api/assessment/items/?type=post')
         self.assertEqual(self.ask(client).status_code, 200)
+
+    def test_a_newer_transfer_retake_is_not_blocked_by_a_stale_withdrawal_sitting(self):
+        self.client_.get('/api/assessment/items/?type=withdrawal')
+        response = self.client_.post(
+            '/api/assessment/retake/', {'exam_type': 'transfer'}, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(sittings.open_paper_of(self.user), 'transfer')
+        self.assertEqual(self.ask().status_code, 200)
+
+    def test_returning_to_withdrawal_restores_the_tutor_block(self):
+        self.client_.get('/api/assessment/items/?type=withdrawal')
+        self.client_.post('/api/assessment/retake/', {'exam_type': 'transfer'}, format='json')
+        self.client_.get('/api/assessment/items/?type=withdrawal')
+        response = self.ask()
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json()['exam_type'], 'withdrawal')
+
+        # Going back to the already-open Transfer retake refreshes that sitting even
+        # though an older Transfer submission exists, and its tutor becomes available.
+        self.client_.get('/api/assessment/items/?type=transfer')
+        self.assertEqual(sittings.open_paper_of(self.user), 'transfer')
+        self.assertEqual(self.ask().status_code, 200)
 
     def test_submitting_the_paper_frees_the_tutor(self):
         self.client_.get('/api/assessment/items/?type=withdrawal')

@@ -208,6 +208,18 @@ class RealItemBankTests(SimpleTestCase):
                     self.assertIn(item.get('keyed_answer'), keys,
                                   f"{item['id']} keys an answer that is not among its options")
 
+    def test_mcq_answer_positions_are_balanced_on_every_form(self):
+        """Do not let every correct answer drift back to the same visible option."""
+        bank = scoring.load_item_bank()
+        for exam_type in scoring.EXAM_TYPES:
+            answers = [item['keyed_answer'] for item in bank[exam_type]
+                       if item.get('type') == 'concept_mcq']
+            counts = {option: answers.count(option) for option in ('a', 'b', 'c', 'd')}
+            self.assertEqual(set(answers), set(counts),
+                             f'{exam_type} does not use every MCQ answer position: {counts}')
+            self.assertLessEqual(max(counts.values()) - min(counts.values()), 1,
+                                 f'{exam_type} MCQ answer positions are unbalanced: {counts}')
+
     def test_item_ids_are_unique_across_the_whole_bank(self):
         ids = [item['id'] for _, item in scoring.all_items()]
         duplicates = {i for i in ids if ids.count(i) > 1}

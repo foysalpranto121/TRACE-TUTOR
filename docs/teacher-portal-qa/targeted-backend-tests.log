@@ -1,0 +1,159 @@
+python.exe : Creating test database for alias 'default' ('test_trace_teacher_qa_20261009')...
+At line:2 char:1
++ & 'E:\projects\anaconda\envs\trace_tutor\python.exe' manage.py test a ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Creating test d...a_20261009')...:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+Found 19 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: corsheaders, messages, rest_framework, runserver_nostatic, staticfiles, tutor
+  Apply all migrations: accounts, admin, assessment, auth, authtoken, contenttypes, curriculum, logging_app, sessions
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying auth.0001_initial... OK
+  Applying logging_app.0001_initial... OK
+  Applying logging_app.0002_alter_interactionlog_options_and_more... OK
+  Applying accounts.0001_initial... OK
+  Applying accounts.0002_participantprofile_academic_group_and_more... OK
+  Applying accounts.0003_participantprofile_avatar... OK
+  Applying accounts.0004_participant_withdrawal... OK
+  Applying accounts.0005_participantprofile_enrolled_arm... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying assessment.0001_initial... OK
+  Applying assessment.0002_expertrating_item_key_alter_expertrating_item_and_more... OK
+  Applying assessment.0003_alter_examsubmission_options_and_more... OK
+  Applying assessment.0004_submission_background_grading... OK
+  Applying assessment.0005_examsubmission_arm... OK
+  Applying assessment.0006_papersitting... OK
+  Applying assessment.0007_examsubmission_claimed_at... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying authtoken.0001_initial... OK
+  Applying authtoken.0002_auto_20160226_1747... OK
+  Applying authtoken.0003_tokenproxy... OK
+  Applying authtoken.0004_alter_tokenproxy_options... OK
+  Applying curriculum.0001_initial... OK
+  Applying curriculum.0002_ingestrun_ocrpage... OK
+test_complete_rating_is_persisted_retrieved_and_replaced_only_for_its_expert (assessment.tests.test_teacher_portal.Teac
+herPortalTests.test_complete_rating_is_persisted_retrieved_and_replaced_only_for_its_expert) ... ok
+test_existing_clients_without_revision_fields_keep_their_valid_api_contract (assessment.tests.test_teacher_portal.Teach
+erPortalTests.test_existing_clients_without_revision_fields_keep_their_valid_api_contract) ... ok
+test_grade_boundaries_and_updates_are_retrievable_and_do_not_alter_server_scores (assessment.tests.test_teacher_portal.
+TeacherPortalTests.test_grade_boundaries_and_updates_are_retrievable_and_do_not_alter_server_scores) ... ok
+test_grade_revision_prevents_stale_overwrites_across_reviewers (assessment.tests.test_teacher_portal.TeacherPortalTests
+.test_grade_revision_prevents_stale_overwrites_across_reviewers) ... 2026-10-09 20:58:42 WARNING django.request: 
+Conflict: /api/expert/grade/
+ok
+test_incomplete_malformed_and_out_of_range_rubrics_never_write_defaults (assessment.tests.test_teacher_portal.TeacherPo
+rtalTests.test_incomplete_malformed_and_out_of_range_rubrics_never_write_defaults) ... 2026-10-09 20:58:42 WARNING 
+django.request: Bad Request: /api/expert/rating/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/rating/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/rating/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/rating/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/rating/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/rating/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/rating/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/rating/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/rating/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/rating/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/rating/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/rating/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/rating/
+ok
+test_invalid_marks_do_not_silently_become_zero_or_clamped_grades (assessment.tests.test_teacher_portal.TeacherPortalTes
+ts.test_invalid_marks_do_not_silently_become_zero_or_clamped_grades) ... 2026-10-09 20:58:42 WARNING django.request: 
+Bad Request: /api/expert/grade/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/grade/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/grade/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/grade/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/grade/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/grade/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/grade/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/grade/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/grade/
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/grade/
+ok
+test_score_api_preserves_null_and_zero_and_pending_status 
+(assessment.tests.test_teacher_portal.TeacherPortalTests.test_score_api_preserves_null_and_zero_and_pending_status) 
+... ok
+test_stale_rating_and_stale_first_creation_return_conflict_without_overwriting (assessment.tests.test_teacher_portal.Te
+acherPortalTests.test_stale_rating_and_stale_first_creation_return_conflict_without_overwriting) ... 2026-10-09 
+20:58:42 WARNING django.request: Conflict: /api/expert/rating/
+2026-10-09 20:58:42 WARNING django.request: Conflict: /api/expert/rating/
+ok
+test_students_and_anonymous_callers_cannot_read_or_write_teacher_data (assessment.tests.test_teacher_portal.TeacherPort
+alTests.test_students_and_anonymous_callers_cannot_read_or_write_teacher_data) ... 2026-10-09 20:58:42 WARNING 
+django.request: Forbidden: /api/expert/reviews/
+2026-10-09 20:58:42 WARNING django.request: Forbidden: /api/expert/submissions/
+2026-10-09 20:58:42 WARNING django.request: Forbidden: /api/expert/certification/
+2026-10-09 20:58:42 WARNING django.request: Forbidden: /api/expert/rating/
+2026-10-09 20:58:42 WARNING django.request: Forbidden: /api/expert/grade/
+2026-10-09 20:58:42 WARNING django.request: Unauthorized: /api/expert/reviews/
+2026-10-09 20:58:42 WARNING django.request: Unauthorized: /api/expert/submissions/
+2026-10-09 20:58:42 WARNING django.request: Unauthorized: /api/expert/certification/
+2026-10-09 20:58:42 WARNING django.request: Unauthorized: /api/expert/rating/
+2026-10-09 20:58:42 WARNING django.request: Unauthorized: /api/expert/grade/
+ok
+test_teacher_arm_switch_is_persisted_but_enrolment_arm_is_immutable (assessment.tests.test_teacher_portal.TeacherPortal
+Tests.test_teacher_arm_switch_is_persisted_but_enrolment_arm_is_immutable) ... 2026-10-09 20:58:42 WARNING 
+django.request: Bad Request: /api/accounts/profile/
+ok
+test_teacher_code_execution_preserves_success_errors_and_timeout_results (assessment.tests.test_teacher_portal.TeacherP
+ortalTests.test_teacher_code_execution_preserves_success_errors_and_timeout_results) ... 2026-10-09 20:58:42 WARNING 
+django.request: Unauthorized: /api/code/run/
+ok
+test_teacher_profile_validation_persistence_and_role_immutability (assessment.tests.test_teacher_portal.TeacherPortalTe
+sts.test_teacher_profile_validation_persistence_and_role_immutability) ... 2026-10-09 20:58:42 WARNING django.request: 
+Bad Request: /api/accounts/profile/
+ok
+test_unknown_item_never_creates_a_research_rating 
+(assessment.tests.test_teacher_portal.TeacherPortalTests.test_unknown_item_never_creates_a_research_rating) ... 
+2026-10-09 20:58:42 WARNING django.request: Bad Request: /api/expert/rating/
+ok
+test_unknown_submission_does_not_create_a_grade 
+(assessment.tests.test_teacher_portal.TeacherPortalTests.test_unknown_submission_does_not_create_a_grade) ... 
+2026-10-09 20:58:42 WARNING django.request: Not Found: /api/expert/grade/
+ok
+test_updating_an_older_grade_makes_it_the_latest_displayed_grade (assessment.tests.test_teacher_portal.TeacherPortalTes
+ts.test_updating_an_older_grade_makes_it_the_latest_displayed_grade) ... ok
+test_take_list_verify_and_prune (assessment.tests.test_sittings.BackupCommandTests.test_take_list_verify_and_prune) 
+... 2026-10-09 20:58:43 ERROR tutor.sandbox: Code execution is BLOCKED: the none tier is below the required docker. 
+docker: image trace-tutor-runner:1 is not built - see backend/tutor/sandbox.Dockerfile; rlimit: setrlimit is 
+POSIX-only (this host is Windows)
+ok
+test_two_different_experts_keep_independent_ratings 
+(assessment.tests.test_teacher_portal.ConcurrentReviewTests.test_two_different_experts_keep_independent_ratings) ... ok
+test_two_sessions_cannot_both_create_the_same_expert_rating (assessment.tests.test_teacher_portal.ConcurrentReviewTests
+.test_two_sessions_cannot_both_create_the_same_expert_rating) ... 2026-10-09 20:58:46 WARNING django.request: 
+Conflict: /api/expert/rating/
+ok
+test_two_sessions_cannot_both_replace_the_shared_latest_grade (assessment.tests.test_teacher_portal.ConcurrentReviewTes
+ts.test_two_sessions_cannot_both_replace_the_shared_latest_grade) ... 2026-10-09 20:58:47 WARNING django.request: 
+Conflict: /api/expert/grade/
+ok
+
+----------------------------------------------------------------------
+Ran 19 tests in 5.408s
+
+OK
+Destroying test database for alias 'default' ('test_trace_teacher_qa_20261009')...
+
+  Applying sessions.0001_initial... OK
+System check identified no issues (0 silenced).

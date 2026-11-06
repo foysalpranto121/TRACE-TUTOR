@@ -1,0 +1,113 @@
+python.exe : Creating test database for alias 'default' ('test_trace_teacher_qa_20261009')...
+At line:2 char:1
++ & 'E:\projects\anaconda\envs\trace_tutor\python.exe' docs/teacher-por ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Creating test d...a_20261009')...:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+Operations to perform:
+  Synchronize unmigrated apps: corsheaders, messages, rest_framework, runserver_nostatic, staticfiles, tutor
+  Apply all migrations: accounts, admin, assessment, auth, authtoken, contenttypes, curriculum, logging_app, sessions
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying auth.0001_initial... OK
+  Applying logging_app.0001_initial... OK
+  Applying logging_app.0002_alter_interactionlog_options_and_more... OK
+  Applying accounts.0001_initial... OK
+  Applying accounts.0002_participantprofile_academic_group_and_more... OK
+  Applying accounts.0003_participantprofile_avatar... OK
+  Applying accounts.0004_participant_withdrawal... OK
+  Applying accounts.0005_participantprofile_enrolled_arm... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying assessment.0001_initial... OK
+  Applying assessment.0002_expertrating_item_key_alter_expertrating_item_and_more... OK
+  Applying assessment.0003_alter_examsubmission_options_and_more... OK
+  Applying assessment.0004_submission_background_grading... OK
+  Applying assessment.0005_examsubmission_arm... OK
+  Applying assessment.0006_papersitting... OK
+  Applying assessment.0007_examsubmission_claimed_at... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying authtoken.0001_initial... OK
+  Applying authtoken.0002_auto_20160226_1747... OK
+  Applying authtoken.0003_tokenproxy... OK
+  Applying authtoken.0004_alter_tokenproxy_options... OK
+  Applying curriculum.0001_initial... OK
+  Applying curriculum.0002_ingestrun_ocrpage... OK
+test_browser_real_requests (__main__.LiveSmoke.test_browser_real_requests) ... 2026-10-09 23:18:53 INFO django.server: 
+- Broken pipe from ('127.0.0.1', 58049)
+2026-10-09 23:19:33 WARNING tutor.views: Tutor model call (openai) failed: OPENAI_API_KEY is not configured
+2026-10-09 23:19:37 WARNING tutor.views: Tutor model call (openai) failed: OPENAI_API_KEY is not configured
+FAIL
+
+======================================================================
+FAIL: test_browser_real_requests (__main__.LiveSmoke.test_browser_real_requests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\shiha\ML-Projects\trace\Trace Tutor AI ( system Design)\Trace Tutor AI ( system 
+Design)\docs\teacher-portal-qa\live-smoke.py", line 64, in test_browser_real_requests
+    self.assertEqual(completed.returncode, 0, completed.stderr)
+AssertionError: 1 != 0 : node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.waitFor: Timeout 45000ms exceeded.
+Call log:
+[2m  - waiting for getByText('Textbook fallback', { exact: true }).first() to be visible[22m
+[2m    92 � locator resolved to hidden <span class="hidden sm:inline">Textbook fallback</span>[22m
+
+    at C:\Users\shiha\ML-Projects\trace\Trace Tutor AI ( system Design)\Trace Tutor AI ( system 
+Design)\docs\teacher-portal-qa\live-browser.mjs:96:70 {
+  log: [
+    "  - waiting for getByText('Textbook fallback', { exact: true }).first() to be visible",
+    '    92 � locator resolved to hidden <span class="hidden sm:inline">Textbook fallback</span>'
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v24.19.0
+
+
+----------------------------------------------------------------------
+Ran 1 test in 95.776s
+
+FAILED (failures=1)
+Destroying test database for alias 'default' ('test_trace_teacher_qa_20261009')...
+
+  Applying sessions.0001_initial... OK
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.waitFor: Timeout 45000ms exceeded.
+Call log:
+[2m  - waiting for getByText('Textbook fallback', { exact: true }).first() to be visible[22m
+[2m    92 � locator resolved to hidden <span class="hidden sm:inline">Textbook fallback</span>[22m
+
+    at C:\Users\shiha\ML-Projects\trace\Trace Tutor AI ( system Design)\Trace Tutor AI ( system Design)\docs\teacher-portal-qa\live-browser.mjs:96:70 {
+  log: [
+    "  - waiting for getByText('Textbook fallback', { exact: true }).first() to be visible",
+    '    92 � locator resolved to hidden <span class="hidden sm:inline">Textbook fallback</span>'
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v24.19.0
+

@@ -1,0 +1,3 @@
+Django check --settings=trace_backend.qa_settings: exit 0; System check identified no issues (0 silenced).
+git diff --check: exit 0; only Git LF/CRLF conversion warnings, no whitespace errors.
+Read-only local PostgreSQL catalog inspection after tests: existing disposable database names = []; no privilege changes.

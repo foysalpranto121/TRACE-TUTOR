@@ -46,6 +46,10 @@ export const AuthProvider = ({ children }) => {
     return () => window.removeEventListener('trace:session-expired', onExpired);
   }, []);
 
+  useEffect(() => {
+    document.documentElement.lang = user?.language || guestLanguage;
+  }, [user?.language, guestLanguage]);
+
   const login = async (identifier, password, remember = true) => {
     const res = await apiService.login(identifier, password);
     saveSession(res.user, res.token, remember);

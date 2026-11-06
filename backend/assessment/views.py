@@ -1,7 +1,10 @@
 import csv
+import hashlib
+import json
 from collections import defaultdict
 
 from django.http import StreamingHttpResponse
+from django.db import transaction
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -10,8 +13,9 @@ from rest_framework.response import Response
 from accounts.models import ParticipantProfile, STAFF_ROLES
 from accounts.permissions import IsResearcher, IsStaffRole
 
-from . import analytics, grading, manifest, psychometrics, scoring, sittings
-from .models import ExpertRating, ExamSubmission, ExpertGrade
+from . import analytics, grading, manifest, psychometrics, scoring, sittings, timing
+from .models import (ExpertRating, ExamSubmission, ExpertGrade, PaperSitting,
+                     TeacherReviewAssignment, ItemReviewAssignment, SubmissionReviewAssignment)
 
 
 class Echo:
@@ -29,6 +33,36 @@ RATING_FIELDS = {
 }
 I_CVI_PASS = 0.78          # Lynn (1986) acceptance threshold for an item's content validity index
 ALIGNMENT_RELEVANT = 3     # 3 or 4 on the 1-4 scale counts the item as relevant
+
+
+def _review_revision(row, fields):
+    """Content revision for conditional updates without changing research rows."""
+    if row is None:
+        return None
+    values = [row.pk, row.expert_user_id, *[getattr(row, field) for field in fields]]
+    return hashlib.sha256(json.dumps(values, default=str, ensure_ascii=False).encode()).hexdigest()
+
+
+def _rating_revision(row):
+    return _review_revision(row, [*RATING_FIELDS.values(), 'feedback'])
+
+
+def _grade_revision(row):
+    return _review_revision(row, ['assigned_marks', 'max_marks', 'feedback_comments', 'graded_at'])
+
+
+def _integer_in_range(value, low, high):
+    # Do not truncate decimals, accept booleans, or clamp invalid scores.
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, str):
+        if not value.strip().isascii() or not value.strip().isdigit():
+            return None
+        try:
+            value = int(value.strip())
+        except ValueError:
+            return None
+    return value if isinstance(value, int) and low <= value <= high else None
 
 
 def _current_expert(request):
@@ -69,18 +103,21 @@ def _accessible_exam_types(user, is_staff_role):
     """
     if is_staff_role:
         return list(PROTOCOL_ORDER)
-    submitted = set(ExamSubmission.objects.filter(student=user)
-                    .values_list('exam_type', flat=True))
-    allowed = [t for t in PROTOCOL_ORDER if t in submitted]
-    upcoming = next((t for t in PROTOCOL_ORDER if t not in submitted), None)
-    if upcoming:
-        allowed.append(upcoming)
-    return allowed
+    return timing.status(user)['available']
 
 
 def _is_staff_role(user):
     profile = ParticipantProfile.objects.filter(user=user).only('role').first()
     return bool(profile and profile.role in STAFF_ROLES)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def assessment_schedule(request):
+    schedule = timing.status(request.user)
+    if _is_staff_role(request.user):
+        schedule['available'] = list(PROTOCOL_ORDER)
+    return Response(schedule)
 
 
 @api_view(['GET'])
@@ -96,6 +133,7 @@ def get_items(request):
             'error': 'That paper is not open to you yet. Complete the earlier forms first.',
             'exam_type': requested,
             'available': available,
+            'schedule': timing.status(request.user),
         }, status=403)
 
     try:
@@ -107,20 +145,66 @@ def get_items(request):
     # bank do not sit papers). A completed paper comes back with its submission id so
     # the page shows the recorded result instead of a fresh form.
     sitting = None
+    is_retake = request.GET.get('retake') in ('1', 'true', 'yes')
     if not _is_staff_role(request.user):
-        if not sittings.already_submitted(request.user, requested):
-            profile = ParticipantProfile.objects.filter(user=request.user).only('assigned_arm').first()
-            sittings.open_paper(request.user, requested, arm=profile.assigned_arm if profile else '')
+        profile = ParticipantProfile.objects.filter(user=request.user).only('assigned_arm').first()
+        arm = profile.assigned_arm if profile else ''
+        if is_retake:
+            sittings.retake_paper(request.user, requested, arm=arm)
+        elif (sittings.is_paper_open(request.user, requested)
+              or not sittings.already_submitted(request.user, requested)):
+            # An explicit retake has an older submission by definition. Refresh its
+            # sitting when the participant returns to its tab so it becomes the active
+            # paper again instead of leaving another tab's stale sitting in control.
+            sittings.open_paper(request.user, requested, arm=arm)
         sitting = sittings.describe(request.user, requested)
-        if sitting['status'] != sittings.COMPLETED and sittings.already_submitted(request.user, requested):
+        if not is_retake and sitting['status'] != sittings.COMPLETED and sittings.already_submitted(request.user, requested) and not sittings.is_paper_open(request.user, requested):
             # Submitted before sittings existed: report it as completed anyway.
-            latest = ExamSubmission.objects.filter(student=request.user, exam_type=requested).order_by('submitted_at').first()
+            latest = ExamSubmission.objects.filter(student=request.user, exam_type=requested).order_by('-submitted_at').first()
             sitting = {**sitting, 'status': sittings.COMPLETED, 'submission_id': latest.pk}
 
     return Response({
         'exam_type': requested,
         'available': available,
         'sitting': sitting,
+        'schedule': timing.status(request.user) if not _is_staff_role(request.user) else None,
+        'items': [scoring.public_item(i) for i in items],
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def retake_exam(request):
+    requested = str(request.data.get('exam_type') or 'pre').lower()
+    if requested not in PROTOCOL_ORDER:
+        return Response({'error': f'Unknown exam type: {requested}'}, status=400)
+
+    available = _accessible_exam_types(request.user, _is_staff_role(request.user))
+    if requested not in available:
+        return Response({
+            'error': 'That paper is not open to you yet.',
+            'exam_type': requested,
+            'available': available,
+            'schedule': timing.status(request.user),
+        }, status=403)
+
+    try:
+        items = scoring.items_for(requested)
+    except scoring.ItemBankError as exc:
+        return Response({'error': str(exc)}, status=500)
+
+    sitting = None
+    if not _is_staff_role(request.user):
+        profile = ParticipantProfile.objects.filter(user=request.user).only('assigned_arm').first()
+        arm = profile.assigned_arm if profile else ''
+        sittings.retake_paper(request.user, requested, arm=arm)
+        sitting = sittings.describe(request.user, requested)
+
+    return Response({
+        'exam_type': requested,
+        'available': available,
+        'sitting': sitting,
+        'schedule': timing.status(request.user) if not _is_staff_role(request.user) else None,
         'items': [scoring.public_item(i) for i in items],
     })
 
@@ -140,14 +224,25 @@ def submit_exam(request):
     # Same gate as get_items: a paper you cannot open is a paper you cannot submit.
     is_staff = _is_staff_role(student)
     if exam_type not in _accessible_exam_types(student, is_staff):
-        return Response({'error': 'That paper is not open to you yet.'}, status=403)
-    # A paper is sat once. The first attempt is the observation; a retake after seeing
-    # the marks is not, and letting it through only confused participants.
-    if not is_staff and sittings.already_submitted(student, exam_type):
-        existing = ExamSubmission.objects.filter(student=student, exam_type=exam_type).order_by('submitted_at').first()
-        return Response({'error': 'You have already submitted this paper.',
-                         'submission_id': existing.pk, 'grading_status': existing.grading_status},
-                        status=409)
+        return Response({'error': 'That paper is not open to you yet. Complete the previous paper and its waiting period.',
+                         'available': _accessible_exam_types(student, is_staff),
+                         'schedule': timing.status(student)}, status=403)
+    # A paper cannot be submitted twice concurrently or after its sitting is closed.
+    # To take a paper again, the participant clicks Retake Assessment which reopens the sitting.
+    if not is_staff:
+        sitting = PaperSitting.objects.filter(student=student, exam_type=exam_type).first()
+        if sitting is not None and not sitting.is_open:
+            existing = sitting.submission or ExamSubmission.objects.filter(student=student, exam_type=exam_type).order_by('-submitted_at').first()
+            return Response({'error': 'You have already submitted this paper.',
+                             'submission_id': existing.pk if existing else None,
+                             'grading_status': existing.grading_status if existing else None},
+                            status=409)
+        elif sitting is None and ExamSubmission.objects.filter(student=student, exam_type=exam_type).exists():
+            existing = ExamSubmission.objects.filter(student=student, exam_type=exam_type).order_by('-submitted_at').first()
+            return Response({'error': 'You have already submitted this paper.',
+                             'submission_id': existing.pk if existing else None,
+                             'grading_status': existing.grading_status if existing else None},
+                            status=409)
 
     # Persist first, grade after. The row exists before any compiler runs, so a slow
     # or failed grading pass can never lose the exam. The client never decides the
@@ -198,6 +293,8 @@ def get_expert_reviews(request):
     item_ids = [item['id'] for _, item in bank_items]
     per_item, experts = _rating_rows(item_ids)
     expert = _current_expert(request)
+    allocated = TeacherReviewAssignment.objects.filter(expert_user=expert).exists()
+    assigned_keys = set(ItemReviewAssignment.objects.filter(expert_user=expert).values_list('item_key', flat=True))
     mine = {r.item_key: r for r in ExpertRating.objects.filter(
         item_key__in=item_ids, expert_user=expert)}
 
@@ -214,6 +311,8 @@ def get_expert_reviews(request):
             'question_text': item.get('question'),
             'curriculum_ref': item.get('curriculum_ref'),
             'ratings_count': per_item.get(item['id'], (0, 0))[0],
+            'rating_revision': _rating_revision(row),
+            'is_assigned': not allocated or item['id'] in assigned_keys,
             'my_rating': None if row is None else {
                 'alignment': row.alignment_score, 'accuracy': row.accuracy_score,
                 'clarity': row.clarity_score, 'difficulty': row.difficulty_score,
@@ -248,33 +347,50 @@ def submit_expert_rating(request):
     if item is None:
         return Response({'error': f'Unknown item_id: {item_id or "(missing)"}'}, status=400)
 
-    payload = request.data.get('ratings') or {}
+    payload = request.data.get('ratings')
+    if not isinstance(payload, dict):
+        return Response({'error': 'Provide all five rubric scores as an object.'}, status=400)
     defaults = {'feedback': str(request.data.get('feedback') or '')}
+    errors = {}
     for key, field in RATING_FIELDS.items():
-        try:
-            score = int(payload.get(key))
-        except (TypeError, ValueError):
-            score = ExpertRating._meta.get_field(field).default
-        defaults[field] = max(1, min(4, score))
+        score = _integer_in_range(payload.get(key), 1, 4)
+        if score is None:
+            errors[key] = 'Choose an integer score from 1 to 4.'
+        else:
+            defaults[field] = score
+    if errors:
+        return Response({'error': 'Score all five criteria from 1 to 4.', 'fields': errors}, status=400)
 
-    ExpertRating.objects.update_or_create(
-        expert_user=_current_expert(request), item_key=item_id, defaults=defaults)
-
-    per_item, _ = _rating_rows([item_id])
-    return Response({'status': 'success', 'rated': True, 'item_id': item_id,
-                     'i_cvi': _i_cvi(per_item[item_id]) if item_id in per_item else None})
+    expert = _current_expert(request)
+    with transaction.atomic():
+        # Lock the expert on first creation as well, when no rating row exists.
+        type(expert).objects.select_for_update().get(pk=expert.pk)
+        existing = ExpertRating.objects.filter(expert_user=expert, item_key=item_id).first()
+        if ('expected_revision' in request.data
+                and request.data['expected_revision'] != _rating_revision(existing)):
+            return Response({'error': 'This rating changed in another session. Reload the latest rating before submitting.',
+                             'reason': 'review_conflict'}, status=409)
+        row, _ = ExpertRating.objects.update_or_create(
+            expert_user=expert, item_key=item_id, defaults=defaults)
+        per_item, _ = _rating_rows([item_id])
+        return Response({'status': 'success', 'rated': True, 'item_id': item_id,
+                         'rating_revision': _rating_revision(row),
+                         'i_cvi': _i_cvi(per_item[item_id]) if item_id in per_item else None})
 
 
 @api_view(['GET'])
 @permission_classes([IsStaffRole])
 def get_student_submissions(request):
-    """Real ExamSubmission rows for expert grading - students are named by participant_code."""
+    """All submissions for expert grading, labelled by participant_code."""
     submissions = (ExamSubmission.objects
                    .select_related('student', 'student__profile')
                    .prefetch_related('grades', 'grades__expert_user')
-                   .order_by('-submitted_at')[:100])
+                   .order_by('-submitted_at', '-pk'))
 
-    payload, banks = [], {}
+    expert = _current_expert(request)
+    allocated = TeacherReviewAssignment.objects.filter(expert_user=expert).exists()
+    assigned_ids = set(SubmissionReviewAssignment.objects.filter(expert_user=expert).values_list('submission_id', flat=True))
+    payload, banks, timing_records = [], {}, {}
     for sub in submissions:
         stored = sub.answers if isinstance(sub.answers, dict) else {}
         results = stored.get('results') or []
@@ -307,25 +423,35 @@ def get_student_submissions(request):
                 },
             })
 
-        grades = sorted(sub.grades.all(), key=lambda g: g.graded_at, reverse=True)
+        # Marking is per expert. A colleague's completed review must not prefill this
+        # expert's form or make their own assigned work appear completed.
+        grades = sorted((g for g in sub.grades.all() if g.expert_user_id == expert.pk),
+                        key=lambda g: (g.graded_at, g.pk), reverse=True)
         grade = grades[0] if grades else None
+        if sub.student_id and sub.student_id not in timing_records:
+            timing_records[sub.student_id] = timing.records(sub.student)
         payload.append({
             'id': sub.id,
+            'is_assigned': not allocated or sub.id in assigned_ids,
+            'my_grade_completed': bool(grade and grade.is_graded),
             'student_label': participant_code or getattr(sub.student, 'username', None) or 'Anonymous',
             'participant_code': participant_code,
             'exam_type': sub.exam_type,
             'chapter': stored.get('chapter'),
             'submitted_at': sub.submitted_at.isoformat(),
+            'timing': timing.report(sub.student, sub.exam_type, sub.submitted_at,
+                                    timing_records[sub.student_id]) if sub.student_id else None,
             'grading_status': sub.grading_status,
             'grading_error': sub.grading_error or None,
             'score_pct': sub.score_pct if sub.is_graded else None,
             'correct': sum(1 for r in results if r.get('correct')) if results else None,
             'total': len(results) or None,
             'code_answers': code_blocks,
+            'grade_revision': _grade_revision(grade),
             'assigned_marks': grade.assigned_marks if grade else None,
             'max_marks': grade.max_marks if grade else 100,
             'feedback': (grade.feedback_comments or '') if grade else '',
-            'status': 'GRADED' if grade else 'PENDING_REVIEW',
+            'status': 'GRADED' if grade and grade.is_graded else 'PENDING_REVIEW',
             'graded_by': getattr(grade.expert_user, 'username', None) if grade else None,
         })
 
@@ -335,30 +461,33 @@ def get_student_submissions(request):
 @api_view(['POST'])
 @permission_classes([IsStaffRole])
 def grade_student_submission(request):
-    submission_id = request.data.get('submission_id')
-    try:
-        submission = ExamSubmission.objects.filter(id=int(submission_id)).first()
-    except (TypeError, ValueError):
-        submission = None
-    if submission is None:
-        return Response({'error': f'Submission {submission_id} does not exist.'}, status=404)
+    submission_id = _integer_in_range(request.data.get('submission_id'), 1, 9223372036854775807)
+    marks = _integer_in_range(request.data.get('assigned_marks'), 0, 100)
+    if marks is None:
+        return Response({'error': 'Enter an integer mark from 0 to 100.',
+                         'fields': {'assigned_marks': 'Enter an integer mark from 0 to 100.'}}, status=400)
 
-    try:
-        marks = int(request.data.get('assigned_marks'))
-    except (TypeError, ValueError):
-        marks = 0
-    marks = max(0, min(100, marks))
-
-    grade, _ = ExpertGrade.objects.update_or_create(
-        submission=submission,
-        expert_user=_current_expert(request),
-        defaults={'assigned_marks': marks, 'max_marks': 100, 'is_graded': True,
-                  'feedback_comments': str(request.data.get('feedback') or '')},
-    )
-
-    return Response({'status': 'success', 'submission_id': submission.id,
-                     'assigned_marks': grade.assigned_marks, 'max_marks': 100,
-                     'graded_at': grade.graded_at.isoformat()})
+    with transaction.atomic():
+        # Serialize checks on the submission, including when no grade exists yet.
+        submission = ExamSubmission.objects.select_for_update().filter(pk=submission_id).first()
+        if submission is None:
+            return Response({'error': f'Submission {submission_id} does not exist.'}, status=404)
+        expert = _current_expert(request)
+        latest = ExpertGrade.objects.filter(submission=submission, expert_user=expert).first()
+        if ('expected_revision' in request.data
+                and request.data['expected_revision'] != _grade_revision(latest)):
+            return Response({'error': 'This grade changed in another session. Reload the latest marks before saving.',
+                             'reason': 'review_conflict'}, status=409)
+        grade, _ = ExpertGrade.objects.update_or_create(
+            submission=submission, expert_user=expert,
+            defaults={'assigned_marks': marks, 'max_marks': 100, 'is_graded': True,
+                      'graded_at': timezone.now(),
+                      'feedback_comments': str(request.data.get('feedback') or '')},
+        )
+        return Response({'status': 'success', 'submission_id': submission.id,
+                         'assigned_marks': grade.assigned_marks, 'max_marks': 100,
+                         'grade_revision': _grade_revision(grade),
+                         'graded_at': grade.graded_at.isoformat()})
 
 
 @api_view(['GET'])

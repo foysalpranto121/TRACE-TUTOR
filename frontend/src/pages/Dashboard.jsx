@@ -1,3 +1,5 @@
+import { formatScore } from '../services/score';
+import { configuredTutorLabel } from '../services/tutorModel';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -140,7 +142,9 @@ export const Dashboard = () => {
       return { skill, pct: Math.round(score / items.length), total: items.length, solved: items.filter((p) => solvedIds.has(p.id)).length };
     }).sort((a, b) => b.pct - a.pct);
 
-    const bestAssessment = Object.values(data?.assessments || {}).reduce((m, a) => Math.max(m, a.best_score || 0), 0);
+    const assessmentScores = Object.values(data?.assessments || {}).map((a) => a.best_score)
+      .filter((score) => typeof score === 'number' && Number.isFinite(score) && score >= 0 && score <= 100);
+    const bestAssessment = assessmentScores.length ? Math.max(...assessmentScores) : null;
     const todayKey = new Date().toISOString().slice(0, 10);
     const today = (data?.daily || []).find((d) => d.date === todayKey) || { code_runs: 0, help_requests: 0, solved: 0 };
     const badges = evaluateBadges(data);
@@ -294,7 +298,7 @@ export const Dashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
             <StatTile icon={<Code2 className="w-5 h-5" />} label="Code runs" value={data.overview.code_runs} delay={0} />
             <StatTile icon={<Bot className="w-5 h-5" />} label="AI help requests" value={data.overview.help_requests} tone="secondary" delay={60} />
-            <StatTile icon={<Database className="w-5 h-5" />} label="RAG index" value={rag ? rag.engine.vector_count : '—'} hint={rag ? `${rag.engine.llm_model} · ${rag.ingest.running ? 'ingesting' : rag.ingest.stage}` : 'status unavailable'} tone="primary" delay={120} animate={false} />
+            <StatTile icon={<Database className="w-5 h-5" />} label="RAG index" value={rag ? rag.engine.vector_count : '—'} hint={rag ? `${configuredTutorLabel(data?.tutor_model)} · ${rag.ingest.running ? 'ingesting' : rag.ingest.stage}` : 'status unavailable'} tone="primary" delay={120} animate={false} />
           </div>
           <div className="flex flex-wrap gap-2">
             <Button as={Link} to="/expert" variant="surface"><Brain className="w-4 h-4 text-primary" /> Expert CVI Portal</Button>
@@ -310,7 +314,7 @@ export const Dashboard = () => {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <StatTile icon={<CheckCircle2 className="w-5 h-5" />} label="সমাধান হয়েছে" value={`${stats.problems_solved || 0}/${NCTB_PROBLEMS.length}`} hint={`${overallPct}% সম্পন্ন · ${stats.problems_attempted || 0} চেষ্টা`} color="emerald" delay={0} animate={false} />
             <StatTile icon={<Award className="w-5 h-5" />} label="ব্যাজ অর্জিত" value={`${derived.earned.length}/${derived.badges.length}`} hint={derived.earned.length ? derived.earned[derived.earned.length - 1].title : 'প্রথম ব্যাজ অপেক্ষা করছে'} color="violet" delay={60} animate={false} />
-            <StatTile icon={<Trophy className="w-5 h-5" />} label="সেরা স্কোর" value={derived.hasAssessments ? `${derived.bestAssessment}%` : '—'} hint={derived.hasAssessments ? `${Object.keys(data.assessments).length}/4 পরীক্ষা দেওয়া` : 'এখনো পরীক্ষা দেননি'} color="amber" delay={120} animate={false} />
+            <StatTile icon={<Trophy className="w-5 h-5" />} label="সেরা স্কোর" value={derived.hasAssessments ? formatScore(derived.bestAssessment) : '—'} hint={derived.hasAssessments ? `${Object.keys(data.assessments).length}/4 পরীক্ষা দেওয়া` : 'এখনো পরীক্ষা দেননি'} color="amber" delay={120} animate={false} />
             <StatTile icon={<Bot className="w-5 h-5" />} label="AI প্রশ্ন" value={stats.help_requests || 0} hint={`${stats.code_runs || 0} রান · ${stats.copy_paste || 0} কপি`} color="sky" delay={180} />
           </div>
 
@@ -373,7 +377,7 @@ export const Dashboard = () => {
                   </div>
                 ) : (
                   <EmptyState icon={<Activity className="w-5 h-5" />} title="এখনো কোনো কার্যক্রম নেই">
-                    Workspace-এ গিয়ে কোড রান করুন — আপনার প্রতিদিনের অগ্রগতি এখানে গ্রাফে দেখা যাবে।
+                    কোড অনুশীলনের পাতায় কোড চালান। প্রতিদিনের অনুশীলনের হিসাব এখানে দেখতে পাবেন।
                   </EmptyState>
                 )}
               </SectionCard>
@@ -465,8 +469,8 @@ export const Dashboard = () => {
                           <div className="text-[10px] font-mono text-on-surface-variant">{a ? `${a.attempts} বার · ${timeAgo(a.last_at)}` : 'দেওয়া হয়নি'}</div>
                         </div>
                         <div className="text-right shrink-0">
-                          <div className={`text-lg font-extrabold font-display ${a ? (a.latest_score >= 60 ? 'text-success' : 'text-warning') : 'text-on-surface-variant/50'}`}>{a ? `${a.latest_score}%` : '—'}</div>
-                          {a && a.best_score !== a.latest_score && <div className="text-[9px] font-mono text-on-surface-variant">সেরা {a.best_score}%</div>}
+                          <div className={`text-lg font-extrabold font-display ${a?.latest_score != null ? (a.latest_score >= 60 ? 'text-success' : 'text-warning') : 'text-on-surface-variant/50'}`}>{a ? formatScore(a.latest_score) : '—'}</div>
+                          {a && a.best_score != null && a.best_score !== a.latest_score && <div className="text-[9px] font-mono text-on-surface-variant">সেরা {formatScore(a.best_score)}</div>}
                         </div>
                       </div>
                     );
@@ -479,7 +483,7 @@ export const Dashboard = () => {
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
                   {[
                     ['মোড', armLabel(arm)],
-                    ['মডেল', rag?.engine?.llm_model || '—'],
+                    [bn ? 'প্রধান মডেল' : 'Primary model', configuredTutorLabel(data?.tutor_model)],
                     ['ইনডেক্সড অনুচ্ছেদ', rag ? rag.engine.vector_count.toLocaleString() : '—'],
                     ['কপি করা কোড', `${stats.copy_paste || 0} বার`],
                   ].map(([k, v]) => (
@@ -500,7 +504,7 @@ export const Dashboard = () => {
         <SectionCard icon={<Clock className="w-4 h-4 text-primary" />} title="সাম্প্রতিক কার্যক্রম" subtitle="Recent activity" className="animate-fade-up stagger-4">
           {!(data.recent || []).length ? (
             <EmptyState icon={<Activity className="w-5 h-5" />} title="এখনো কিছু নেই">
-              Workspace-এ কোড রান করুন বা AI টিউটরকে প্রশ্ন করুন — প্রতিটি কাজ এখানে লগ হবে।
+              কোড চালালে বা AI টিউটরকে প্রশ্ন করলে সেই কাজের রেকর্ড এখানে দেখতে পাবেন।
             </EmptyState>
           ) : (
             <ol className="border-l border-outline-variant/40 ml-3 space-y-3">

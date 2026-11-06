@@ -1,0 +1,411 @@
+diff --git a/backend/tutor/runner.py b/backend/tutor/runner.py
+index fecb1a9..94c5492 100644
+--- a/backend/tutor/runner.py
++++ b/backend/tutor/runner.py
+@@ -10,7 +10,6 @@ import re
+ import shutil
+ import subprocess
+ import sys
+-import tempfile
+ from pathlib import Path
+ 
+ from . import sandbox
+@@ -88,8 +87,8 @@ def compiler_status():
+         need = box.get('required_tier') or sandbox.DOCKER
+         hint = (f'Code execution is disabled: the available containment ({box["tier"]}) is '
+                 f'below the required {need}. Build the runner image '
+-                '(backend/tutor/sandbox.Dockerfile), or lower CODE_SANDBOX_MIN_TIER / set '
+-                'CODE_SANDBOX_REQUIRED=0 on a closed network.')
++                '(backend/tutor/sandbox.Dockerfile), and check Docker workdir permissions '
++                f'and host path mapping. {box.get("detail") or ""}')
+     elif not (containerised or c):
+         hint = 'No C compiler found. Install gcc/clang or run: pip install ziglang'
+     elif box['tier'] != sandbox.DOCKER:
+@@ -177,7 +176,7 @@ def _compile_c_family(language, code, workdir):
+     # In a container the binary is Linux/ELF; on the host it must match the host.
+     exe_name = 'main.out' if (tier == sandbox.DOCKER or os.name != 'nt') else 'main.exe'
+     exe = workdir / exe_name
+-    (workdir / src_name).write_text(code, encoding='utf-8')
++    sandbox.write_workfile(workdir / src_name, code)
+     tail = ['-Wall', src_name, '-o', exe_name]
+ 
+     # The container has real gcc, so it gets gcc's spellings.
+@@ -216,7 +215,7 @@ def _compile_c_family(language, code, workdir):
+ 
+ 
+ def _check_python(code, workdir):
+-    (workdir / 'main.py').write_text(code, encoding='utf-8')
++    sandbox.write_workfile(workdir / 'main.py', code)
+     try:
+         # Parsing is not execution, so this is safe to do in-process.
+         ast.parse(code, filename='main.py')
+@@ -278,7 +277,7 @@ def run_code(language, code, test_cases=None, mode='run'):
+             'sandbox': sandbox.status()['tier'],
+         }
+ 
+-    workdir = Path(tempfile.mkdtemp(prefix='trace_run_'))
++    workdir = sandbox.create_workdir()
+     try:
+         build = _check_python(code, workdir) if language == 'python' else _compile_c_family(language, code, workdir)
+         result = {
+diff --git a/backend/tutor/sandbox.py b/backend/tutor/sandbox.py
+index 44feb8f..9acc8a5 100644
+--- a/backend/tutor/sandbox.py
++++ b/backend/tutor/sandbox.py
+@@ -33,8 +33,10 @@ import platform
+ import shutil
+ import signal
+ import subprocess
++import tempfile
+ import time
+ import uuid
++from pathlib import Path
+ 
+ from django.conf import settings
+ 
+@@ -100,6 +102,56 @@ def limits(kind):
+     }
+ 
+ 
++def docker_identity():
++    """Match a non-root POSIX backend; never execute submissions as root."""
++    if os.name == 'posix' and os.geteuid() != 0:
++        return os.geteuid(), os.getegid()
++    return 65532, 65532
++
++
++def create_workdir(prefix='trace_run_'):
++    """Private workspace shared by the backend and its non-root runner."""
++    root = _conf('CODE_SANDBOX_WORKDIR_ROOT', '') or None
++    path = Path(tempfile.mkdtemp(prefix=prefix, dir=root))
++    try:
++        if os.name == 'posix' and os.geteuid() == 0:
++            os.chown(path, *docker_identity())
++        return path
++    except OSError:
++        shutil.rmtree(path, ignore_errors=True)
++        raise
++
++
++def write_workfile(path, content):
++    """Keep source/probe files private, including with a root backend and umask 077."""
++    path.write_text(content, encoding='utf-8')
++    if os.name == 'posix':
++        path.chmod(0o600)
++        if os.geteuid() == 0:
++            os.chown(path, *docker_identity())
++
++
++def docker_workdir(workdir):
++    """Translate a shared backend directory to its Docker-daemon host path.
++
++    --mount deliberately fails if the host path is absent; --volume would silently
++    create an unrelated empty directory when the backend runs in another container.
++    """
++    path = Path(workdir).resolve()
++    host_root = _conf('CODE_SANDBOX_HOST_WORKDIR_ROOT', '')
++    if not host_root:
++        return str(path)
++    local_root = _conf('CODE_SANDBOX_WORKDIR_ROOT', '')
++    if not local_root or not os.path.isabs(host_root):
++        raise SandboxUnavailable('Sandbox host/local workdir roots must both be configured '
++                                 'with an absolute Docker host path.')
++    try:
++        relative = path.relative_to(Path(local_root).resolve())
++    except ValueError as exc:
++        raise SandboxUnavailable('Sandbox workdir is outside CODE_SANDBOX_WORKDIR_ROOT.') from exc
++    return str(Path(host_root) / relative)
++
++
+ # ------------------------------------------------------------------------ detection
+ def _docker_usable():
+     """Docker counts as available only if it can actually run our image with a mount.
+@@ -119,20 +171,29 @@ def _docker_usable():
+         return False, (f'image {image_name()} is not built - see '
+                        'backend/tutor/sandbox.Dockerfile')
+ 
+-    import tempfile
+-    from pathlib import Path
+-    probe_dir = Path(tempfile.mkdtemp(prefix='trace_probe_'))
++    probe_dir = None
+     try:
+-        (probe_dir / 'probe.txt').write_text('ok', encoding='utf-8')
++        probe_dir = create_workdir(prefix='trace_probe_')
++        token = uuid.uuid4().hex
++        write_workfile(probe_dir / 'probe.txt', token)
+         result = subprocess.run(
+             _docker_command(['cat', 'probe.txt'], probe_dir, 'run', writable=False),
+             capture_output=True, text=True, timeout=60)
+-        if result.returncode != 0 or 'ok' not in (result.stdout or ''):
++        if result.returncode != 0 or token != (result.stdout or '').strip():
+             return False, f'container could not read the mounted workdir: {(result.stderr or "").strip()[:200]}'
+-    except (OSError, subprocess.SubprocessError) as exc:
++        result = subprocess.run(
++            _docker_command(['sh', '-c', 'cat probe.txt > written.txt'],
++                            probe_dir, 'compile', writable=True),
++            capture_output=True, text=True, timeout=60)
++        if result.returncode != 0:
++            return False, f'container could not write the mounted workdir: {(result.stderr or "").strip()[:200]}'
++        if (probe_dir / 'written.txt').read_text(encoding='utf-8') != token:
++            return False, 'Docker host and backend workdir paths do not refer to the same directory'
++    except (OSError, subprocess.SubprocessError, SandboxUnavailable) as exc:
+         return False, f'probe container failed: {exc}'
+     finally:
+-        shutil.rmtree(probe_dir, ignore_errors=True)
++        if probe_dir is not None:
++            shutil.rmtree(probe_dir, ignore_errors=True)
+     return True, None
+ 
+ 
+@@ -223,13 +284,12 @@ def ensure_allowed():
+         if tier == NONE:
+             raise SandboxUnavailable(
+                 'Code execution is disabled: no sandbox is available on this host '
+-                f'({reason or "no containment backend"}). Build the runner image, or set '
+-                'CODE_SANDBOX_REQUIRED=0 to accept the risk on a closed network.')
++                f'({reason or "no containment backend"}). Check the Docker daemon, runner '
++                'image and shared workdir permissions/path configuration.')
+         raise SandboxUnavailable(
+             f'Code execution is disabled: only the {tier} tier is available and the policy '
+             f'requires {minimum_tier()} ({reason or "the container runtime is not usable"}). '
+-            f'Build the runner image, or set CODE_SANDBOX_MIN_TIER={tier} to accept that '
+-            'student programs can reach the host filesystem and network.')
++            'Check the Docker daemon, runner image and shared workdir permissions/path configuration.')
+     return tier
+ 
+ 
+@@ -251,7 +311,8 @@ def _docker_command(inner_argv, workdir, kind, writable, name=None, cpu_hardcap=
+     forever."""
+     caps = limits(kind)
+     cpu_limit = int(cpu_hardcap or caps['cpu_seconds'])
+-    mount = f'{os.path.abspath(str(workdir))}:/work' + ('' if writable else ':ro')
++    mount = f'type=bind,source={docker_workdir(workdir)},target=/work' + ('' if writable else ',readonly')
++    uid, gid = docker_identity()
+     argv = ['docker', 'run', '--rm', '--interactive']
+     if name:
+         argv += ['--name', name]
+@@ -267,8 +328,9 @@ def _docker_command(inner_argv, workdir, kind, writable, name=None, cpu_hardcap=
+         '--ulimit', f'fsize={caps["max_file_mb"] * 1024 * 1024}:{caps["max_file_mb"] * 1024 * 1024}',
+         '--cap-drop', 'ALL',
+         '--security-opt', 'no-new-privileges',
++        '--user', f'{uid}:{gid}',
+         '--workdir', '/work',
+-        '--volume', mount,
++        '--mount', mount,
+     ]
+     if not writable:
+         argv += ['--read-only', '--tmpfs', '/tmp:rw,size=16m']
+diff --git a/backend/tutor/test_sandbox.py b/backend/tutor/test_sandbox.py
+index 1c6ad73..42f32ce 100644
+--- a/backend/tutor/test_sandbox.py
++++ b/backend/tutor/test_sandbox.py
+@@ -7,9 +7,13 @@ run everywhere, because that is the check that keeps a deployment from silently
+ executing untrusted code with no protection at all.
+ """
+ import os
++import shutil
++import stat
++import tempfile
+ import textwrap
+ import unittest
+ from unittest.mock import Mock, patch
++from pathlib import Path
+ 
+ from django.test import SimpleTestCase, override_settings
+ 
+@@ -195,6 +199,7 @@ class KillTreeTests(SimpleTestCase):
+         proc.kill.assert_not_called()
+ 
+ 
++@override_settings(CODE_SANDBOX_WORKDIR_ROOT='', CODE_SANDBOX_HOST_WORKDIR_ROOT='')
+ class DockerCommandTests(SimpleTestCase):
+     """The container flags are the containment, so assert on them directly."""
+ 
+@@ -227,12 +232,14 @@ class DockerCommandTests(SimpleTestCase):
+ 
+     def test_the_run_step_mounts_the_workdir_read_only(self):
+         argv = self.command()
+-        self.assertTrue(any(a.endswith(':/work:ro') for a in argv))
++        self.assertIn('--mount', argv)
++        self.assertTrue(any(a.endswith('target=/work,readonly') for a in argv))
++        self.assertNotIn('--volume', argv)
+         self.assertIn('--read-only', argv)
+ 
+     def test_the_compile_step_gets_a_writable_workdir(self):
+         argv = self.command(kind='compile', writable=True)
+-        self.assertTrue(any(a.endswith(':/work') for a in argv))
++        self.assertTrue(any(a.endswith('target=/work') for a in argv))
+         self.assertNotIn('--read-only', argv)
+ 
+     def test_compiling_gets_a_larger_memory_cap_than_running(self):
+@@ -260,6 +267,117 @@ class DockerCommandTests(SimpleTestCase):
+         with override_settings(CODE_SANDBOX_IMAGE='my-runner:7'):
+             self.assertIn('my-runner:7', self.command())
+ 
++    def test_the_container_always_has_an_explicit_non_root_identity(self):
++        argv = self.command()
++        self.assertEqual(argv[argv.index('--user') + 1],
++                         ':'.join(map(str, sandbox.docker_identity())))
++        self.assertNotEqual(sandbox.docker_identity()[0], 0)
++
++
++@override_settings(CODE_SANDBOX_WORKDIR_ROOT='', CODE_SANDBOX_HOST_WORKDIR_ROOT='')
++class WorkdirTests(SimpleTestCase):
++    def test_a_non_root_backend_identity_is_preserved(self):
++        with patch('tutor.sandbox.os.name', 'posix'), \
++             patch('tutor.sandbox.os.geteuid', return_value=1001, create=True), \
++             patch('tutor.sandbox.os.getegid', return_value=1002, create=True):
++            self.assertEqual(sandbox.docker_identity(), (1001, 1002))
++
++    def test_a_root_backend_uses_the_unprivileged_image_identity(self):
++        with patch('tutor.sandbox.os.name', 'posix'), \
++             patch('tutor.sandbox.os.geteuid', return_value=0, create=True):
++            self.assertEqual(sandbox.docker_identity(), (65532, 65532))
++
++    def test_workdirs_use_the_configured_shared_root_and_are_cleanable(self):
++        with tempfile.TemporaryDirectory() as root, \
++             override_settings(CODE_SANDBOX_WORKDIR_ROOT=root):
++            path = sandbox.create_workdir()
++            self.assertEqual(path.parent, Path(root))
++            sandbox.write_workfile(path / 'main.c', 'int main(){return 0;}')
++            if os.name == 'posix':
++                self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o700)
++                self.assertEqual(stat.S_IMODE((path / 'main.c').stat().st_mode), 0o600)
++                self.assertEqual(path.stat().st_uid, sandbox.docker_identity()[0])
++                self.assertEqual((path / 'main.c').stat().st_uid, sandbox.docker_identity()[0])
++            shutil.rmtree(path)
++            self.assertFalse(path.exists())
++
++    def test_host_mapping_preserves_the_private_directory_name(self):
++        with tempfile.TemporaryDirectory() as root, \
++             override_settings(CODE_SANDBOX_WORKDIR_ROOT=root,
++                               CODE_SANDBOX_HOST_WORKDIR_ROOT=str(Path(root) / 'host')):
++            path = Path(root) / 'trace_run_abc'
++            self.assertEqual(sandbox.docker_workdir(path), str(Path(root) / 'host' / path.name))
++
++    def test_host_mapping_refuses_a_directory_outside_the_shared_root(self):
++        with tempfile.TemporaryDirectory() as root, \
++             override_settings(CODE_SANDBOX_WORKDIR_ROOT=str(Path(root) / 'shared'),
++                               CODE_SANDBOX_HOST_WORKDIR_ROOT=root):
++            with self.assertRaises(sandbox.SandboxUnavailable):
++                sandbox.docker_workdir(Path(root) / 'unshared')
++
++    def test_host_mapping_requires_the_backend_root(self):
++        with override_settings(CODE_SANDBOX_WORKDIR_ROOT='',
++                               CODE_SANDBOX_HOST_WORKDIR_ROOT='/host/shared'):
++            with self.assertRaises(sandbox.SandboxUnavailable):
++                sandbox.docker_workdir('/tmp/work')
++
++    def test_probe_checks_reads_writes_and_backend_visibility(self):
++        calls = []
++
++        def docker_run(argv, **kwargs):
++            calls.append(argv)
++            if argv[1:3] == ['image', 'inspect']:
++                return Mock(returncode=0)
++            mount = argv[argv.index('--mount') + 1]
++            source = mount.split('source=', 1)[1].split(',target=', 1)[0]
++            path = Path(source)
++            token = (path / 'probe.txt').read_text()
++            if argv[-2:] == ['cat', 'probe.txt']:
++                return Mock(returncode=0, stdout=token, stderr='')
++            (path / 'written.txt').write_text(token)
++            return Mock(returncode=0, stdout='', stderr='')
++
++        with patch('tutor.sandbox.shutil.which', return_value='docker'), \
++             patch('tutor.sandbox.subprocess.run', side_effect=docker_run):
++            self.assertEqual(sandbox._docker_usable(), (True, None))
++        self.assertEqual(len(calls), 3)
++
++    def test_probe_rejects_a_readable_but_unwritable_mount(self):
++        # Reuse the real workspace/token while simulating Docker's permission error.
++        def docker_run(argv, **kwargs):
++            if argv[1:3] == ['image', 'inspect']:
++                return Mock(returncode=0)
++            if argv[-2:] == ['cat', 'probe.txt']:
++                mount = argv[argv.index('--mount') + 1]
++                source = mount.split('source=', 1)[1].split(',target=', 1)[0]
++                return Mock(returncode=0, stdout=(Path(source) / 'probe.txt').read_text(), stderr='')
++            return Mock(returncode=1, stdout='', stderr='Permission denied')
++
++        with patch('tutor.sandbox.shutil.which', return_value='docker'), \
++             patch('tutor.sandbox.subprocess.run', side_effect=docker_run):
++            ok, reason = sandbox._docker_usable()
++        self.assertFalse(ok)
++        self.assertIn('could not write', reason)
++
++
++@unittest.skipUnless(active_tier() == sandbox.DOCKER, 'needs the docker tier')
++class DockerSumTests(SimpleTestCase):
++    def test_sum_of_first_five_natural_numbers(self):
++        result = runner.run_code(language='c', code=textwrap.dedent('''\
++            #include <stdio.h>
++            int main() {
++                int n, sum = 0;
++                scanf("%d", &n);
++                for (int i = 1; i <= n; i++) sum += i;
++                printf("%d\\n", sum);
++                return 0;
++            }
++        '''), test_cases=[{'input': '5', 'output': '15'}])
++        self.assertEqual(result['sandbox'], sandbox.DOCKER)
++        self.assertEqual(result['status'], 'SUCCESS', result)
++        self.assertEqual(result['test_results'][0]['actual'], '15')
++        self.assertEqual(result['test_results'][0]['exit_code'], 0)
++
+ 
+ @unittest.skipUnless(os.name == 'posix', 'rlimit caps are POSIX-only')
+ class RlimitTests(SimpleTestCase):
+diff --git a/deploy/linux/trace-tutor.service b/deploy/linux/trace-tutor.service
+index 094aac6..49df1ce 100644
+--- a/deploy/linux/trace-tutor.service
++++ b/deploy/linux/trace-tutor.service
+@@ -15,6 +15,12 @@ User=tracetutor
+ Group=tracetutor
+ WorkingDirectory=/opt/trace-tutor/backend
+ Environment=PYTHONUNBUFFERED=1
++# PrivateTmp's /tmp is invisible to the host Docker daemon. Use a shared runtime
++# directory owned by the service user, while retaining PrivateTmp for everything else.
++RuntimeDirectory=trace-tutor-work
++RuntimeDirectoryMode=0700
++Environment=CODE_SANDBOX_WORKDIR_ROOT=/run/trace-tutor-work
++Environment=CODE_SANDBOX_HOST_WORKDIR_ROOT=/run/trace-tutor-work
+ ExecStart=/opt/trace-tutor/backend/.venv/bin/python -m waitress --listen=0.0.0.0:8000 --threads=8 trace_backend.wsgi:application
+ Restart=always
+ RestartSec=5
+diff --git a/backend/trace_backend/settings.py b/backend/trace_backend/settings.py
+index 4a45219..6404aaf 100644
+--- a/backend/trace_backend/settings.py
++++ b/backend/trace_backend/settings.py
+@@ -322,6 +324,10 @@ CODE_SANDBOX_REQUIRED = env_flag('CODE_SANDBOX_REQUIRED', default=not DEBUG)
+ # only to accept those gaps on a closed, proctored network.
+ CODE_SANDBOX_MIN_TIER = os.environ.get('CODE_SANDBOX_MIN_TIER', 'docker').strip().lower()
+ CODE_SANDBOX_IMAGE = os.environ.get('CODE_SANDBOX_IMAGE', 'trace-tutor-runner:1')
++# For a containerised backend, bind-mount a host directory here and map its host path.
++# Leave both unset for a backend running directly on the Docker host.
++CODE_SANDBOX_WORKDIR_ROOT = os.environ.get('CODE_SANDBOX_WORKDIR_ROOT', '')
++CODE_SANDBOX_HOST_WORKDIR_ROOT = os.environ.get('CODE_SANDBOX_HOST_WORKDIR_ROOT', '')
+ CODE_SANDBOX_CPUS = os.environ.get('CODE_SANDBOX_CPUS', '1.0')
+ CODE_SANDBOX_STARTUP_GRACE = int(os.environ.get('CODE_SANDBOX_STARTUP_GRACE', '15'))
+ # While the active tier is below the required minimum, re-probe this often (seconds) so a
+diff --git a/backend/.env.example b/backend/.env.example
+index 2468bda..f36877b 100644
+--- a/backend/.env.example
++++ b/backend/.env.example
+@@ -161,6 +161,16 @@ CODE_SANDBOX=auto
+ # CODE_SANDBOX_IMAGE=trace-tutor-runner:1
+ # CODE_SANDBOX_CPUS=1.0
+ 
++# Backend on the Docker host: leave both unset (uses the system temp directory).
++# Backend container using the host daemon: share a host directory with the backend,
++# e.g. --mount type=bind,source=/srv/trace-work,target=/sandbox-work
++# The backend user must be able to create/delete private subdirectories there.
++# CODE_SANDBOX_WORKDIR_ROOT=/sandbox-work
++# CODE_SANDBOX_HOST_WORKDIR_ROOT=/srv/trace-work
++# These must refer to the SAME directory; the read/write probe verifies that.
++# The runner uses the backend's non-root UID/GID; a root backend hands private
++# workdirs/files to UID/GID 65532. No chmod 777 or root runner is needed.
++
+ # Caps on the student's program, and on the compiler.
+ # CODE_RUN_MEMORY_MB=256
+ # CODE_RUN_MAX_PROCESSES=64

@@ -171,7 +171,7 @@ export const Profile = () => {
     const patch = { ...form, has_computer_at_home: form.has_computer_at_home === '' ? null : form.has_computer_at_home === 'yes' };
     try {
       await updateProfile(patch);
-      setNotice({ ok: true, text: bn ? 'প্রোফাইল সংরক্ষিত হয়েছে।' : 'Profile saved.' });
+      setNotice({ ok: true, text: bn ? 'প্রোফাইলের তথ্য সেভ হয়েছে।' : 'Profile saved.' });
     } catch (err) {
       setErrors(err.fields || {});
       setNotice({ ok: false, text: err.message });
@@ -196,10 +196,10 @@ export const Profile = () => {
   if (!user) return null;
 
   return (
-    <div className="max-w-5xl mx-auto w-full space-y-5 pb-10">
+    <div className="max-w-5xl mx-auto w-full shrink-0 space-y-5 pb-10">
       {/* Header card */}
-      <div className="bg-surface-container rounded-2xl border border-outline-variant/30 p-5 shadow-xl flex flex-wrap items-center gap-5">
-        <div className="flex flex-col items-center gap-2">
+      <div className="bg-surface-container rounded-2xl border border-outline-variant/30 p-5 shadow-xl grid grid-cols-[auto_minmax(0,1fr)] xl:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-5">
+        <div className="flex flex-col items-center gap-2 self-start">
           <button
             type="button"
             onClick={() => !avatarBusy && fileInput.current?.click()}
@@ -227,8 +227,8 @@ export const Profile = () => {
             )}
           </div>
         </div>
-        <div className="min-w-0 flex-1">
-          <h1 className="text-xl font-extrabold text-on-surface truncate">{user.full_name || user.username}</h1>
+        <div className="min-w-0 [overflow-wrap:anywhere]">
+          <h1 className="text-xl font-extrabold text-on-surface">{user.full_name || user.username}</h1>
           <div className="text-xs text-on-surface-variant font-mono">@{user.username}{user.email ? ` · ${user.email}` : ''}</div>
           <div className="flex flex-wrap items-center gap-2 mt-2 text-[11px] font-mono">
             <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/30 font-bold">{user.role}</span>
@@ -239,16 +239,16 @@ export const Profile = () => {
             }`}>
               {armLabel(user.arm)}
             </span>
-            {user.school_name && <span className="text-on-surface-variant flex items-center gap-1"><School className="w-3 h-3" /> {user.school_name}</span>}
+            {user.school_name && <span className="min-w-0 text-on-surface-variant flex items-start gap-1"><School className="w-3 h-3 shrink-0 mt-0.5" /> <span className="min-w-0">{user.school_name}</span></span>}
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-2 text-[11px]">
-          <div className="bg-surface-container-high rounded-xl border border-outline-variant/30 px-3 py-2">
-            <div className="font-mono text-on-surface-variant uppercase text-[10px] flex items-center gap-1"><Fingerprint className="w-3 h-3" /> Participant code</div>
+        <div className="col-span-2 xl:col-span-1 min-w-0 grid grid-cols-2 gap-2 text-[11px] [overflow-wrap:anywhere]">
+          <div className="min-w-0 bg-surface-container-high rounded-xl border border-outline-variant/30 px-3 py-2">
+            <div className="font-mono text-on-surface-variant uppercase text-[10px] flex items-start gap-1"><Fingerprint className="w-3 h-3 shrink-0 mt-0.5" /> <span className="min-w-0">Participant code</span></div>
             <div className="font-extrabold text-on-surface text-sm">{user.participant_code || '-'}</div>
           </div>
-          <div className="bg-surface-container-high rounded-xl border border-outline-variant/30 px-3 py-2">
-            <div className="font-mono text-on-surface-variant uppercase text-[10px] flex items-center gap-1"><Calendar className="w-3 h-3" /> Member since</div>
+          <div className="min-w-0 bg-surface-container-high rounded-xl border border-outline-variant/30 px-3 py-2">
+            <div className="font-mono text-on-surface-variant uppercase text-[10px] flex items-start gap-1"><Calendar className="w-3 h-3 shrink-0 mt-0.5" /> <span className="min-w-0">Member since</span></div>
             <div className="font-extrabold text-on-surface text-sm">{user.joined ? new Date(user.joined).toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}</div>
           </div>
         </div>
@@ -347,7 +347,7 @@ export const Profile = () => {
       {/* Appearance: theme + how much motion the animated interface should use */}
       <Section
         icon={<Palette className="w-4 h-4 text-primary" />}
-        title={bn ? 'চেহারা ও অ্যানিমেশন' : 'Appearance & motion'}
+        title={bn ? 'থিম ও অ্যানিমেশন' : 'Appearance & motion'}
         subtitle={bn ? 'থিম ও অ্যানিমেশনের মাত্রা বেছে নিন' : 'Pick your theme and how animated the interface should feel'}
       >
         <div className="space-y-4">
@@ -495,7 +495,7 @@ export const Profile = () => {
               <PasswordField label={bn ? 'নতুন পাসওয়ার্ড' : 'New password'} value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} autoComplete="new-password" required />
               <StrengthMeter password={pw.next} />
             </div>
-            <PasswordField label={bn ? 'নতুন পাসওয়ার্ড নিশ্চিত করুন' : 'Confirm new password'} value={pw.confirm} onChange={(e) => setPw({ ...pw, confirm: e.target.value })} autoComplete="new-password" required />
+            <PasswordField label={bn ? 'নতুন পাসওয়ার্ড আবার লিখুন' : 'Confirm new password'} value={pw.confirm} onChange={(e) => setPw({ ...pw, confirm: e.target.value })} autoComplete="new-password" required />
             <button type="submit" disabled={pwState.saving || !pw.current || !pw.next} className="px-4 py-2 rounded-xl bg-surface-container-high border border-outline-variant/40 text-on-surface text-xs font-bold flex items-center gap-2 hover:bg-surface-container-highest transition-colors disabled:opacity-50">
               {pwState.saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4 text-primary" />} {bn ? 'পাসওয়ার্ড আপডেট' : 'Update password'}
             </button>

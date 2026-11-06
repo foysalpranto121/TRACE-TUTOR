@@ -1,0 +1,44 @@
+{
+  "snapshot_at_utc": "2026-11-06T09:03:07.757Z",
+  "snapshot_at_dhaka": "2026-11-06T15:03:07+06:00",
+  "files": {
+    "teacher_reviews.csv": {
+      "rows": 311,
+      "columns": 43,
+      "sha256": "1532eb1d60d09f9becb01bb18348a5e3f78a792352be6070a5aab353d285266b"
+    },
+    "students_database.csv": {
+      "rows": 60,
+      "columns": 94,
+      "sha256": "888aff4889c2953898385a5a5901c176ccbe368d93fe06f16126b83aaccc8982"
+    },
+    "students_sheet_format.csv": {
+      "rows": 60,
+      "columns": 29,
+      "sha256": "883e91aebad500120193d743a16af342f6ff06df6b7772229c24d973e9cb02dd"
+    },
+    "teacher_summary.csv": {
+      "rows": 10,
+      "columns": 17,
+      "sha256": "9870b52908c82d93baef6fe0a3b6cc971c370a49875ac01ea6a68ea61bfc41ab"
+    },
+    "student_submissions.csv": {
+      "rows": 237,
+      "columns": 26,
+      "sha256": "00fefea3d9204d611b57aba32a495baf117e6f0e521b5dcb5395e1b7e234cae7"
+    },
+    "data_dictionary.csv": {
+      "rows": 209,
+      "columns": 4,
+      "sha256": "cd5c11746baa88bb27e4bb85822ce5b9d7e22b0d4211f3fd4b6484d7bf46076f"
+    }
+  },
+  "saved_grades": 248,
+  "saved_item_ratings": 63,
+  "formula_escaped_cells": 0,
+  "synthetic_student_count": 60,
+  "review_status_counts": {
+    "ITEM_REVIEW:RATED": 63,
+    "SUBMISSION_GRADE:GRADED": 248
+  }
+}

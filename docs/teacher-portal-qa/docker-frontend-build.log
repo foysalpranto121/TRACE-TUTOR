@@ -1,0 +1,54 @@
+
+> trace-tutor-frontend@1.0.0 build
+> vite build
+
+vite v6.4.3 building for production...
+transforming...
+✓ 2249 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                           1.24 kB │ gzip:   0.67 kB
+dist/assets/index-CCZasV-A.css           58.82 kB │ gzip:  11.48 kB
+dist/assets/score-mZCI-jHE.js             0.19 kB │ gzip:   0.17 kB
+dist/assets/check-CUGKgdan.js             0.29 kB │ gzip:   0.24 kB
+dist/assets/play-vF3r14be.js              0.30 kB │ gzip:   0.25 kB
+dist/assets/arrow-right-Co3-_7Gj.js       0.33 kB │ gzip:   0.26 kB
+dist/assets/terminal-Cv0DX_f6.js          0.36 kB │ gzip:   0.28 kB
+dist/assets/info-Z0RC9Ubp.js              0.37 kB │ gzip:   0.28 kB
+dist/assets/circle-x-B1KZpTVZ.js          0.37 kB │ gzip:   0.28 kB
+dist/assets/trending-up-CwGDn_w0.js       0.37 kB │ gzip:   0.28 kB
+dist/assets/code-xml-D7uC5rA0.js          0.38 kB │ gzip:   0.28 kB
+dist/assets/copy-BHMH322A.js              0.40 kB │ gzip:   0.31 kB
+dist/assets/circle-help-DT1xmudy.js       0.40 kB │ gzip:   0.30 kB
+dist/assets/download-DRLPVCJ0.js          0.43 kB │ gzip:   0.32 kB
+dist/assets/book-open-cloj9qp2.js         0.45 kB │ gzip:   0.31 kB
+dist/assets/users-B1Wg0Z4n.js             0.47 kB │ gzip:   0.32 kB
+dist/assets/file-code-i0HKzeGi.js         0.49 kB │ gzip:   0.32 kB
+dist/assets/shield-check-CYjRFjpm.js      0.49 kB │ gzip:   0.35 kB
+dist/assets/refresh-cw-C6szBS6_.js        0.49 kB │ gzip:   0.32 kB
+dist/assets/bot-DWz-tuGR.js               0.50 kB │ gzip:   0.33 kB
+dist/assets/trash-2-DEZmRaMc.js           0.53 kB │ gzip:   0.35 kB
+dist/assets/layers-BwRH0Aa6.js            0.53 kB │ gzip:   0.34 kB
+dist/assets/file-text-Cb_8X-po.js         0.75 kB │ gzip:   0.36 kB
+dist/assets/tutorModel-DXEjn8ZR.js        0.95 kB │ gzip:   0.49 kB
+dist/assets/target-CqSkh5nn.js            0.97 kB │ gzip:   0.48 kB
+dist/assets/school-BQUDmU9M.js            1.43 kB │ gzip:   0.61 kB
+dist/assets/CodeRain-B24t3W2u.js          2.15 kB │ gzip:   1.16 kB
+dist/assets/ChatMarkdown-BRzHdQFG.js      2.23 kB │ gzip:   1.13 kB
+dist/assets/Login-8EsvdlNW.js             5.24 kB │ gzip:   2.22 kB
+dist/assets/AuthLayout-yOXI6ofV.js        5.50 kB │ gzip:   2.05 kB
+dist/assets/fields-CON_NE0k.js            5.61 kB │ gzip:   2.10 kB
+dist/assets/editor-DcEovlLs.js           14.90 kB │ gzip:   5.13 kB
+dist/assets/Register-DIpwHx2G.js         16.98 kB │ gzip:   6.05 kB
+dist/assets/AdminDashboard-CW4Nfhnm.js   18.58 kB │ gzip:   5.56 kB
+dist/assets/RAGInspector-Do3HA2lI.js     18.64 kB │ gzip:   5.34 kB
+dist/assets/LandingPage-DyfWNNMi.js      24.55 kB │ gzip:   6.45 kB
+dist/assets/ExpertPortal-BlwSsvTb.js     25.87 kB │ gzip:   7.65 kB
+dist/assets/Dashboard-ClbkQ5dd.js        27.62 kB │ gzip:   8.34 kB
+dist/assets/Profile-BORoIz4i.js          33.97 kB │ gzip:   9.89 kB
+dist/assets/AssessmentPage-DNasOAaN.js   45.66 kB │ gzip:  11.80 kB
+dist/assets/Workspace-DynZdgP1.js        55.86 kB │ gzip:  14.67 kB
+dist/assets/index-ahR4sxvw.js            77.38 kB │ gzip:  25.10 kB
+dist/assets/react--cv88Mzj.js           163.88 kB │ gzip:  53.62 kB
+dist/assets/charts-BoBzP-sS.js          382.38 kB │ gzip: 105.71 kB
+✓ built in 4.60s

@@ -1,0 +1,25 @@
+
+> trace-tutor-frontend@1.0.0 test
+> node --test tests/*.test.mjs && vitest run
+
+✔ completed grading unlocks transfer from server response without clearing results (2.3423ms)
+✔ pending and failed grading do not unlock a later phase (0.1554ms)
+✔ a response from a previous phase is ignored after cleanup (0.6398ms)
+✔ refresh failure preserves availability and reports a retryable error (0.4968ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 58.1033
+
+ RUN  v4.1.11 C:/Users/shiha/ML-Projects/trace/Trace Tutor AI ( system Design)/Trace Tutor AI ( system Design)/frontend
+
+
+ Test Files  6 passed (6)
+      Tests  104 passed (104)
+   Start at  23:15:14
+   Duration  3.26s (transform 825ms, setup 0ms, import 2.27s, tests 5.31s, environment 2.50s)
+

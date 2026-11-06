@@ -559,3 +559,58 @@ class TutorArmTests(ApiTestCase):
         views = [row.payload.get('view') for row in
                  InteractionLog.objects.filter(user=self.treat, event_type='HELP_REQUEST').order_by('pk')]
         self.assertEqual(views, ['independent', None])
+
+    def test_a_standalone_question_does_not_include_the_unrelated_assessment_task(self):
+        prompt = '<br/> kothay use kora hoy?'
+        model_answer = {
+            'rag_answer': {'textbook_rule': 'Line break', 'curriculum_citation': '',
+                           'textbook_explanation': 'The br element creates a line break.',
+                           'grounded': False},
+            'independent_ai_answer': {'chat_answer': '<br> creates a line break in HTML.',
+                                      'concept_applied': 'HTML line break',
+                                      'problem_breakdown': ['Place it where a new line is needed.'],
+                                      'pedagogical_justification': 'It is a void element.',
+                                      'code_solution': '<p>First<br>Second</p>'},
+            'direct_answer': '<br> creates a line break in HTML.',
+        }
+        with patch('tutor.views.rag_engine_instance.retrieve', return_value=[]) as retrieve, \
+                patch('tutor.views.llm.generate_json', return_value=(model_answer, 'pinned-model')) as generate:
+            response = self.ask(
+                self.treat_c, prompt=prompt, problem_title='Sum of squares',
+                problem_description='Calculate 1^2 + ... + N^2.',
+                code='scanf("%d", &n);', use_problem_context=False)
+
+        self.assertEqual(response.status_code, 200)
+        retrieve.assert_called_once_with(prompt, k=5)
+        model_request = generate.call_args.args[1]
+        self.assertIn(prompt, model_request)
+        self.assertNotIn('Sum of squares', model_request)
+        self.assertNotIn('scanf', model_request)
+        self.assertEqual(response.json()['independent_ai_answer']['chat_answer'],
+                         '<br> creates a line break in HTML.')
+
+    def test_an_explicit_context_request_includes_the_visible_task_and_code(self):
+        model_answer = {
+            'rag_answer': {'textbook_rule': '', 'curriculum_citation': '',
+                           'textbook_explanation': '', 'grounded': False},
+            'independent_ai_answer': {'chat_answer': 'Start with the loop bounds.',
+                                      'concept_applied': 'Loop',
+                                      'problem_breakdown': ['Read N'],
+                                      'pedagogical_justification': 'The task needs N.',
+                                      'code_solution': 'for (i = 1; i <= n; i++) {}'},
+            'direct_answer': 'Start with the loop bounds.',
+        }
+        prompt = 'Give me a hint for this question'
+        with patch('tutor.views.rag_engine_instance.retrieve', return_value=[]) as retrieve, \
+                patch('tutor.views.llm.generate_json', return_value=(model_answer, 'pinned-model')) as generate:
+            response = self.ask(
+                self.treat_c, prompt=prompt, problem_title='Sum of squares',
+                problem_description='Calculate the series.', code='long long sum = 0;',
+                use_problem_context=True)
+
+        self.assertEqual(response.status_code, 200)
+        retrieve.assert_called_once_with(f'{prompt} Sum of squares', k=5)
+        model_request = generate.call_args.args[1]
+        self.assertIn('SUPPLEMENTAL ASSESSMENT CONTEXT', model_request)
+        self.assertIn('Sum of squares', model_request)
+        self.assertIn('long long sum = 0;', model_request)

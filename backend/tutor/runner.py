@@ -10,7 +10,6 @@ import re
 import shutil
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
 from . import sandbox
@@ -88,8 +87,8 @@ def compiler_status():
         need = box.get('required_tier') or sandbox.DOCKER
         hint = (f'Code execution is disabled: the available containment ({box["tier"]}) is '
                 f'below the required {need}. Build the runner image '
-                '(backend/tutor/sandbox.Dockerfile), or lower CODE_SANDBOX_MIN_TIER / set '
-                'CODE_SANDBOX_REQUIRED=0 on a closed network.')
+                '(backend/tutor/sandbox.Dockerfile), and check Docker workdir permissions '
+                f'and host path mapping. {box.get("detail") or ""}')
     elif not (containerised or c):
         hint = 'No C compiler found. Install gcc/clang or run: pip install ziglang'
     elif box['tier'] != sandbox.DOCKER:
@@ -177,7 +176,7 @@ def _compile_c_family(language, code, workdir):
     # In a container the binary is Linux/ELF; on the host it must match the host.
     exe_name = 'main.out' if (tier == sandbox.DOCKER or os.name != 'nt') else 'main.exe'
     exe = workdir / exe_name
-    (workdir / src_name).write_text(code, encoding='utf-8')
+    sandbox.write_workfile(workdir / src_name, code)
     tail = ['-Wall', src_name, '-o', exe_name]
 
     # The container has real gcc, so it gets gcc's spellings.
@@ -216,7 +215,7 @@ def _compile_c_family(language, code, workdir):
 
 
 def _check_python(code, workdir):
-    (workdir / 'main.py').write_text(code, encoding='utf-8')
+    sandbox.write_workfile(workdir / 'main.py', code)
     try:
         # Parsing is not execution, so this is safe to do in-process.
         ast.parse(code, filename='main.py')
@@ -278,7 +277,7 @@ def run_code(language, code, test_cases=None, mode='run'):
             'sandbox': sandbox.status()['tier'],
         }
 
-    workdir = Path(tempfile.mkdtemp(prefix='trace_run_'))
+    workdir = sandbox.create_workdir()
     try:
         build = _check_python(code, workdir) if language == 'python' else _compile_c_family(language, code, workdir)
         result = {

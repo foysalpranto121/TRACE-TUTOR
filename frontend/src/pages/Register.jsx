@@ -18,18 +18,11 @@ const STEP_FIELDS = {
   3: ['prior_experience', 'languages_known', 'ai_tool_familiarity', 'device_type', 'internet_access', 'has_computer_at_home', 'weekly_study_hours', 'learning_goals', 'preferred_language', 'consent_given'],
 };
 
-const suggestUsername = (name) => {
-  const ascii = name.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim().split(/\s+/).filter(Boolean).join('.');
-  if (ascii.length >= 3) return ascii.slice(0, 30);
-  return `student${Math.floor(1000 + Math.random() * 9000)}`;
-};
-
 export const Register = () => {
   const { register, user, ready, language } = useAuth();
   const navigate = useNavigate();
   const bn = language === 'bn';
   const submitted = useRef(false);
-  const usernameTouched = useRef(false);
 
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState({});
@@ -54,12 +47,7 @@ export const Register = () => {
   const isStudent = form.role === 'STUDENT';
   const set = (field) => (e) => {
     const value = e && e.target ? (e.target.type === 'checkbox' ? e.target.checked : e.target.value) : e;
-    setForm((f) => {
-      const next = { ...f, [field]: value };
-      if (field === 'full_name' && !usernameTouched.current) next.username = suggestUsername(value);
-      if (field === 'username') usernameTouched.current = true;
-      return next;
-    });
+    setForm((f) => ({ ...f, [field]: value }));
     setErrors((er) => ({ ...er, [field]: undefined }));
   };
 
@@ -67,7 +55,7 @@ export const Register = () => {
     const er = {};
     if (s === 1) {
       if (!form.full_name.trim()) er.full_name = 'Full name is required.';
-      if (!USERNAME_RE.test(form.username)) er.username = '3-30 letters, digits, dots, underscores or hyphens - no spaces.';
+      if (!USERNAME_RE.test(form.username)) er.username = bn ? 'নিজের ইউজারনেম লিখুন: ৩–৩০টি ইংরেজি অক্ষর, সংখ্যা, ডট, আন্ডারস্কোর বা হাইফেন। স্পেস দেওয়া যাবে না।' : 'Choose a username: 3-30 letters, digits, dots, underscores or hyphens - no spaces.';
       if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) er.email = 'Enter a valid email address.';
       if (form.password.length < 8) er.password = 'Use at least 8 characters.';
       else if (/^\d+$/.test(form.password)) er.password = 'Password cannot be only numbers.';
@@ -122,7 +110,7 @@ export const Register = () => {
   const steps = [
     { n: 1, label: bn ? 'অ্যাকাউন্ট' : 'Account' },
     { n: 2, label: isStudent ? (bn ? 'প্রতিষ্ঠান ও শ্রেণি' : 'School & class') : (bn ? 'প্রতিষ্ঠান' : 'Institution') },
-    { n: 3, label: bn ? 'পটভূমি ও সম্মতি' : 'Background & consent' },
+    { n: 3, label: bn ? 'অভিজ্ঞতা ও সম্মতি' : 'Background & consent' },
   ];
 
   return (
@@ -132,7 +120,7 @@ export const Register = () => {
           <div className="text-[11px] font-mono font-bold text-primary uppercase tracking-wider">{bn ? 'নিবন্ধন' : 'Create account'} · {step}/3</div>
           <h2 className="text-2xl font-extrabold text-on-surface tracking-tight">{bn ? 'TRACE Tutor অ্যাকাউন্ট তৈরি করুন' : 'Create your TRACE Tutor account'}</h2>
           <p className="text-xs text-on-surface-variant">
-            {bn ? 'গবেষণার জন্য কয়েকটি তথ্য প্রয়োজন; আপনার নাম কখনো প্রকাশ করা হবে না।' : 'A few details help the study - your name is never published, only a participant code.'}
+            {bn ? 'গবেষণার জন্য আপনার সম্পর্কে কিছু তথ্য জানতে চাই। প্রকাশিত ফলাফলে আপনার নামের বদলে অংশগ্রহণকারী কোড ব্যবহার করা হবে।' : 'A few details help the study - your name is never published, only a participant code.'}
           </p>
         </div>
 
@@ -176,13 +164,13 @@ export const Register = () => {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <TextField label={bn ? 'পূর্ণ নাম' : 'Full name'} required value={form.full_name} onChange={set('full_name')} error={errors.full_name} placeholder={bn ? 'যেমন: তানভীর রহমান' : 'e.g. Tanvir Rahman'} autoComplete="name" autoFocus />
-                <TextField label={bn ? 'ইউজারনেম' : 'Username'} required hint="(login id)" value={form.username} onChange={set('username')} error={errors.username} placeholder="tanvir.rahman" autoComplete="username" />
+                <TextField label={bn ? 'ইউজারনেম' : 'Username'} required hint={bn ? '(নিজে বেছে নিন)' : '(choose your own)'} value={form.username} onChange={set('username')} error={errors.username} placeholder={bn ? 'আপনার পছন্দের ইউজারনেম' : 'Choose a username'} autoComplete="off" autoCapitalize="none" spellCheck={false} />
                 <TextField label={bn ? 'ইমেইল' : 'Email'} hint={bn ? '(ঐচ্ছিক)' : '(optional)'} type="email" icon={<Mail className="w-4 h-4" />} value={form.email} onChange={set('email')} error={errors.email} placeholder="tanvir@example.com" autoComplete="email" className="sm:col-span-2" />
                 <div>
                   <PasswordField label={bn ? 'পাসওয়ার্ড' : 'Password'} required value={form.password} onChange={set('password')} error={errors.password} placeholder={bn ? 'কমপক্ষে ৮ অক্ষর' : 'At least 8 characters'} autoComplete="new-password" />
                   <StrengthMeter password={form.password} />
                 </div>
-                <PasswordField label={bn ? 'পাসওয়ার্ড নিশ্চিত করুন' : 'Confirm password'} required value={form.confirm} onChange={set('confirm')} error={errors.confirm} placeholder="••••••••" autoComplete="new-password" />
+                <PasswordField label={bn ? 'পাসওয়ার্ড আবার লিখুন' : 'Confirm password'} required value={form.confirm} onChange={set('confirm')} error={errors.confirm} placeholder="••••••••" autoComplete="new-password" />
                 {!isStudent && (
                   <TextField label={bn ? 'স্টাফ অ্যাক্সেস কোড' : 'Staff access code'} required icon={<KeyRound className="w-4 h-4" />} value={form.access_code} onChange={set('access_code')} error={errors.access_code} placeholder="Provided by the research coordinator" className="sm:col-span-2" />
                 )}

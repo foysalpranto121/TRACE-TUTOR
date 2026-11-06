@@ -29,41 +29,41 @@ const hue = (name) => ({ '--chip': `var(--accent-${name})` });
 const FEATURES = [
   {
     icon: Brain, color: 'violet',
-    title: 'AI যা যুক্তি দেখায়', en: 'An AI that shows its thinking',
-    body: 'শুধু উত্তর নয় — ধাপে ধাপে লজিক, ভুলের কারণ আর NCTB বইয়ের পৃষ্ঠা নম্বরসহ ব্যাখ্যা।',
+    title: 'ধাপে ধাপে ব্যাখ্যা', en: 'An AI that shows its thinking',
+    body: 'সমাধানের ধাপ ও ভুলের কারণ বুঝুন। প্রাসঙ্গিক ব্যাখ্যার সঙ্গে NCTB বইয়ের পৃষ্ঠা নম্বরও দেখুন।',
   },
   {
     icon: Terminal, color: 'sky',
-    title: 'সত্যিকারের কম্পাইলার', en: 'A real compiler, not a simulation',
-    body: 'আপনার C কোড সত্যিই কম্পাইল ও রান হয়। ভুল লাইনে লাল দাগ, টেস্ট কেস পাস/ফেল — VS Code-এর মতো।',
+    title: 'C কোড চালিয়ে দেখুন', en: 'A real compiler, not a simulation',
+    body: 'C কোড লিখে চালান। কোথায় ভুল হয়েছে এবং কোন টেস্ট কেস মিলেছে, তা ফলাফলে দেখুন।',
   },
   {
     icon: Code2, color: 'emerald',
     title: 'HTML লাইভ প্রিভিউ', en: 'Live HTML preview & validation',
-    body: 'অধ্যায় ৪-এর টেবিল, লিংক, লিস্ট লিখুন — সঙ্গে সঙ্গে রেন্ডার দেখুন আর ট্যাগের ভুল ধরুন।',
+    body: 'চতুর্থ অধ্যায়ের টেবিল, লিংক ও লিস্ট তৈরি করুন। পাশে প্রিভিউ দেখে HTML-এর ভুল ঠিক করুন।',
   },
   {
     icon: Trophy, color: 'amber',
     title: 'XP, স্ট্রিক ও ব্যাজ', en: 'XP, streaks and badges',
-    body: 'প্রতিটি সমাধানে XP, প্রতিদিন অনুশীলনে স্ট্রিক, আর দক্ষতা অনুযায়ী ব্যাজ আনলক করুন।',
+    body: 'অনুশীলন করে XP ও ব্যাজ সংগ্রহ করুন। কত দিন নিয়মিত অনুশীলন করছেন, সেটিও দেখতে পাবেন।',
   },
   {
     icon: BookOpen, color: 'teal',
-    title: 'NCTB বই থেকেই উত্তর', en: 'Grounded in the NCTB textbook',
-    body: 'বাংলা ও ইংরেজি সংস্করণের পাঠ্যবই থেকে হুবহু অনুচ্ছেদ ও পৃষ্ঠা উদ্ধৃতিসহ উত্তর।',
+    title: 'পাঠ্যবইয়ের সাহায্যে শিখুন', en: 'Grounded in the NCTB textbook',
+    body: 'NCTB বইয়ের প্রাসঙ্গিক অংশের ভিত্তিতে ব্যাখ্যা দেখুন। পৃষ্ঠা নম্বর ধরে বইয়ের সঙ্গে মিলিয়ে নিতে পারবেন।',
   },
   {
     icon: Target, color: 'rose',
     title: 'বোর্ড পরীক্ষার প্রস্তুতি', en: 'Built for the HSC board exam',
-    body: 'প্রি-টেস্ট, পোস্ট-টেস্ট ও ট্রান্সফার টাস্ক — নিজের অগ্রগতি সংখ্যায় দেখুন।',
+    body: 'শেখার আগে ও পরে পরীক্ষা দিন। নতুন সমস্যায় শেখা বিষয়গুলো কাজে লাগিয়ে নিজের অগ্রগতি দেখুন।',
   },
 ];
 
 const STEPS = [
-  { n: '০১', icon: GraduationCap, color: 'rose', title: 'অ্যাকাউন্ট খুলুন', en: 'Create your account', body: 'কলেজ, শ্রেণি ও অভিজ্ঞতা জানান — ৩০ সেকেন্ডেই শেষ।' },
-  { n: '০২', icon: Code2, color: 'sky', title: 'কোড লিখুন ও রান করুন', en: 'Write and run real code', body: 'অধ্যায় ৪ ও ৫-এর টাস্কে কোড লিখুন, টেস্ট কেস পাস করান।' },
-  { n: '০৩', icon: Bot, color: 'violet', title: 'AI-কে প্রশ্ন করুন', en: 'Ask the AI tutor', body: 'আটকে গেলে বাংলায় প্রশ্ন করুন — যুক্তিসহ ব্যাখ্যা পাবেন।' },
-  { n: '০৪', icon: Trophy, color: 'amber', title: 'অগ্রগতি ট্র্যাক করুন', en: 'Track your progress', body: 'XP, স্ট্রিক, দক্ষতা চার্ট আর পরীক্ষার স্কোর এক ড্যাশবোর্ডে।' },
+  { n: '০১', icon: GraduationCap, color: 'rose', title: 'অ্যাকাউন্ট খুলুন', en: 'Create your account', body: 'নিজের ইউজারনেম বেছে নিন। কলেজ, শ্রেণি ও আগের অভিজ্ঞতার তথ্য দিয়ে অ্যাকাউন্ট খুলুন।' },
+  { n: '০২', icon: Code2, color: 'sky', title: 'কোড লিখুন ও রান করুন', en: 'Write and run real code', body: 'চতুর্থ ও পঞ্চম অধ্যায়ের সমস্যা সমাধান করুন। কোড চালিয়ে ফলাফল মিলিয়ে নিন।' },
+  { n: '০৩', icon: Bot, color: 'violet', title: 'AI-কে প্রশ্ন করুন', en: 'Ask the AI tutor', body: 'কোথাও আটকে গেলে বাংলায় প্রশ্ন করুন। আপনার টিউটর মোড অনুযায়ী সাহায্য পাবেন।' },
+  { n: '০৪', icon: Trophy, color: 'amber', title: 'নিজের অগ্রগতি দেখুন', en: 'Track your progress', body: 'ড্যাশবোর্ডে অনুশীলনের হিসাব, অর্জিত XP ও পরীক্ষার ফল দেখুন।' },
 ];
 
 const TOPICS = [
@@ -101,10 +101,10 @@ export const LandingPage = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const primaryCta = user ? { to: roleHome(user.role), label: 'ড্যাশবোর্ডে যান (Go to dashboard)' } : { to: '/register', label: 'বিনামূল্যে শুরু করুন' };
+  const primaryCta = user ? { to: roleHome(user.role), label: 'ড্যাশবোর্ডে যান' } : { to: '/register', label: 'বিনামূল্যে শুরু করুন' };
 
   return (
-    <div className="min-h-screen bg-surface text-on-surface overflow-x-hidden">
+    <div lang="bn" className="min-h-screen bg-surface text-on-surface overflow-x-hidden">
       {/* ── Nav ─────────────────────────────────────────────────────────── */}
       <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'glass-panel border-x-0 border-t-0 shadow-lift' : 'border-b border-transparent'}`}>
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
@@ -170,13 +170,13 @@ export const LandingPage = () => {
             </div>
 
             <h1 className="text-4xl sm:text-5xl xl:text-6xl font-extrabold leading-[1.08] animate-fade-up stagger-1">
-              মুখস্থ নয় —<br />
-              <span className="text-gradient">যুক্তি বুঝে</span><br />
+              কোড লিখে,<br />
+              <span className="text-gradient">ধাপে ধাপে</span><br />
               প্রোগ্রামিং শিখুন
             </h1>
 
             <p className="text-base text-on-surface-variant leading-relaxed max-w-xl animate-fade-up stagger-2">
-              এমন একটা AI টিউটর যে শুধু উত্তর দেয় না — <strong className="text-on-surface font-semibold">প্রতিটা ধাপের যুক্তি দেখায়</strong>, NCTB পাঠ্যবইয়ের পৃষ্ঠা থেকে উদ্ধৃতি দেয়, আর আপনার কোড সত্যিকারের কম্পাইলারে চালিয়ে ভুলটা ঠিক কোন লাইনে তা ধরিয়ে দেয়।
+              এইচএসসি আইসিটির C ও HTML অনুশীলন করুন। <strong className="text-on-surface font-semibold">কোড লিখুন, চালান, ভুল ঠিক করুন।</strong> আটকে গেলে AI টিউটরের সাহায্য নিন।
             </p>
 
             <div className="flex flex-wrap items-center gap-3 animate-fade-up stagger-3">
@@ -184,7 +184,7 @@ export const LandingPage = () => {
                 <Rocket className="w-4 h-4" /> {primaryCta.label} <ArrowRight className="w-4 h-4" />
               </Button>
               <Button as={Link} to="/login" variant="surface" size="lg">
-                <Play className="w-4 h-4 text-primary" /> আগে থেকেই অ্যাকাউন্ট আছে
+                <Play className="w-4 h-4 text-primary" /> অ্যাকাউন্ট থাকলে লগইন করুন
               </Button>
             </div>
 
@@ -192,7 +192,7 @@ export const LandingPage = () => {
               {[
                 { icon: CheckCircle2, label: 'সম্পূর্ণ বিনামূল্যে', color: 'emerald' },
                 { icon: Languages, label: 'বাংলা ও ইংরেজি', color: 'sky' },
-                { icon: ShieldCheck, label: 'গবেষণা-অনুমোদিত', color: 'violet' },
+                { icon: ShieldCheck, label: 'শেখার ওপর গবেষণা', color: 'violet' },
               ].map((c) => (
                 <span key={c.label} style={hue(c.color)} className="chip-soft inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold">
                   <c.icon className="w-3.5 h-3.5" /> {c.label}
@@ -261,7 +261,7 @@ export const LandingPage = () => {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pb-14">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
-              { icon: Layers, value: 8, suffix: '+', label: 'প্র্যাকটিস টাস্ক', color: 'sky' },
+              { icon: Layers, value: 8, suffix: '+', label: 'অনুশীলনের সমস্যা', color: 'sky' },
               { icon: BookOpen, value: 60, suffix: '+', label: 'পরীক্ষার প্রশ্ন', color: 'violet' },
               { icon: Terminal, value: 4, suffix: '', label: 'ভাষা সাপোর্ট', color: 'emerald' },
               { icon: ShieldCheck, value: 100, suffix: '%', label: 'পাঠ্যবই-ভিত্তিক', color: 'amber' },
@@ -284,7 +284,7 @@ export const LandingPage = () => {
           <span style={hue('violet')} className="chip-soft inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold"><Sparkles className="w-3 h-3" /> কেন TRACE Tutor</span>
           <h2 className="text-3xl sm:text-4xl font-extrabold">অন্য AI উত্তর দেয়।<br /><span className="text-gradient">TRACE শেখায়।</span></h2>
           <p className="text-sm text-on-surface-variant leading-relaxed">
-            কপি-পেস্ট করে পরীক্ষায় পাস করা যায় না। তাই প্রতিটা উত্তরের সঙ্গে যুক্তি, পাঠ্যবইয়ের রেফারেন্স আর সত্যিকারের কম্পাইলার ফিডব্যাক।
+            কোড লিখে অনুশীলন করুন, ফলাফল দেখুন এবং ভুলগুলো বুঝে ঠিক করুন। ব্যাখ্যা ও পাঠ্যবইয়ের সূত্র শেখা বিষয়গুলো মিলিয়ে নিতে সাহায্য করবে।
           </p>
         </Reveal>
 
@@ -333,7 +333,7 @@ export const LandingPage = () => {
         <Reveal className="text-center max-w-2xl mx-auto space-y-3 mb-12">
           <span style={hue('emerald')} className="chip-soft inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold"><BookOpen className="w-3 h-3" /> এনসিটিবি সিলেবাস</span>
           <h2 className="text-3xl sm:text-4xl font-extrabold">যা যা শিখবেন</h2>
-          <p className="text-sm text-on-surface-variant">বোর্ড বইয়ের অধ্যায় ধরে ধরে — প্রতিটা টপিকে অনুশীলন, টেস্ট কেস আর AI ব্যাখ্যা।</p>
+          <p className="text-sm text-on-surface-variant">পাঠ্যবইয়ের চতুর্থ, পঞ্চম ও ষষ্ঠ অধ্যায়ের বিষয়গুলো অনুশীলন করুন।</p>
         </Reveal>
 
         <div className="grid md:grid-cols-3 gap-4">
@@ -370,10 +370,10 @@ export const LandingPage = () => {
             <div className="absolute -bottom-24 right-1/4 w-96 h-96 rounded-full bg-secondary/20 blur-[120px]" aria-hidden />
             <div className="relative space-y-5">
               <h2 className="text-3xl sm:text-4xl font-extrabold max-w-2xl mx-auto leading-tight">
-                আজই প্রথম প্রোগ্রামটা <span className="text-gradient">রান করে ফেলুন</span>
+                আপনার প্রথম প্রোগ্রাম <span className="text-gradient">চালিয়ে দেখুন</span>
               </h2>
               <p className="text-sm text-on-surface-variant max-w-lg mx-auto">
-                কোনো ইনস্টল লাগবে না, কোনো খরচ নেই। শুধু একটা অ্যাকাউন্ট খুলুন আর ব্রাউজারেই কোডিং শুরু করুন।
+                ব্রাউজারেই কোড লিখে চালাতে পারবেন। অ্যাকাউন্ট খুলে অনুশীলন শুরু করুন।
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
                 <Button as={Link} to={primaryCta.to} size="lg" className="btn-vivid">

@@ -1,0 +1,16 @@
+{
+  "status": "DEPLOYED",
+  "backup": "/srv/trace-tutor/deployment-backups/expert-queue-20261022T183819Z",
+  "before_count": 100,
+  "after_count": 248,
+  "participants": 65,
+  "first_participant": "SIM-001",
+  "last_participant": "TT-0008",
+  "participants_below_SIM_035": 34,
+  "research_rows_unchanged": true,
+  "health": {
+    "status": "ok",
+    "database": "ok"
+  },
+  "candidate_sha256": "2cefdc3eea08dcecbafe9caf6326449473804238e17f5fa7dfdf75429b0490d1"
+}

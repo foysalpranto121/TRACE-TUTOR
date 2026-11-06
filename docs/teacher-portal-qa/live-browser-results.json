@@ -1,0 +1,331 @@
+[
+  {
+    "name": "desktop",
+    "realLogin": true,
+    "cviPersistence": true,
+    "independentDrafts": true,
+    "gradeUpdate": true,
+    "realRefresh": true,
+    "nullAndZero": true,
+    "search": true,
+    "actualDockerRun": "SUCCESS",
+    "runResults": [
+      {
+        "id": 1,
+        "input": "5",
+        "expected": "Sum = 15",
+        "actual": "Sum = 15",
+        "stderr": "",
+        "exit_code": 0,
+        "timed_out": false,
+        "time_ms": 364,
+        "passed": true
+      },
+      {
+        "id": 2,
+        "input": "10",
+        "expected": "Sum = 55",
+        "actual": "Sum = 55",
+        "stderr": "",
+        "exit_code": 0,
+        "timed_out": false,
+        "time_ms": 389,
+        "passed": true
+      }
+    ],
+    "cviAxe": [],
+    "markingAxe": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/accounts/login/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/reviews/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/submissions/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/rating/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/reviews/",
+        "status": 200
+      },
+      {
+        "path": "/api/accounts/me/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/reviews/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/submissions/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/grade/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/submissions/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/submissions/",
+        "status": 200
+      },
+      {
+        "path": "/api/accounts/me/",
+        "status": 200
+      },
+      {
+        "path": "/api/dashboard/",
+        "status": 200
+      },
+      {
+        "path": "/api/accounts/me/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/dashboard/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/status/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/status/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/run/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/run/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/run/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/dashboard/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/run/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/dashboard/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/run/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/dashboard/",
+        "status": 200
+      },
+      {
+        "path": "/api/tutor/query/",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "name": "mobile",
+    "realLogin": true,
+    "cviPersistence": true,
+    "independentDrafts": true,
+    "gradeUpdate": true,
+    "realRefresh": true,
+    "nullAndZero": true,
+    "search": true,
+    "actualDockerRun": "SUCCESS",
+    "runResults": [
+      {
+        "id": 1,
+        "input": "5",
+        "expected": "Sum = 15",
+        "actual": "Sum = 15",
+        "stderr": "",
+        "exit_code": 0,
+        "timed_out": false,
+        "time_ms": 378,
+        "passed": true
+      },
+      {
+        "id": 2,
+        "input": "10",
+        "expected": "Sum = 55",
+        "actual": "Sum = 55",
+        "stderr": "",
+        "exit_code": 0,
+        "timed_out": false,
+        "time_ms": 360,
+        "passed": true
+      }
+    ],
+    "cviAxe": [],
+    "markingAxe": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/accounts/login/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/reviews/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/submissions/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/rating/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/reviews/",
+        "status": 200
+      },
+      {
+        "path": "/api/accounts/me/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/reviews/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/submissions/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/grade/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/submissions/",
+        "status": 200
+      },
+      {
+        "path": "/api/expert/submissions/",
+        "status": 200
+      },
+      {
+        "path": "/api/accounts/me/",
+        "status": 200
+      },
+      {
+        "path": "/api/curriculum/status/",
+        "status": 200
+      },
+      {
+        "path": "/api/accounts/me/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/status/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/status/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/dashboard/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/run/",
+        "status": 200
+      },
+      {
+        "path": "/api/code/run/",
+        "status": 200
+      },
+      {
+        "path": "/api/telemetry/log/",
+        "status": 200
+      },
+      {
+        "path": "/api/dashboard/",
+        "status": 200
+      },
+      {
+        "path": "/api/tutor/query/",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "name": "mobile-student",
+    "realLogin": true,
+    "frontendAndBackendRoleIsolation": true
+  }
+]

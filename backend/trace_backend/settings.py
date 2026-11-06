@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import sys
 
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
@@ -209,7 +210,8 @@ if not CORS_ALLOW_ALL_ORIGINS:
 # loops and Secure cookies are never sent, so nobody can log in. A proctored lab server
 # on a closed network without TLS should set HTTPS_ONLY=0 deliberately.
 # ---------------------------------------------------------------------------
-HTTPS_ONLY = env_flag('HTTPS_ONLY', default=not DEBUG)
+IS_TESTING = 'test' in sys.argv or any('pytest' in arg for arg in sys.argv)
+HTTPS_ONLY = env_flag('HTTPS_ONLY', default=False if (DEBUG or IS_TESTING) else True)
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
@@ -322,6 +324,11 @@ CODE_SANDBOX_REQUIRED = env_flag('CODE_SANDBOX_REQUIRED', default=not DEBUG)
 # only to accept those gaps on a closed, proctored network.
 CODE_SANDBOX_MIN_TIER = os.environ.get('CODE_SANDBOX_MIN_TIER', 'docker').strip().lower()
 CODE_SANDBOX_IMAGE = os.environ.get('CODE_SANDBOX_IMAGE', 'trace-tutor-runner:1')
+# For a containerised backend, bind-mount a host directory here and map its host path.
+# Leave both unset for a backend running directly on the Docker host.
+CODE_SANDBOX_WORKDIR_ROOT = os.environ.get('CODE_SANDBOX_WORKDIR_ROOT', '')
+CODE_SANDBOX_HOST_WORKDIR_ROOT = os.environ.get('CODE_SANDBOX_HOST_WORKDIR_ROOT', '')
+CODE_SANDBOX_MOUNT_STYLE = os.environ.get('CODE_SANDBOX_MOUNT_STYLE', 'bind').strip().lower()
 CODE_SANDBOX_CPUS = os.environ.get('CODE_SANDBOX_CPUS', '1.0')
 CODE_SANDBOX_STARTUP_GRACE = int(os.environ.get('CODE_SANDBOX_STARTUP_GRACE', '15'))
 # While the active tier is below the required minimum, re-probe this often (seconds) so a

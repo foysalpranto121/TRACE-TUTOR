@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useTutorAvailability } from '../hooks/useTutorAvailability';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/useAuth';
 import { CodeEditor } from '../components/Editor/CodeEditor';
 import { ReasoningTracePanel } from '../components/TutorPanel/ReasoningTracePanel';
@@ -25,6 +26,14 @@ export const Workspace = () => {
   const { user, arm, language } = useAuth();
   const celebrate = useCelebrate();
   const progressRef = useRef(null);
+  const requestBusy = useRef(false);
+  const [queryText, setQueryText] = useState('');
+  const [tutorModel, setTutorModel] = useState(null);
+  const onDashboard = useCallback((data) => {
+    progressRef.current = snapshotProgress(data);
+    setTutorModel(data.tutor_model || null);
+  }, []);
+  const { availability, refreshAvailability, reportLocked } = useTutorAvailability(user?.id, onDashboard);
   const [showProblemPane, setShowProblemPane] = useState(true);
 
   const nctbProblems = NCTB_PROBLEMS;
@@ -43,6 +52,12 @@ export const Workspace = () => {
     error: null,
   });
 
+  // Header results also work while Workspace stays mounted. The tutor draft
+  // remains in this component; selecting the same task leaves editor text intact.
+  useResetOnChange(searchParams.get('problem'), () => {
+    setActiveProblem(requestedProblem || nctbProblems[0]);
+  });
+
   // Switching problems swaps the editor contents during render, not after paint.
   useResetOnChange(activeProblem?.id, () => {
     setCurrentCode(activeProblem.starterCode);
@@ -51,11 +66,6 @@ export const Workspace = () => {
 
   useEffect(() => {
     apiService.getCodeStatus().then(setCompilerInfo).catch(() => setCompilerInfo({ ready: false }));
-  }, []);
-
-  // Progress snapshot so a successful run can show exactly what the student just earned.
-  useEffect(() => {
-    apiService.getDashboard().then((d) => { progressRef.current = snapshotProgress(d); }).catch(() => {});
   }, []);
 
   const handleCompileResult = async (out) => {
@@ -93,7 +103,16 @@ export const Workspace = () => {
   // `extra` carries anything the panel knows that the server should record with the
   // turn - today the view (dual / rag / independent) the question was asked from.
   const handleRequestHelp = async (queryText, extra = {}) => {
+    if (requestBusy.current || availability.status !== 'available') return false;
+    requestBusy.current = true;
     setTutorState({ isLoading: true, traceData: null, groundedPassage: null, error: null });
+    // Check again before generating: another tab/device may have opened a paper.
+    const confirmed = await refreshAvailability();
+    if (confirmed.status !== 'available') {
+      requestBusy.current = false;
+      setTutorState({ isLoading: false, traceData: null, groundedPassage: null, error: null });
+      return false;
+    }
 
     // HELP_REQUEST is logged server-side in query_tutor now (with arm, paper, ai_status
     // and whether it was refused), so the assessment chat and the workspace are both
@@ -108,14 +127,18 @@ export const Workspace = () => {
         problem_title: activeProblem.title,
         problem_description: activeProblem.description_en,
         compiler_output: compilerOutput,
+        use_problem_context: true,
         ...extra,
       });
       setTutorState({ isLoading: false, traceData: res, groundedPassage: res.grounded_passage, error: null });
+      return true;
     } catch (err) {
-      // A refusal because a no-AI paper is open is a rule, not a failure; the panels
-      // present it calmly so a student mid-pre-test does not think the system is broken.
-      const errorKind = err.body?.reason === 'paper_in_progress' ? 'policy' : 'failure';
-      setTutorState({ isLoading: false, traceData: null, groundedPassage: null, error: err.message, errorKind });
+      const locked = err.body?.reason === 'paper_in_progress';
+      if (locked) reportLocked(err.body);
+      setTutorState({ isLoading: false, traceData: null, groundedPassage: null, error: locked ? null : err.message });
+      return false;
+    } finally {
+      requestBusy.current = false;
     }
   };
 
@@ -268,7 +291,11 @@ export const Workspace = () => {
               groundedPassage={tutorState.groundedPassage}
               isLoading={tutorState.isLoading}
               error={tutorState.error}
-              errorKind={tutorState.errorKind}
+              modelMetadata={tutorModel}
+              availability={availability}
+              onRetryAvailability={refreshAvailability}
+              queryText={queryText}
+              onQueryChange={setQueryText}
               onRequestHelp={handleRequestHelp}
             />
           ) : (
@@ -276,7 +303,11 @@ export const Workspace = () => {
               solutionData={tutorState.traceData}
               isLoading={tutorState.isLoading}
               error={tutorState.error}
-              errorKind={tutorState.errorKind}
+              modelMetadata={tutorModel}
+              availability={availability}
+              onRetryAvailability={refreshAvailability}
+              queryText={queryText}
+              onQueryChange={setQueryText}
               onRequestHelp={handleRequestHelp}
             />
           )}

@@ -1,17 +1,23 @@
+import { describeTutorModel } from '../../services/tutorModel';
+import { TutorAvailabilityNotice } from './TutorAvailabilityNotice';
+import { TutorQuestionForm } from './TutorQuestionForm';
 import { useState } from 'react';
-import { Bot, CheckCircle2, Copy, Check, ShieldCheck, AlertTriangle, Lock } from 'lucide-react';
+import { Bot, CheckCircle2, Copy, Check, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { apiService } from '../../services/api';
 
 export const AnswerOnlyPanel = ({
   solutionData,
   isLoading,
   error,
-  errorKind,   // 'policy' when the server refused by rule (a no-AI paper is open), else 'failure'
+  modelMetadata,
+  availability,
+  onRetryAvailability,
+  queryText,
+  onQueryChange,
   onRequestHelp,
   onCopyCode,
 }) => {
   const [copied, setCopied] = useState(false);
-  const [queryText, setQueryText] = useState('');
 
   const handleCopy = (code) => {
     navigator.clipboard.writeText(code);
@@ -21,16 +27,11 @@ export const AnswerOnlyPanel = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleHelpSubmit = (e) => {
-    e.preventDefault();
-    if (!queryText.trim()) return;
-    if (onRequestHelp) onRequestHelp(queryText);
-    setQueryText('');
-  };
 
   const directAnswer = solutionData?.direct_answer || '';
   const codeSolution = solutionData?.independent_ai_answer?.code_solution || solutionData?.code_solution || '';
-  const modelLabel = solutionData?.model || 'Gemini';
+  const modelInfo = describeTutorModel(modelMetadata, solutionData, isLoading);
+  const modelLabel = modelInfo.label;
 
   return (
     <div className="flex flex-col h-full bg-surface-container rounded-2xl border border-outline-variant/30 overflow-hidden shadow-2xl">
@@ -47,31 +48,23 @@ export const AnswerOnlyPanel = ({
           </div>
         </div>
 
-        <div className="px-2.5 py-1 rounded-full bg-surface-container border border-outline-variant/30 text-on-surface-variant text-[11px] font-mono font-bold flex items-center gap-1 shadow-sm">
+        <div title={modelInfo.title} className="px-2.5 py-1 rounded-full bg-surface-container border border-outline-variant/30 text-on-surface-variant text-[11px] font-mono font-bold flex items-center gap-1 shadow-sm">
           <ShieldCheck className="w-3.5 h-3.5 text-primary" />
-          {modelLabel}{solutionData?.cached ? ' · cached' : ''}
+          {modelLabel}{!isLoading && solutionData?.cached ? ' · cached' : ''}
         </div>
       </div>
+
+      <TutorAvailabilityNotice availability={availability} onRetry={onRetryAvailability} />
 
       <div className="flex-1 overflow-y-auto p-5 space-y-5">
         {isLoading && (
           <div className="py-12 flex flex-col items-center justify-center space-y-3">
             <div className="w-10 h-10 border-3 border-amber-500 border-t-transparent rounded-full animate-spin" />
-            <span className="text-xs text-amber-500 font-mono font-bold animate-pulse">Generating direct code fix...</span>
+            <span role="status" className="text-xs text-amber-500 font-mono font-bold animate-pulse">Generating direct code fix...</span>
           </div>
         )}
 
         {!isLoading && error && (
-          errorKind === 'policy' ? (
-            // A rule, not an outage: the pre-test and withdrawal task are no-AI papers.
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-xs text-amber-500 flex items-start gap-2">
-              <Lock className="w-4 h-4 shrink-0 mt-0.5" />
-              <div>
-                <div className="font-bold">Tutor paused for this paper</div>
-                <div className="mt-1 leading-relaxed">{error}</div>
-              </div>
-            </div>
-          ) : (
             <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-4 text-xs text-rose-400 flex items-start gap-2">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
               <div>
@@ -79,14 +72,13 @@ export const AnswerOnlyPanel = ({
                 <div className="font-mono mt-1">{error}</div>
               </div>
             </div>
-          )
         )}
 
         {!isLoading && solutionData && (
           <div className="space-y-4">
             {solutionData.ai_status === 'fallback' && (
               <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-[11px] text-amber-500">
-                {modelLabel} did not respond: {solutionData.error}
+                AI generation is unavailable — showing textbook material. {solutionData.error}
               </div>
             )}
 
@@ -120,19 +112,10 @@ export const AnswerOnlyPanel = ({
         )}
       </div>
 
-      <form onSubmit={handleHelpSubmit} className="p-4 bg-surface-container-high border-t border-outline-variant/30 flex gap-2">
-        <input
-          type="text"
-          value={queryText}
-          onChange={(e) => setQueryText(e.target.value)}
-          placeholder="Ask for the direct solution or fix..."
-          aria-label="Ask the tutor for the direct solution or fix"
-          className="flex-1 bg-surface-container rounded-xl px-4 py-2.5 text-xs text-on-surface font-medium placeholder:text-outline border border-outline-variant/30 focus:border-amber-500 outline-none shadow-sm"
-        />
-        <button type="submit" disabled={!queryText.trim() || isLoading} className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-md disabled:opacity-50 transition-all">
-          Get Fix
-        </button>
-      </form>
+      <TutorQuestionForm queryText={queryText} onQueryChange={onQueryChange}
+        availability={availability} isLoading={isLoading}
+        onSubmit={onRequestHelp}
+        placeholder={'Ask for the direct solution or fix...'} label="Ask the tutor for the direct solution or fix" buttonLabel="Get Fix" answerOnly />
     </div>
   );
 };

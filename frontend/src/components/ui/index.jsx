@@ -29,11 +29,11 @@ export const Card = ({ interactive = false, className = '', children, ...props }
   </div>
 );
 
-export const SectionCard = ({ icon, title, subtitle, action, className = '', bodyClass = 'p-5', children }) => (
+export const SectionCard = ({ icon, title, subtitle, action, headingAs: Heading = 'h3', className = '', bodyClass = 'p-5', children }) => (
   <Card className={`flex flex-col overflow-hidden ${className}`}>
     <header className="px-5 py-3.5 border-b border-outline-variant/30 flex items-center justify-between gap-3">
       <div className="min-w-0">
-        <h3 className="text-xs font-extrabold text-on-surface uppercase tracking-wider flex items-center gap-2 font-display">{icon}{title}</h3>
+        <Heading className="text-xs font-extrabold text-on-surface uppercase tracking-wider flex items-center gap-2 font-display">{icon}{title}</Heading>
         {subtitle && <p className="text-[11px] text-on-surface-variant mt-0.5">{subtitle}</p>}
       </div>
       {action}

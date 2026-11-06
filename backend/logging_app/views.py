@@ -10,6 +10,8 @@ from rest_framework.response import Response
 
 from accounts.models import ParticipantProfile, STAFF_ROLES
 from assessment.models import ExamSubmission, ExpertGrade
+from assessment import sittings
+from trace_backend import llm
 from .models import InteractionLog
 from .signals import dashboard_cache_key
 
@@ -101,11 +103,20 @@ def dashboard_summary(request):
 
     # Study-wide totals are for the people running the study, not for participants.
     payload = dict(data)
+    # Live policy state must not be cached with the progress summary.
+    payload['tutor_model'] = llm.public_metadata()
+    blocking = sittings.blocking_paper(user)
+    payload['tutor_availability'] = {
+        'available': blocking is None,
+        'reason': 'paper_in_progress' if blocking else None,
+        'exam_type': blocking,
+    }
     if not is_staff_role:
         payload.pop('overview', None)
 
     response = Response(payload)
     response['X-Trace-Cache'] = 'hit' if hit else 'miss'
+    response['Cache-Control'] = 'no-store'
     return response
 
 
@@ -173,10 +184,11 @@ def _build_dashboard(user):
         for s in (ExamSubmission.objects
                   .filter(student=user, grading_status=ExamSubmission.GRADED)
                   .order_by('submitted_at')):
-            a = assessments.setdefault(s.exam_type, {'exam_type': s.exam_type, 'attempts': 0, 'latest_score': None, 'best_score': 0, 'last_at': None})
+            a = assessments.setdefault(s.exam_type, {'exam_type': s.exam_type, 'attempts': 0, 'latest_score': None, 'best_score': None, 'last_at': None})
             a['attempts'] += 1
             a['latest_score'] = s.score_pct
-            a['best_score'] = max(a['best_score'], s.score_pct)
+            if s.score_pct is not None:
+                a['best_score'] = s.score_pct if a['best_score'] is None else max(a['best_score'], s.score_pct)
             a['last_at'] = timezone.localtime(s.submitted_at).isoformat()
 
     recent = [

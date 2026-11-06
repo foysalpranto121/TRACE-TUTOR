@@ -13,6 +13,7 @@ at the time, so a restored copy can be checked against what was taken.
 The database is the only copy of participant data. Schedule this daily (see README, "Backups")
 and keep BACKUP_DIR on a different disk from the database.
 """
+from contextlib import closing
 import json
 import os
 import shutil
@@ -217,11 +218,11 @@ class Command(BaseCommand):
         _run([pg_tool('createdb'), *_conn_args('postgres')[:-2], scratch])
         try:
             _run([pg_tool('pg_restore'), *_conn_args(scratch), '--no-owner', '--no-privileges', str(folder / 'db.dump')])
-            import psycopg
+            import psycopg2
             db = _db()
-            with psycopg.connect(host=db.get('HOST') or 'localhost', port=int(db.get('PORT') or 5432),
+            with closing(psycopg2.connect(host=db.get('HOST') or 'localhost', port=int(db.get('PORT') or 5432),
                                  user=db.get('USER') or 'postgres', password=db.get('PASSWORD') or '',
-                                 dbname=scratch) as conn:
+                                 dbname=scratch)) as conn:
                 with conn.cursor() as cur:
                     restored = _row_counts(cur)
         finally:

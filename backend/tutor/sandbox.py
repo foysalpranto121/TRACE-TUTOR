@@ -33,8 +33,10 @@ import platform
 import shutil
 import signal
 import subprocess
+import tempfile
 import time
 import uuid
+from pathlib import Path
 
 from django.conf import settings
 
@@ -100,6 +102,82 @@ def limits(kind):
     }
 
 
+def docker_identity():
+    """Match a non-root POSIX backend; never execute submissions as root."""
+    if os.name == 'posix' and os.geteuid() != 0:
+        return os.geteuid(), os.getegid()
+    return 65532, 65532
+
+
+def create_workdir(prefix='trace_run_'):
+    """Private workspace shared by the backend and its non-root runner."""
+    root = _conf('CODE_SANDBOX_WORKDIR_ROOT', os.environ.get('CODE_SANDBOX_WORKDIR_ROOT', '')) or None
+    path = Path(tempfile.mkdtemp(prefix=prefix, dir=root))
+    try:
+        if os.name == 'posix' and os.geteuid() == 0:
+            os.chown(path, *docker_identity())
+        return path
+    except OSError:
+        shutil.rmtree(path, ignore_errors=True)
+        raise
+
+
+def write_workfile(path, content):
+    """Keep source/probe files private, including with a root backend and umask 077."""
+    path.write_text(content, encoding='utf-8')
+    if os.name == 'posix':
+        path.chmod(0o600)
+        if os.geteuid() == 0:
+            os.chown(path, *docker_identity())
+
+
+def docker_workdir(workdir):
+    """Translate a shared backend directory to its Docker-daemon host path.
+
+    --mount deliberately fails if the host path is absent; --volume would silently
+    create an unrelated empty directory when the backend runs in another container.
+    """
+    path = Path(workdir).resolve()
+    host_root = _conf('CODE_SANDBOX_HOST_WORKDIR_ROOT', os.environ.get('CODE_SANDBOX_HOST_WORKDIR_ROOT', ''))
+    if not host_root:
+        return str(path)
+    local_root = _conf('CODE_SANDBOX_WORKDIR_ROOT', os.environ.get('CODE_SANDBOX_WORKDIR_ROOT', ''))
+    if not local_root or not os.path.isabs(host_root):
+        raise SandboxUnavailable('Sandbox host/local workdir roots must both be configured '
+                                 'with an absolute Docker host path.')
+    try:
+        relative = path.relative_to(Path(local_root).resolve())
+    except ValueError as exc:
+        raise SandboxUnavailable('Sandbox workdir is outside CODE_SANDBOX_WORKDIR_ROOT.') from exc
+    return str(Path(host_root) / relative)
+
+
+def docker_mount(workdir, writable):
+    source = docker_workdir(workdir)
+    # Explicit compatibility for locked wrappers that allow --volume but not --mount.
+    # Read env as a fallback so an existing deployment can update just the runner files.
+    style = _conf('CODE_SANDBOX_MOUNT_STYLE',
+                  os.environ.get('CODE_SANDBOX_MOUNT_STYLE', 'bind'))
+    if style == 'bind':
+        return ['--mount', f'type=bind,source={source},target=/work' +
+                ('' if writable else ',readonly')]
+    if style != 'volume':
+        raise SandboxUnavailable('CODE_SANDBOX_MOUNT_STYLE must be bind or volume.')
+    # Legacy --volume can create missing host paths. Limit it to an explicitly
+    # configured, existing directory at the SAME absolute host/backend path.
+    root = _conf('CODE_SANDBOX_WORKDIR_ROOT', os.environ.get('CODE_SANDBOX_WORKDIR_ROOT', ''))
+    if not root or source != str(Path(workdir).resolve()):
+        raise SandboxUnavailable('Volume compatibility requires a shared workdir root '
+                                 'at the same absolute path on the backend and Docker host.')
+    try:
+        Path(workdir).resolve().relative_to(Path(root).resolve())
+    except ValueError as exc:
+        raise SandboxUnavailable('Sandbox workdir is outside CODE_SANDBOX_WORKDIR_ROOT.') from exc
+    if not Path(workdir).is_dir():
+        raise SandboxUnavailable('Sandbox volume source directory does not exist.')
+    return ['--volume', f'{source}:/work' + ('' if writable else ':ro')]
+
+
 # ------------------------------------------------------------------------ detection
 def _docker_usable():
     """Docker counts as available only if it can actually run our image with a mount.
@@ -119,20 +197,29 @@ def _docker_usable():
         return False, (f'image {image_name()} is not built - see '
                        'backend/tutor/sandbox.Dockerfile')
 
-    import tempfile
-    from pathlib import Path
-    probe_dir = Path(tempfile.mkdtemp(prefix='trace_probe_'))
+    probe_dir = None
     try:
-        (probe_dir / 'probe.txt').write_text('ok', encoding='utf-8')
+        probe_dir = create_workdir(prefix='trace_probe_')
+        token = uuid.uuid4().hex
+        write_workfile(probe_dir / 'probe.txt', token)
         result = subprocess.run(
             _docker_command(['cat', 'probe.txt'], probe_dir, 'run', writable=False),
             capture_output=True, text=True, timeout=60)
-        if result.returncode != 0 or 'ok' not in (result.stdout or ''):
+        if result.returncode != 0 or token != (result.stdout or '').strip():
             return False, f'container could not read the mounted workdir: {(result.stderr or "").strip()[:200]}'
-    except (OSError, subprocess.SubprocessError) as exc:
+        result = subprocess.run(
+            _docker_command(['sh', '-c', 'cat probe.txt > written.txt'],
+                            probe_dir, 'compile', writable=True),
+            capture_output=True, text=True, timeout=60)
+        if result.returncode != 0:
+            return False, f'container could not write the mounted workdir: {(result.stderr or "").strip()[:200]}'
+        if (probe_dir / 'written.txt').read_text(encoding='utf-8') != token:
+            return False, 'Docker host and backend workdir paths do not refer to the same directory'
+    except (OSError, subprocess.SubprocessError, SandboxUnavailable) as exc:
         return False, f'probe container failed: {exc}'
     finally:
-        shutil.rmtree(probe_dir, ignore_errors=True)
+        if probe_dir is not None:
+            shutil.rmtree(probe_dir, ignore_errors=True)
     return True, None
 
 
@@ -223,13 +310,12 @@ def ensure_allowed():
         if tier == NONE:
             raise SandboxUnavailable(
                 'Code execution is disabled: no sandbox is available on this host '
-                f'({reason or "no containment backend"}). Build the runner image, or set '
-                'CODE_SANDBOX_REQUIRED=0 to accept the risk on a closed network.')
+                f'({reason or "no containment backend"}). Check the Docker daemon, runner '
+                'image and shared workdir permissions/path configuration.')
         raise SandboxUnavailable(
             f'Code execution is disabled: only the {tier} tier is available and the policy '
             f'requires {minimum_tier()} ({reason or "the container runtime is not usable"}). '
-            f'Build the runner image, or set CODE_SANDBOX_MIN_TIER={tier} to accept that '
-            'student programs can reach the host filesystem and network.')
+            'Check the Docker daemon, runner image and shared workdir permissions/path configuration.')
     return tier
 
 
@@ -251,7 +337,8 @@ def _docker_command(inner_argv, workdir, kind, writable, name=None, cpu_hardcap=
     forever."""
     caps = limits(kind)
     cpu_limit = int(cpu_hardcap or caps['cpu_seconds'])
-    mount = f'{os.path.abspath(str(workdir))}:/work' + ('' if writable else ':ro')
+    mount_args = docker_mount(workdir, writable)
+    uid, gid = docker_identity()
     argv = ['docker', 'run', '--rm', '--interactive']
     if name:
         argv += ['--name', name]
@@ -267,9 +354,10 @@ def _docker_command(inner_argv, workdir, kind, writable, name=None, cpu_hardcap=
         '--ulimit', f'fsize={caps["max_file_mb"] * 1024 * 1024}:{caps["max_file_mb"] * 1024 * 1024}',
         '--cap-drop', 'ALL',
         '--security-opt', 'no-new-privileges',
+        '--user', f'{uid}:{gid}',
         '--workdir', '/work',
-        '--volume', mount,
     ]
+    argv += mount_args
     if not writable:
         argv += ['--read-only', '--tmpfs', '/tmp:rw,size=16m']
     argv += [image_name()]

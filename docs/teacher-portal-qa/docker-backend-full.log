@@ -1,0 +1,1408 @@
+python.exe : Creating test database for alias 'default' ('test_trace_teacher_qa_20261009')...
+At line:2 char:1
++ & 'E:\projects\anaconda\envs\trace_tutor\python.exe' manage.py test - ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Creating test d...a_20261009')...:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+Found 488 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: corsheaders, messages, rest_framework, runserver_nostatic, staticfiles, tutor
+  Apply all migrations: accounts, admin, assessment, auth, authtoken, contenttypes, curriculum, logging_app, sessions
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying auth.0001_initial... OK
+  Applying logging_app.0001_initial... OK
+  Applying logging_app.0002_alter_interactionlog_options_and_more... OK
+  Applying accounts.0001_initial... OK
+  Applying accounts.0002_participantprofile_academic_group_and_more... OK
+  Applying accounts.0003_participantprofile_avatar... OK
+  Applying accounts.0004_participant_withdrawal... OK
+  Applying accounts.0005_participantprofile_enrolled_arm... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying assessment.0001_initial... OK
+  Applying assessment.0002_expertrating_item_key_alter_expertrating_item_and_more... OK
+  Applying assessment.0003_alter_examsubmission_options_and_more... OK
+  Applying assessment.0004_submission_background_grading... OK
+  Applying assessment.0005_examsubmission_arm... OK
+  Applying assessment.0006_papersitting... OK
+  Applying assessment.0007_examsubmission_claimed_at... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying authtoken.0001_initial... OK
+  Applying authtoken.0002_auto_20160226_1747... OK
+  Applying authtoken.0003_tokenproxy... OK
+  Applying authtoken.0004_alter_tokenproxy_options... OK
+  Applying curriculum.0001_initial... OK
+  Applying curriculum.0002_ingestrun_ocrpage... OK
+test_every_personal_field_is_blanked (accounts.test_withdrawal.ErasureTests.test_every_personal_field_is_blanked) ... 
+2026-10-09 23:03:30 INFO accounts.withdrawal: Participant TT-0001 withdrawn by participant: 3 events and 2 submissions 
+erased
+ok
+test_everything_the_participant_generated_is_deleted 
+(accounts.test_withdrawal.ErasureTests.test_everything_the_participant_generated_is_deleted) ... 2026-10-09 23:03:30 
+INFO accounts.withdrawal: Participant TT-0002 withdrawn by participant: 3 events and 2 submissions erased
+ok
+test_staff_accounts_cannot_be_withdrawn 
+(accounts.test_withdrawal.ErasureTests.test_staff_accounts_cannot_be_withdrawn) ... ok
+test_the_account_is_retired_not_deleted 
+(accounts.test_withdrawal.ErasureTests.test_the_account_is_retired_not_deleted) ... 2026-10-09 23:03:31 INFO 
+accounts.withdrawal: Participant TT-0005 withdrawn by participant: 3 events and 2 submissions erased
+ok
+test_the_export_shows_a_withdrawn_row_of_nulls 
+(accounts.test_withdrawal.ErasureTests.test_the_export_shows_a_withdrawn_row_of_nulls) ... 2026-10-09 23:03:31 INFO 
+accounts.withdrawal: Participant TT-0006 withdrawn by participant: 3 events and 2 submissions erased
+ok
+test_the_pseudonymous_code_and_arm_survive_for_the_denominator 
+(accounts.test_withdrawal.ErasureTests.test_the_pseudonymous_code_and_arm_survive_for_the_denominator) ... 2026-10-09 
+23:03:32 INFO accounts.withdrawal: Participant TT-0007 withdrawn by researcher: 3 events and 2 submissions erased
+ok
+test_withdrawing_twice_is_harmless (accounts.test_withdrawal.ErasureTests.test_withdrawing_twice_is_harmless) ... 
+2026-10-09 23:03:32 INFO accounts.withdrawal: Participant TT-0008 withdrawn by participant: 3 events and 2 submissions 
+erased
+ok
+test_a_researcher_can_action_a_withdrawal_by_participant_code (accounts.test_withdrawal.ResearcherWithdrawalEndpointTes
+ts.test_a_researcher_can_action_a_withdrawal_by_participant_code) ... 2026-10-09 23:03:33 INFO accounts.withdrawal: 
+Participant TT-0009 withdrawn by researcher: 3 events and 2 submissions erased
+ok
+test_an_unknown_code_is_a_404 
+(accounts.test_withdrawal.ResearcherWithdrawalEndpointTests.test_an_unknown_code_is_a_404) ... ok
+test_only_researchers_may (accounts.test_withdrawal.ResearcherWithdrawalEndpointTests.test_only_researchers_may) ... ok
+test_a_participant_can_download_everything_held_about_them 
+(accounts.test_withdrawal.RightOfAccessTests.test_a_participant_can_download_everything_held_about_them) ... ok
+test_it_is_only_ever_the_callers_own_data 
+(accounts.test_withdrawal.RightOfAccessTests.test_it_is_only_ever_the_callers_own_data) ... ok
+test_a_withdrawn_account_cannot_log_back_in 
+(accounts.test_withdrawal.SelfWithdrawalEndpointTests.test_a_withdrawn_account_cannot_log_back_in) ... 2026-10-09 
+23:03:36 INFO accounts.withdrawal: Participant TT-0024 withdrawn by participant: 3 events and 2 submissions erased
+ok
+test_requires_the_correct_password 
+(accounts.test_withdrawal.SelfWithdrawalEndpointTests.test_requires_the_correct_password) ... ok
+test_staff_get_a_clear_refusal (accounts.test_withdrawal.SelfWithdrawalEndpointTests.test_staff_get_a_clear_refusal) 
+... ok
+test_withdraws_erases_and_signs_the_participant_out 
+(accounts.test_withdrawal.SelfWithdrawalEndpointTests.test_withdraws_erases_and_signs_the_participant_out) ... 
+2026-10-09 23:03:38 INFO accounts.withdrawal: Participant TT-0028 withdrawn by participant: 3 events and 2 submissions 
+erased
+ok
+test_allocation_fills_the_smaller_arm (accounts.tests.ArmAllocationTests.test_allocation_fills_the_smaller_arm) ... ok
+test_allocation_stays_balanced_across_many_enrolments 
+(accounts.tests.ArmAllocationTests.test_allocation_stays_balanced_across_many_enrolments) ... ok
+test_staff_are_not_allocated_into_the_study 
+(accounts.tests.ArmAllocationTests.test_staff_are_not_allocated_into_the_study) ... ok
+test_a_participant_can_still_edit_their_other_profile_fields 
+(accounts.tests.ArmSwitchTests.test_a_participant_can_still_edit_their_other_profile_fields) ... ok
+test_a_participant_is_locked_until_the_last_paper_is_in 
+(accounts.tests.ArmSwitchTests.test_a_participant_is_locked_until_the_last_paper_is_in) ... ok
+test_a_pending_submission_still_counts_as_a_sat_paper 
+(accounts.tests.ArmSwitchTests.test_a_pending_submission_still_counts_as_a_sat_paper) ... ok
+test_a_switch_before_completion_is_marked_as_such 
+(accounts.tests.ArmSwitchTests.test_a_switch_before_completion_is_marked_as_such) ... ok
+test_allocation_balance_counts_enrolment_not_later_switches 
+(accounts.tests.ArmSwitchTests.test_allocation_balance_counts_enrolment_not_later_switches)
+Participants enrolled ANSWER_ONLY who all switch must not make the next ... ok
+test_always_lets_participants_switch_at_any_time 
+(accounts.tests.ArmSwitchTests.test_always_lets_participants_switch_at_any_time) ... ok
+test_an_unknown_mode_is_refused (accounts.tests.ArmSwitchTests.test_an_unknown_mode_is_refused) ... ok
+test_an_unknown_policy_falls_back_to_the_safe_one 
+(accounts.tests.ArmSwitchTests.test_an_unknown_policy_falls_back_to_the_safe_one) ... ok
+test_every_switch_is_logged_with_who_why_and_when 
+(accounts.tests.ArmSwitchTests.test_every_switch_is_logged_with_who_why_and_when) ... ok
+test_never_locks_participants_even_after_completion 
+(accounts.tests.ArmSwitchTests.test_never_locks_participants_even_after_completion) ... ok
+test_staff_may_switch_under_every_policy (accounts.tests.ArmSwitchTests.test_staff_may_switch_under_every_policy) ... 
+ok
+test_switching_never_changes_the_arm_of_record 
+(accounts.tests.ArmSwitchTests.test_switching_never_changes_the_arm_of_record) ... ok
+test_the_default_policy_is_after_protocol (accounts.tests.ArmSwitchTests.test_the_default_policy_is_after_protocol) 
+... ok
+test_the_session_explains_the_lock_and_then_the_unlock 
+(accounts.tests.ArmSwitchTests.test_the_session_explains_the_lock_and_then_the_unlock) ... ok
+test_the_switch_unlocks_once_the_protocol_is_complete 
+(accounts.tests.ArmSwitchTests.test_the_switch_unlocks_once_the_protocol_is_complete) ... ok
+test_three_papers_are_not_enough (accounts.tests.ArmSwitchTests.test_three_papers_are_not_enough) ... ok
+test_a_bad_password_is_rejected (accounts.tests.AuthTests.test_a_bad_password_is_rejected) ... ok
+test_a_deactivated_account_cannot_log_in (accounts.tests.AuthTests.test_a_deactivated_account_cannot_log_in) ... ok
+test_changing_the_password_rotates_the_token (accounts.tests.AuthTests.test_changing_the_password_rotates_the_token) 
+... ok
+test_login_by_username_and_by_email (accounts.tests.AuthTests.test_login_by_username_and_by_email) ... ok
+test_logout_revokes_the_token_server_side (accounts.tests.AuthTests.test_logout_revokes_the_token_server_side) ... ok
+test_the_wrong_current_password_blocks_the_change 
+(accounts.tests.AuthTests.test_the_wrong_current_password_blocks_the_change) ... ok
+test_a_participant_reads_their_own_profile (accounts.tests.ProfileTests.test_a_participant_reads_their_own_profile) 
+... ok
+test_an_out_of_range_language_falls_back_to_bangla 
+(accounts.tests.ProfileTests.test_an_out_of_range_language_falls_back_to_bangla) ... ok
+test_numeric_covariates_are_clamped_not_trusted 
+(accounts.tests.ProfileTests.test_numeric_covariates_are_clamped_not_trusted) ... ok
+test_participant_code_cannot_be_rewritten (accounts.tests.ProfileTests.test_participant_code_cannot_be_rewritten) ... 
+ok
+test_role_cannot_be_escalated_through_a_profile_update 
+(accounts.tests.ProfileTests.test_role_cannot_be_escalated_through_a_profile_update) ... ok
+test_the_profile_needs_authentication (accounts.tests.ProfileTests.test_the_profile_needs_authentication) ... ok
+test_a_participant_cannot_choose_their_own_arm_at_enrolment 
+(accounts.tests.RegistrationTests.test_a_participant_cannot_choose_their_own_arm_at_enrolment)
+assigned_arm is not an editable profile field, so the body cannot set it. ... ok
+test_a_participant_is_given_a_pseudonymous_code 
+(accounts.tests.RegistrationTests.test_a_participant_is_given_a_pseudonymous_code) ... ok
+test_a_student_can_enrol_and_receives_a_token 
+(accounts.tests.RegistrationTests.test_a_student_can_enrol_and_receives_a_token) ... ok
+test_a_weak_password_is_rejected (accounts.tests.RegistrationTests.test_a_weak_password_is_rejected) ... ok
+test_consent_is_required_for_a_student (accounts.tests.RegistrationTests.test_consent_is_required_for_a_student) ... ok
+test_usernames_are_validated_and_unique (accounts.tests.RegistrationTests.test_usernames_are_validated_and_unique) ... 
+ok
+test_staff_registration_is_refused_outright_when_no_code_is_configured 
+(accounts.tests.StaffRegistrationTests.test_staff_registration_is_refused_outright_when_no_code_is_configured)
+An empty configured code must not mean 'any code will do'. ... ok
+test_the_access_code_is_required (accounts.tests.StaffRegistrationTests.test_the_access_code_is_required) ... ok
+test_the_correct_code_enrols_a_teacher (accounts.tests.StaffRegistrationTests.test_the_correct_code_enrols_a_teacher) 
+... ok
+test_a_submission_is_stamped_with_the_current_arm 
+(accounts.tests.SubmissionArmTests.test_a_submission_is_stamped_with_the_current_arm) ... 2026-10-09 23:03:58 INFO 
+assessment.grading: Graded submission 48: 0/15 (0%)
+ok
+test_the_stamp_follows_the_mode_at_submission_time 
+(accounts.tests.SubmissionArmTests.test_the_stamp_follows_the_mode_at_submission_time) ... 2026-10-09 23:03:58 INFO 
+assessment.grading: Graded submission 49: 0/15 (0%)
+2026-10-09 23:03:58 INFO assessment.grading: Graded submission 50: 0/15 (0%)
+ok
+test_an_empty_study_reports_nulls_rather_than_illustrative_numbers 
+(assessment.tests.test_access.AdminStatsTests.test_an_empty_study_reports_nulls_rather_than_illustrative_numbers) ... 
+ok
+test_participant_counts_track_real_enrolments 
+(assessment.tests.test_access.AdminStatsTests.test_participant_counts_track_real_enrolments) ... ok
+test_a_user_without_a_profile_is_treated_as_unprivileged 
+(assessment.tests.test_access.EndpointPermissionTests.test_a_user_without_a_profile_is_treated_as_unprivileged)
+The role gates read the profile; a missing one must fail closed. ... ok
+test_anonymous_callers_are_refused_everywhere 
+(assessment.tests.test_access.EndpointPermissionTests.test_anonymous_callers_are_refused_everywhere) ... ok
+test_participants_cannot_reach_researcher_endpoints 
+(assessment.tests.test_access.EndpointPermissionTests.test_participants_cannot_reach_researcher_endpoints) ... ok
+test_participants_cannot_reach_staff_endpoints 
+(assessment.tests.test_access.EndpointPermissionTests.test_participants_cannot_reach_staff_endpoints) ... ok
+test_researchers_can_reach_everything 
+(assessment.tests.test_access.EndpointPermissionTests.test_researchers_can_reach_everything) ... ok
+test_staff_can_reach_staff_endpoints 
+(assessment.tests.test_access.EndpointPermissionTests.test_staff_can_reach_staff_endpoints) ... ok
+test_teachers_cannot_reach_researcher_endpoints 
+(assessment.tests.test_access.EndpointPermissionTests.test_teachers_cannot_reach_researcher_endpoints) ... ok
+test_a_completed_paper_stays_readable 
+(assessment.tests.test_access.ExamPaperAccessTests.test_a_completed_paper_stays_readable) ... ok
+test_a_locked_paper_cannot_be_submitted_either 
+(assessment.tests.test_access.ExamPaperAccessTests.test_a_locked_paper_cannot_be_submitted_either) ... ok
+test_a_new_participant_may_only_open_the_pre_test 
+(assessment.tests.test_access.ExamPaperAccessTests.test_a_new_participant_may_only_open_the_pre_test) ... ok
+test_a_refusal_also_reports_which_papers_are_open 
+(assessment.tests.test_access.ExamPaperAccessTests.test_a_refusal_also_reports_which_papers_are_open) ... ok
+test_an_open_paper_can_be_submitted 
+(assessment.tests.test_access.ExamPaperAccessTests.test_an_open_paper_can_be_submitted) ... 2026-10-09 23:04:02 INFO 
+assessment.grading: Graded submission 52: 0/15 (0%)
+ok
+test_an_unknown_paper_is_rejected_rather_than_silently_served 
+(assessment.tests.test_access.ExamPaperAccessTests.test_an_unknown_paper_is_rejected_rather_than_silently_served) ... 
+ok
+test_served_items_never_carry_the_answer_key 
+(assessment.tests.test_access.ExamPaperAccessTests.test_served_items_never_carry_the_answer_key) ... ok
+test_staff_may_open_every_paper_to_review_the_bank 
+(assessment.tests.test_access.ExamPaperAccessTests.test_staff_may_open_every_paper_to_review_the_bank) ... ok
+test_the_next_paper_unlocks_only_after_the_previous_one_is_submitted (assessment.tests.test_access.ExamPaperAccessTests
+.test_the_next_paper_unlocks_only_after_the_previous_one_is_submitted) ... ok
+test_the_response_reports_which_papers_are_open 
+(assessment.tests.test_access.ExamPaperAccessTests.test_the_response_reports_which_papers_are_open) ... ok
+test_the_export_carries_the_real_recorded_score 
+(assessment.tests.test_access.ResearcherExportTests.test_the_export_carries_the_real_recorded_score) ... ok
+test_the_export_identifies_people_only_by_participant_code 
+(assessment.tests.test_access.ResearcherExportTests.test_the_export_identifies_people_only_by_participant_code) ... ok
+test_the_export_is_offered_as_a_dated_download 
+(assessment.tests.test_access.ResearcherExportTests.test_the_export_is_offered_as_a_dated_download) ... ok
+test_the_export_streams_a_header_and_one_row_per_participant 
+(assessment.tests.test_access.ResearcherExportTests.test_the_export_streams_a_header_and_one_row_per_participant) ... 
+ok
+test_a_submission_belongs_to_the_caller_whatever_the_body_says 
+(assessment.tests.test_access.SubmissionOwnershipTests.test_a_submission_belongs_to_the_caller_whatever_the_body_says) 
+... 2026-10-09 23:04:07 INFO assessment.grading: Graded submission 58: 0/15 (0%)
+ok
+test_the_score_is_computed_server_side_not_taken_from_the_body 
+(assessment.tests.test_access.SubmissionOwnershipTests.test_the_score_is_computed_server_side_not_taken_from_the_body) 
+... 2026-10-09 23:04:07 INFO assessment.grading: Graded submission 59: 0/15 (0%)
+ok
+test_a_participant_with_no_data_yields_nulls_not_zeros 
+(assessment.tests.test_analytics.ParticipantRowTests.test_a_participant_with_no_data_yields_nulls_not_zeros) ... ok
+test_event_counts_come_from_the_telemetry_table 
+(assessment.tests.test_analytics.ParticipantRowTests.test_event_counts_come_from_the_telemetry_table) ... ok
+test_rows_identify_people_by_participant_code_only 
+(assessment.tests.test_analytics.ParticipantRowTests.test_rows_identify_people_by_participant_code_only) ... ok
+test_scores_gain_and_drop_are_derived_from_submissions 
+(assessment.tests.test_analytics.ParticipantRowTests.test_scores_gain_and_drop_are_derived_from_submissions) ... ok
+test_staff_accounts_are_not_participants 
+(assessment.tests.test_analytics.ParticipantRowTests.test_staff_accounts_are_not_participants) ... ok
+test_the_first_submission_counts_and_retakes_are_only_tallied 
+(assessment.tests.test_analytics.ParticipantRowTests.test_the_first_submission_counts_and_retakes_are_only_tallied) 
+... ok
+test_an_empty_study_reports_zero_and_null_never_a_placeholder 
+(assessment.tests.test_analytics.StudyStatsTests.test_an_empty_study_reports_zero_and_null_never_a_placeholder) ... ok
+test_an_outcome_nobody_has_completed_stays_null 
+(assessment.tests.test_analytics.StudyStatsTests.test_an_outcome_nobody_has_completed_stays_null) ... ok
+test_counts_and_outcomes_reflect_the_rows_in_the_database 
+(assessment.tests.test_analytics.StudyStatsTests.test_counts_and_outcomes_reflect_the_rows_in_the_database) ... ok
+test_a_graded_row_cannot_be_claimed_again 
+(assessment.tests.test_grading.ClaimTests.test_a_graded_row_cannot_be_claimed_again) ... ok
+test_exactly_one_grader_wins_a_pending_row 
+(assessment.tests.test_grading.ClaimTests.test_exactly_one_grader_wins_a_pending_row) ... ok
+test_grade_now_grades_a_pending_row_and_declines_a_taken_one 
+(assessment.tests.test_grading.ClaimTests.test_grade_now_grades_a_pending_row_and_declines_a_taken_one) ... 2026-10-09 
+23:04:11 INFO assessment.grading: Graded submission 96: 2/15 (13%)
+ok
+test_a_grading_crash_is_recorded_on_the_row_not_raised 
+(assessment.tests.test_grading.GradeOutcomeTests.test_a_grading_crash_is_recorded_on_the_row_not_raised) ... 
+2026-10-09 23:04:11 ERROR assessment.grading: Grading submission 97 failed
+Traceback (most recent call last):
+  File "C:\Users\shiha\ML-Projects\trace\Trace Tutor AI ( system Design)\Trace Tutor AI ( system 
+Design)\backend\assessment\grading.py", line 112, in grade
+    score_pct, correct, total, results = scoring.grade_submission(
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\unittest\mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\unittest\mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\unittest\mock.py", line 1183, in _execute_mock_call
+    raise effect
+RuntimeError: compiler exploded
+ok
+test_failed_rows_can_be_requeued_and_then_grade 
+(assessment.tests.test_grading.GradeOutcomeTests.test_failed_rows_can_be_requeued_and_then_grade) ... 2026-10-09 
+23:04:11 ERROR assessment.grading: Grading submission 98 failed
+Traceback (most recent call last):
+  File "C:\Users\shiha\ML-Projects\trace\Trace Tutor AI ( system Design)\Trace Tutor AI ( system 
+Design)\backend\assessment\grading.py", line 112, in grade
+    score_pct, correct, total, results = scoring.grade_submission(
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\unittest\mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\unittest\mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\unittest\mock.py", line 1183, in _execute_mock_call
+    raise effect
+RuntimeError: boom
+2026-10-09 23:04:11 INFO assessment.grading: Graded submission 98: 2/15 (13%)
+ok
+test_grade_pending_drains_oldest_first_and_reports_the_count 
+(assessment.tests.test_grading.GradeOutcomeTests.test_grade_pending_drains_oldest_first_and_reports_the_count) ... 
+2026-10-09 23:04:12 INFO assessment.grading: Graded submission 99: 2/15 (13%)
+2026-10-09 23:04:12 INFO assessment.grading: Graded submission 100: 2/15 (13%)
+2026-10-09 23:04:12 INFO assessment.grading: Graded submission 101: 2/15 (13%)
+ok
+test_grading_fills_in_score_and_per_item_results 
+(assessment.tests.test_grading.GradeOutcomeTests.test_grading_fills_in_score_and_per_item_results) ... 2026-10-09 
+23:04:12 INFO assessment.grading: Graded submission 102: 2/15 (13%)
+ok
+test_a_pending_submission_carries_no_score_into_the_dashboard (assessment.tests.test_grading.QueuedRowsAreNotYetObserva
+tionsTests.test_a_pending_submission_carries_no_score_into_the_dashboard) ... ok
+test_a_pending_submission_is_not_counted_by_the_analytics (assessment.tests.test_grading.QueuedRowsAreNotYetObservation
+sTests.test_a_pending_submission_is_not_counted_by_the_analytics) ... ok
+test_a_pending_submission_still_unlocks_the_next_paper (assessment.tests.test_grading.QueuedRowsAreNotYetObservationsTe
+sts.test_a_pending_submission_still_unlocks_the_next_paper)
+The paper was sat; the participant must not be able to sit it again. ... ok
+test_a_graded_row_exposes_everything_the_result_screen_needs 
+(assessment.tests.test_grading.RepresentationTests.test_a_graded_row_exposes_everything_the_result_screen_needs) ... 
+2026-10-09 23:04:13 INFO assessment.grading: Graded submission 106: 2/15 (13%)
+ok
+test_a_pending_row_exposes_no_score_and_no_results 
+(assessment.tests.test_grading.RepresentationTests.test_a_pending_row_exposes_no_score_and_no_results) ... ok
+test_a_freshly_claimed_row_is_left_alone 
+(assessment.tests.test_grading.StaleGradingTests.test_a_freshly_claimed_row_is_left_alone) ... ok
+test_a_grading_unavailable_error_marks_the_row_failed_and_is_retryable (assessment.tests.test_grading.StaleGradingTests
+.test_a_grading_unavailable_error_marks_the_row_failed_and_is_retryable) ... 2026-10-09 23:04:14 ERROR 
+assessment.grading: Grading submission 109 failed
+Traceback (most recent call last):
+  File "C:\Users\shiha\ML-Projects\trace\Trace Tutor AI ( system Design)\Trace Tutor AI ( system 
+Design)\backend\assessment\grading.py", line 112, in grade
+    score_pct, correct, total, results = scoring.grade_submission(
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\unittest\mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\unittest\mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\unittest\mock.py", line 1183, in _execute_mock_call
+    raise effect
+assessment.scoring.GradingUnavailable: runner down
+ok
+test_a_row_stuck_in_grading_is_requeued_and_then_grades 
+(assessment.tests.test_grading.StaleGradingTests.test_a_row_stuck_in_grading_is_requeued_and_then_grades) ... 
+2026-10-09 23:04:14 INFO assessment.grading: Graded submission 110: 2/15 (13%)
+ok
+test_grade_pending_reclaims_a_stranded_row_on_its_own 
+(assessment.tests.test_grading.StaleGradingTests.test_grade_pending_reclaims_a_stranded_row_on_its_own) ... 2026-10-09 
+23:04:14 INFO assessment.grading: Graded submission 111: 2/15 (13%)
+ok
+test_an_unknown_id_and_an_anonymous_caller_get_nothing 
+(assessment.tests.test_grading.SubmissionPollTests.test_an_unknown_id_and_an_anonymous_caller_get_nothing) ... ok
+test_another_participant_cannot_read_it 
+(assessment.tests.test_grading.SubmissionPollTests.test_another_participant_cannot_read_it)
+Ids are sequential; without this check any participant could read anyone's marks. ... ok
+test_staff_can_read_it (assessment.tests.test_grading.SubmissionPollTests.test_staff_can_read_it) ... ok
+test_the_owner_can_poll_their_submission 
+(assessment.tests.test_grading.SubmissionPollTests.test_the_owner_can_poll_their_submission) ... ok
+test_a_submission_is_saved_and_graded 
+(assessment.tests.test_grading.SubmitEndpointTests.test_a_submission_is_saved_and_graded) ... 2026-10-09 23:04:17 INFO 
+assessment.grading: Graded submission 116: 2/15 (13%)
+ok
+test_the_body_cannot_smuggle_in_a_score 
+(assessment.tests.test_grading.SubmitEndpointTests.test_the_body_cannot_smuggle_in_a_score) ... 2026-10-09 23:04:17 
+INFO assessment.grading: Graded submission 117: 0/15 (0%)
+ok
+test_the_exam_is_saved_even_when_grading_crashes 
+(assessment.tests.test_grading.SubmitEndpointTests.test_the_exam_is_saved_even_when_grading_crashes)
+The single most important property of the new flow. ... 2026-10-09 23:04:18 ERROR assessment.grading: Grading 
+submission 118 failed
+Traceback (most recent call last):
+  File "C:\Users\shiha\ML-Projects\trace\Trace Tutor AI ( system Design)\Trace Tutor AI ( system 
+Design)\backend\assessment\grading.py", line 112, in grade
+    score_pct, correct, total, results = scoring.grade_submission(
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\unittest\mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\unittest\mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\unittest\mock.py", line 1183, in _execute_mock_call
+    raise effect
+RuntimeError: toolchain down
+ok
+test_enqueue_spawns_no_thread_and_leaves_the_row_pending 
+(assessment.tests.test_grading.WorkerModeTests.test_enqueue_spawns_no_thread_and_leaves_the_row_pending) ... ok
+test_submit_returns_202_pending_for_the_worker_to_pick_up 
+(assessment.tests.test_grading.WorkerModeTests.test_submit_returns_202_pending_for_the_worker_to_pick_up) ... 
+2026-10-09 23:04:18 INFO assessment.grading: Graded submission 120: 2/15 (13%)
+ok
+test_an_untouched_bank_is_not_certified_and_says_why 
+(assessment.tests.test_psychometrics.CertificationReportTests.test_an_untouched_bank_is_not_certified_and_says_why) 
+... ok
+test_form_equivalence_is_reported_once_there_is_data 
+(assessment.tests.test_psychometrics.CertificationReportTests.test_form_equivalence_is_reported_once_there_is_data) 
+... ok
+test_the_report_carries_the_protocol_thresholds 
+(assessment.tests.test_psychometrics.CertificationReportTests.test_the_report_carries_the_protocol_thresholds) ... ok
+test_a_unanimously_relevant_item_certifies 
+(assessment.tests.test_psychometrics.ContentValidityTests.test_a_unanimously_relevant_item_certifies) ... ok
+test_an_irrelevant_item_is_marked_for_discard 
+(assessment.tests.test_psychometrics.ContentValidityTests.test_an_irrelevant_item_is_marked_for_discard) ... ok
+test_an_unrated_bank_reports_nothing_rather_than_zero 
+(assessment.tests.test_psychometrics.ContentValidityTests.test_an_unrated_bank_reports_nothing_rather_than_zero) ... ok
+test_i_cvi_is_the_proportion_rating_the_item_relevant 
+(assessment.tests.test_psychometrics.ContentValidityTests.test_i_cvi_is_the_proportion_rating_the_item_relevant) ... ok
+test_meeting_the_target_is_reported 
+(assessment.tests.test_psychometrics.ContentValidityTests.test_meeting_the_target_is_reported) ... ok
+test_s_cvi_averages_across_rated_items_only 
+(assessment.tests.test_psychometrics.ContentValidityTests.test_s_cvi_averages_across_rated_items_only) ... ok
+test_s_cvi_ua_counts_only_unanimous_items 
+(assessment.tests.test_psychometrics.ContentValidityTests.test_s_cvi_ua_counts_only_unanimous_items) ... ok
+test_difficulty_is_the_proportion_answering_correctly 
+(assessment.tests.test_psychometrics.ItemAnalysisTests.test_difficulty_is_the_proportion_answering_correctly) ... ok
+test_items_outside_the_difficulty_range_are_flagged 
+(assessment.tests.test_psychometrics.ItemAnalysisTests.test_items_outside_the_difficulty_range_are_flagged) ... ok
+test_no_pilot_data_reports_nothing 
+(assessment.tests.test_psychometrics.ItemAnalysisTests.test_no_pilot_data_reports_nothing) ... ok
+test_only_the_first_submission_of_a_form_counts 
+(assessment.tests.test_psychometrics.ItemAnalysisTests.test_only_the_first_submission_of_a_form_counts) ... ok
+test_staff_submissions_are_not_pilot_data 
+(assessment.tests.test_psychometrics.ItemAnalysisTests.test_staff_submissions_are_not_pilot_data) ... ok
+test_take_list_verify_and_prune (assessment.tests.test_sittings.BackupCommandTests.test_take_list_verify_and_prune) 
+... ok
+test_it_is_offered_as_a_download (assessment.tests.test_sittings.ManifestTests.test_it_is_offered_as_a_download) ... ok
+test_it_records_everything_that_could_change_the_data 
+(assessment.tests.test_sittings.ManifestTests.test_it_records_everything_that_could_change_the_data) ... ok
+test_only_a_researcher_may_read_it (assessment.tests.test_sittings.ManifestTests.test_only_a_researcher_may_read_it) 
+... ok
+test_with_yes_it_wipes_participants_and_keeps_staff_and_ratings 
+(assessment.tests.test_sittings.ResetStudyDataTests.test_with_yes_it_wipes_participants_and_keeps_staff_and_ratings) 
+... ok
+test_without_yes_it_only_reports (assessment.tests.test_sittings.ResetStudyDataTests.test_without_yes_it_only_reports) 
+... ok
+test_a_completed_paper_is_served_with_its_result_pointer 
+(assessment.tests.test_sittings.SittingLifecycleTests.test_a_completed_paper_is_served_with_its_result_pointer) ... 
+2026-10-09 23:04:38 INFO assessment.grading: Graded submission 146: 0/15 (0%)
+ok
+test_a_paper_cannot_be_submitted_twice 
+(assessment.tests.test_sittings.SittingLifecycleTests.test_a_paper_cannot_be_submitted_twice) ... 2026-10-09 23:04:38 
+INFO assessment.grading: Graded submission 147: 0/15 (0%)
+ok
+test_fetching_a_paper_opens_a_sitting_and_logs_it 
+(assessment.tests.test_sittings.SittingLifecycleTests.test_fetching_a_paper_opens_a_sitting_and_logs_it) ... ok
+test_get_items_with_retake_query_param_reopens_sitting 
+(assessment.tests.test_sittings.SittingLifecycleTests.test_get_items_with_retake_query_param_reopens_sitting) ... 
+2026-10-09 23:04:39 INFO assessment.grading: Graded submission 148: 0/15 (0%)
+ok
+test_refetching_is_idempotent_and_refreshes_activity 
+(assessment.tests.test_sittings.SittingLifecycleTests.test_refetching_is_idempotent_and_refreshes_activity) ... ok
+test_retake_reopens_sitting_and_allows_subsequent_submission 
+(assessment.tests.test_sittings.SittingLifecycleTests.test_retake_reopens_sitting_and_allows_subsequent_submission) 
+... 2026-10-09 23:04:39 INFO assessment.grading: Graded submission 149: 0/15 (0%)
+2026-10-09 23:04:39 INFO assessment.grading: Graded submission 150: 0/15 (0%)
+ok
+test_staff_browsing_the_bank_get_no_sittings 
+(assessment.tests.test_sittings.SittingLifecycleTests.test_staff_browsing_the_bank_get_no_sittings) ... ok
+test_submitting_closes_the_sitting_and_links_the_submission 
+(assessment.tests.test_sittings.SittingLifecycleTests.test_submitting_closes_the_sitting_and_links_the_submission) ... 
+2026-10-09 23:04:40 INFO assessment.grading: Graded submission 151: 0/15 (0%)
+ok
+test_submitting_without_fetching_still_records_a_closed_sitting 
+(assessment.tests.test_sittings.SittingLifecycleTests.test_submitting_without_fetching_still_records_a_closed_sitting) 
+... 2026-10-09 23:04:40 INFO assessment.grading: Graded submission 152: 0/15 (0%)
+ok
+test_time_on_paper_reaches_the_export 
+(assessment.tests.test_sittings.SittingLifecycleTests.test_time_on_paper_reaches_the_export) ... 2026-10-09 23:04:40 
+INFO assessment.grading: Graded submission 153: 0/15 (0%)
+ok
+test_a_newer_transfer_retake_is_not_blocked_by_a_stale_withdrawal_sitting (assessment.tests.test_sittings.TutorGatingTe
+sts.test_a_newer_transfer_retake_is_not_blocked_by_a_stale_withdrawal_sitting) ... 2026-10-09 23:04:41 WARNING 
+tutor.views: Tutor model call (openai) failed: OPENAI_API_KEY is not configured
+ok
+test_an_abandoned_paper_stops_blocking_after_the_ttl 
+(assessment.tests.test_sittings.TutorGatingTests.test_an_abandoned_paper_stops_blocking_after_the_ttl) ... 2026-10-09 
+23:04:41 WARNING tutor.views: Tutor model call (openai) failed: OPENAI_API_KEY is not configured
+ok
+test_reopening_an_abandoned_paper_blocks_again 
+(assessment.tests.test_sittings.TutorGatingTests.test_reopening_an_abandoned_paper_blocks_again) ... ok
+test_returning_to_withdrawal_restores_the_tutor_block 
+(assessment.tests.test_sittings.TutorGatingTests.test_returning_to_withdrawal_restores_the_tutor_block) ... 2026-10-09 
+23:04:42 WARNING tutor.views: Tutor model call (openai) failed: OPENAI_API_KEY is not configured
+ok
+test_staff_are_never_blocked (assessment.tests.test_sittings.TutorGatingTests.test_staff_are_never_blocked) ... 
+2026-10-09 23:04:42 WARNING tutor.views: Tutor model call (openai) failed: OPENAI_API_KEY is not configured
+ok
+test_submitting_the_paper_frees_the_tutor 
+(assessment.tests.test_sittings.TutorGatingTests.test_submitting_the_paper_frees_the_tutor) ... 2026-10-09 23:04:42 
+INFO assessment.grading: Graded submission 172: 0/15 (0%)
+2026-10-09 23:04:42 WARNING tutor.views: Tutor model call (openai) failed: OPENAI_API_KEY is not configured
+ok
+test_the_set_of_no_ai_papers_is_configurable 
+(assessment.tests.test_sittings.TutorGatingTests.test_the_set_of_no_ai_papers_is_configurable) ... 2026-10-09 23:04:43 
+WARNING tutor.views: Tutor model call (openai) failed: OPENAI_API_KEY is not configured
+ok
+test_the_tutor_answers_when_no_paper_is_open 
+(assessment.tests.test_sittings.TutorGatingTests.test_the_tutor_answers_when_no_paper_is_open) ... 2026-10-09 23:04:43 
+WARNING tutor.views: Tutor model call (openai) failed: OPENAI_API_KEY is not configured
+ok
+test_the_tutor_is_allowed_during_the_ai_papers 
+(assessment.tests.test_sittings.TutorGatingTests.test_the_tutor_is_allowed_during_the_ai_papers) ... 2026-10-09 
+23:04:43 WARNING tutor.views: Tutor model call (openai) failed: OPENAI_API_KEY is not configured
+ok
+test_the_tutor_refuses_while_the_pre_test_is_open 
+(assessment.tests.test_sittings.TutorGatingTests.test_the_tutor_refuses_while_the_pre_test_is_open) ... ok
+test_the_tutor_refuses_while_the_withdrawal_task_is_open 
+(assessment.tests.test_sittings.TutorGatingTests.test_the_tutor_refuses_while_the_withdrawal_task_is_open) ... ok
+test_complete_rating_is_persisted_retrieved_and_replaced_only_for_its_expert (assessment.tests.test_teacher_portal.Teac
+herPortalTests.test_complete_rating_is_persisted_retrieved_and_replaced_only_for_its_expert) ... ok
+test_existing_clients_without_revision_fields_keep_their_valid_api_contract (assessment.tests.test_teacher_portal.Teach
+erPortalTests.test_existing_clients_without_revision_fields_keep_their_valid_api_contract) ... ok
+test_grade_boundaries_and_updates_are_retrievable_and_do_not_alter_server_scores (assessment.tests.test_teacher_portal.
+TeacherPortalTests.test_grade_boundaries_and_updates_are_retrievable_and_do_not_alter_server_scores) ... ok
+test_grade_revision_prevents_stale_overwrites_across_reviewers (assessment.tests.test_teacher_portal.TeacherPortalTests
+.test_grade_revision_prevents_stale_overwrites_across_reviewers) ... ok
+test_incomplete_malformed_and_out_of_range_rubrics_never_write_defaults (assessment.tests.test_teacher_portal.TeacherPo
+rtalTests.test_incomplete_malformed_and_out_of_range_rubrics_never_write_defaults) ... ok
+test_invalid_marks_do_not_silently_become_zero_or_clamped_grades (assessment.tests.test_teacher_portal.TeacherPortalTes
+ts.test_invalid_marks_do_not_silently_become_zero_or_clamped_grades) ... ok
+test_score_api_preserves_null_and_zero_and_pending_status 
+(assessment.tests.test_teacher_portal.TeacherPortalTests.test_score_api_preserves_null_and_zero_and_pending_status) 
+... ok
+test_stale_rating_and_stale_first_creation_return_conflict_without_overwriting (assessment.tests.test_teacher_portal.Te
+acherPortalTests.test_stale_rating_and_stale_first_creation_return_conflict_without_overwriting) ... ok
+test_students_and_anonymous_callers_cannot_read_or_write_teacher_data (assessment.tests.test_teacher_portal.TeacherPort
+alTests.test_students_and_anonymous_callers_cannot_read_or_write_teacher_data) ... ok
+test_teacher_arm_switch_is_persisted_but_enrolment_arm_is_immutable (assessment.tests.test_teacher_portal.TeacherPortal
+Tests.test_teacher_arm_switch_is_persisted_but_enrolment_arm_is_immutable) ... ok
+test_teacher_code_execution_preserves_success_errors_and_timeout_results (assessment.tests.test_teacher_portal.TeacherP
+ortalTests.test_teacher_code_execution_preserves_success_errors_and_timeout_results) ... ok
+test_teacher_profile_validation_persistence_and_role_immutability (assessment.tests.test_teacher_portal.TeacherPortalTe
+sts.test_teacher_profile_validation_persistence_and_role_immutability) ... ok
+test_unknown_item_never_creates_a_research_rating 
+(assessment.tests.test_teacher_portal.TeacherPortalTests.test_unknown_item_never_creates_a_research_rating) ... ok
+test_unknown_submission_does_not_create_a_grade 
+(assessment.tests.test_teacher_portal.TeacherPortalTests.test_unknown_submission_does_not_create_a_grade) ... ok
+test_updating_an_older_grade_makes_it_the_latest_displayed_grade (assessment.tests.test_teacher_portal.TeacherPortalTes
+ts.test_updating_an_older_grade_makes_it_the_latest_displayed_grade) ... ok
+test_a_backward_cross_reference_cannot_rewind_the_book 
+(curriculum.tests.ChapterStructureTests.test_a_backward_cross_reference_cannot_rewind_the_book) ... ok
+test_a_chapter_runs_until_the_next_one_opens 
+(curriculum.tests.ChapterStructureTests.test_a_chapter_runs_until_the_next_one_opens) ... ok
+test_a_chapter_whose_opening_page_came_back_blank_is_rescued 
+(curriculum.tests.ChapterStructureTests.test_a_chapter_whose_opening_page_came_back_blank_is_rescued)
+The failure that once emptied Chapter 6: an opener page transcribed to nothing used to ... ok
+test_a_contents_page_does_not_open_a_chapter 
+(curriculum.tests.ChapterStructureTests.test_a_contents_page_does_not_open_a_chapter)
+A page that names several chapters near its top is the table of contents. Taking it as ... ok
+test_a_rescue_cannot_contradict_the_openers 
+(curriculum.tests.ChapterStructureTests.test_a_rescue_cannot_contradict_the_openers)
+Section numbering for chapter 2 appearing after chapter 4 has opened is noise, not chapter 2. ... ok
+test_a_sentence_mentioning_a_chapter_number_is_not_an_opener 
+(curriculum.tests.ChapterStructureTests.test_a_sentence_mentioning_a_chapter_number_is_not_an_opener) ... ok
+test_a_title_inside_a_bullet_does_not_open_a_chapter 
+(curriculum.tests.ChapterStructureTests.test_a_title_inside_a_bullet_does_not_open_a_chapter)
+The printed title must BE the heading, not merely occur inside a short line. ... ok
+test_an_english_chapter_opener_is_recognised 
+(curriculum.tests.ChapterStructureTests.test_an_english_chapter_opener_is_recognised) ... ok
+test_an_unchaptered_document_gets_no_carry_over 
+(curriculum.tests.ChapterStructureTests.test_an_unchaptered_document_gets_no_carry_over) ... ok
+test_both_bangla_normalisations_of_a_heading_are_recognised 
+(curriculum.tests.ChapterStructureTests.test_both_bangla_normalisations_of_a_heading_are_recognised)
+The model writes '\u09af\u09bc' either precomposed (U+09DF) or as \u09af plus a nukta, and page 119 of ... ok
+test_chapter_four_spelled_out_is_an_opener 
+(curriculum.tests.ChapterStructureTests.test_chapter_four_spelled_out_is_an_opener) ... ok
+test_prose_naming_another_chapter_does_not_reopen_it 
+(curriculum.tests.ChapterStructureTests.test_prose_naming_another_chapter_does_not_reopen_it) ... ok
+test_section_numbering_names_its_chapter 
+(curriculum.tests.ChapterStructureTests.test_section_numbering_names_its_chapter) ... ok
+test_index_status_is_available_to_any_participant 
+(curriculum.tests.CorpusAccessTests.test_index_status_is_available_to_any_participant)
+The student dashboard shows whether the curriculum index is ready. ... ok
+test_participants_cannot_dump_the_corpus (curriculum.tests.CorpusAccessTests.test_participants_cannot_dump_the_corpus) 
+... ok
+test_staff_can_inspect_the_corpus (curriculum.tests.CorpusAccessTests.test_staff_can_inspect_the_corpus) ... ok
+test_the_textbook_corpus_is_not_public (curriculum.tests.CorpusAccessTests.test_the_textbook_corpus_is_not_public) ... 
+ok
+test_the_corpus_version_is_the_last_completed_run 
+(curriculum.tests.CorpusVersionTests.test_the_corpus_version_is_the_last_completed_run) ... ok
+test_a_failed_run_is_recorded_as_an_error_not_lost 
+(curriculum.tests.IngestRecordTests.test_a_failed_run_is_recorded_as_an_error_not_lost) ... 2026-10-09 23:04:48 ERROR 
+curriculum.ocr_ingest: Ingestion failed
+Traceback (most recent call last):
+  File "C:\Users\shiha\ML-Projects\trace\Trace Tutor AI ( system Design)\Trace Tutor AI ( system 
+Design)\backend\curriculum\ocr_ingest.py", line 792, in run_ingest
+    total += index_pdf_cache(name, page_range=page_range, reindex=reindex)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\unittest\mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\unittest\mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\unittest\mock.py", line 1183, in _execute_mock_call
+    raise effect
+RuntimeError: embedding quota
+2026-10-09 23:04:48 INFO curriculum.ocr_ingest: ERROR: embedding quota
+ok
+test_a_run_is_recorded_from_start_to_finish 
+(curriculum.tests.IngestRecordTests.test_a_run_is_recorded_from_start_to_finish) ... 2026-10-09 23:04:49 INFO 
+curriculum.ocr_ingest: HSC ICT (BV).pdf: only 1 of 6 chapters resolved; missing [1, 2, 3, 5, 6]
+2026-10-09 23:04:49 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: indexed 2 new chunks (0 already indexed, 0 
+relabelled)
+2026-10-09 23:04:49 INFO curriculum.ocr_ingest: Ingestion complete. Vector count now 7
+ok
+test_every_page_gets_a_status_row (curriculum.tests.IngestRecordTests.test_every_page_gets_a_status_row) ... 
+2026-10-09 23:04:49 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: only 1 of 6 chapters resolved; missing [1, 2, 3, 5, 
+6]
+2026-10-09 23:04:49 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: indexed 2 new chunks (0 already indexed, 0 
+relabelled)
+2026-10-09 23:04:49 INFO curriculum.ocr_ingest: Ingestion complete. Vector count now 7
+ok
+test_indexed_chunks_reflect_the_vector_store_not_the_relational_rows 
+(curriculum.tests.IngestRecordTests.test_indexed_chunks_reflect_the_vector_store_not_the_relational_rows)
+A passage row is written before its embedding succeeds, so the vector store is the truth. ... 2026-10-09 23:04:50 INFO 
+curriculum.ocr_ingest: HSC ICT (BV).pdf: only 1 of 6 chapters resolved; missing [1, 2, 3, 5, 6]
+2026-10-09 23:04:50 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: indexed 2 new chunks (0 already indexed, 0 
+relabelled)
+2026-10-09 23:04:50 INFO curriculum.ocr_ingest: Ingestion complete. Vector count now 7
+ok
+test_run_history_and_page_status_are_staff_only 
+(curriculum.tests.IngestRecordTests.test_run_history_and_page_status_are_staff_only) ... 2026-10-09 23:04:50 INFO 
+curriculum.ocr_ingest: HSC ICT (BV).pdf: only 1 of 6 chapters resolved; missing [1, 2, 3, 5, 6]
+2026-10-09 23:04:50 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: indexed 2 new chunks (0 already indexed, 0 
+relabelled)
+2026-10-09 23:04:50 INFO curriculum.ocr_ingest: Ingestion complete. Vector count now 7
+ok
+test_status_reports_the_last_run_from_the_database 
+(curriculum.tests.IngestRecordTests.test_status_reports_the_last_run_from_the_database) ... 2026-10-09 23:04:51 INFO 
+curriculum.ocr_ingest: HSC ICT (BV).pdf: only 1 of 6 chapters resolved; missing [1, 2, 3, 5, 6]
+2026-10-09 23:04:51 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: indexed 2 new chunks (0 already indexed, 0 
+relabelled)
+2026-10-09 23:04:51 INFO curriculum.ocr_ingest: Ingestion complete. Vector count now 7
+ok
+test_sync_is_idempotent (curriculum.tests.IngestRecordTests.test_sync_is_idempotent) ... 2026-10-09 23:04:51 INFO 
+curriculum.ocr_ingest: HSC ICT (BV).pdf: only 1 of 6 chapters resolved; missing [1, 2, 3, 5, 6]
+2026-10-09 23:04:51 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: indexed 2 new chunks (0 already indexed, 0 
+relabelled)
+2026-10-09 23:04:51 INFO curriculum.ocr_ingest: Ingestion complete. Vector count now 7
+ok
+test_the_api_records_who_started_a_run (curriculum.tests.IngestRecordTests.test_the_api_records_who_started_a_run) ... 
+ok
+test_a_malformed_page_range_is_rejected_rather_than_crashing 
+(curriculum.tests.IngestionGuardTests.test_a_malformed_page_range_is_rejected_rather_than_crashing)
+`lo, hi = str(pages).split('-')` used to raise ValueError and return a 500. ... ok
+test_a_reversed_page_range_is_rejected (curriculum.tests.IngestionGuardTests.test_a_reversed_page_range_is_rejected) 
+... ok
+test_a_valid_page_range_is_passed_through 
+(curriculum.tests.IngestionGuardTests.test_a_valid_page_range_is_passed_through) ... ok
+test_an_absent_page_range_means_the_whole_document 
+(curriculum.tests.IngestionGuardTests.test_an_absent_page_range_means_the_whole_document) ... ok
+test_only_a_researcher_can_start_an_ingestion_run 
+(curriculum.tests.IngestionGuardTests.test_only_a_researcher_can_start_an_ingestion_run)
+A full pass is hours of billed vision-model calls. ... ok
+test_the_ingest_rate_limit_actually_bites 
+(curriculum.tests.IngestionGuardTests.test_the_ingest_rate_limit_actually_bites) ... ok
+test_the_worker_count_is_clamped (curriculum.tests.IngestionGuardTests.test_the_worker_count_is_clamped) ... ok
+test_a_language_filter_is_respected (curriculum.tests.KeywordRetrievalTests.test_a_language_filter_is_respected) ... ok
+test_an_empty_query_retrieves_nothing (curriculum.tests.KeywordRetrievalTests.test_an_empty_query_retrieves_nothing) 
+... ok
+test_retrieval_falls_back_to_seed_passages_and_says_so 
+(curriculum.tests.KeywordRetrievalTests.test_retrieval_falls_back_to_seed_passages_and_says_so) ... ok
+test_a_document_missing_a_chapter_is_reported 
+(curriculum.tests.ReindexHygieneTests.test_a_document_missing_a_chapter_is_reported) ... 2026-10-09 23:04:57 INFO 
+curriculum.ocr_ingest: HSC ICT (BV).pdf: only 1 of 6 chapters resolved; missing [1, 2, 3, 5, 6]
+2026-10-09 23:04:57 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: indexed 1 new chunks (0 already indexed, 0 
+relabelled)
+ok
+test_a_re_transcribed_page_is_re_embedded_and_its_orphans_removed 
+(curriculum.tests.ReindexHygieneTests.test_a_re_transcribed_page_is_re_embedded_and_its_orphans_removed) ... 
+2026-10-09 23:04:57 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: only 0 of 6 chapters resolved; missing [1, 2, 3, 4, 
+5, 6]
+2026-10-09 23:04:57 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: indexed 3 new chunks (0 already indexed, 0 
+relabelled)
+2026-10-09 23:04:57 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: only 0 of 6 chapters resolved; missing [1, 2, 3, 4, 
+5, 6]
+2026-10-09 23:04:57 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: indexed 0 new chunks (3 already indexed, 3 
+relabelled)
+2026-10-09 23:04:57 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: only 0 of 6 chapters resolved; missing [1, 2, 3, 4, 
+5, 6]
+2026-10-09 23:04:57 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: indexed 2 new chunks (0 already indexed, 0 
+relabelled, 1 stale removed)
+ok
+test_a_legacy_record_counts_as_one_attempt 
+(curriculum.tests.RetryBudgetTests.test_a_legacy_record_counts_as_one_attempt) ... ok
+test_a_refused_batch_is_split_but_a_quota_refusal_is_not 
+(curriculum.tests.RetryBudgetTests.test_a_refused_batch_is_split_but_a_quota_refusal_is_not) ... 2026-10-09 23:04:57 
+INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: 3 pages, 3 cached, 3 to OCR (3 cached-but-empty being retried)
+2026-10-09 23:04:57 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: OCR pages 1-3 done (3/3)
+2026-10-09 23:04:57 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: 3 pages, 3 cached, 3 to OCR (3 cached-but-empty 
+being retried)
+2026-10-09 23:04:57 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: OCR pages 1-3 FAILED: 429 RESOURCE_EXHAUSTED quota 
+exceeded
+2026-10-09 23:04:57 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: quota exhausted - pausing OCR for this document; 
+cached pages will still be indexed. Re-run ingestion later to resume.
+2026-10-09 23:04:57 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: 3 page(s) transcribed to almost nothing: [1, 2, 3]; 
+3 retryable with --retry-empty
+ok
+test_a_worse_retry_keeps_the_better_transcription 
+(curriculum.tests.RetryBudgetTests.test_a_worse_retry_keeps_the_better_transcription) ... 2026-10-09 23:04:57 INFO 
+curriculum.ocr_ingest: HSC ICT (BV).pdf: 3 pages, 1 cached, 3 to OCR (1 cached-but-empty being retried)
+2026-10-09 23:04:57 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: OCR pages 1-3 done (3/3)
+2026-10-09 23:04:57 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: 3 page(s) transcribed to almost nothing: [1, 2, 3]; 
+2 retryable with --retry-empty; 1 given up after 2 attempts
+ok
+test_every_page_gets_exactly_max_attempts (curriculum.tests.RetryBudgetTests.test_every_page_gets_exactly_max_attempts)
+A page cached before attempts were tracked and a page cached after must both stop at ... 2026-10-09 23:04:57 INFO 
+curriculum.ocr_ingest: HSC ICT (BV).pdf: 3 pages, 3 cached, 2 to OCR (2 cached-but-empty being retried)
+2026-10-09 23:04:57 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: OCR pages 1-2 done (3/3)
+2026-10-09 23:04:57 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: 2 page(s) transcribed to almost nothing: [1, 2]; 2 
+given up after 2 attempts
+2026-10-09 23:04:57 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: 3 pages, 3 cached, 0 to OCR
+2026-10-09 23:04:57 INFO curriculum.ocr_ingest: HSC ICT (BV).pdf: 2 page(s) transcribed to almost nothing: [1, 2]; 2 
+given up after 2 attempts
+ok
+test_a_non_numeric_k_falls_back_instead_of_raising 
+(curriculum.tests.SearchInputTests.test_a_non_numeric_k_falls_back_instead_of_raising) ... ok
+test_an_empty_query_returns_no_passages (curriculum.tests.SearchInputTests.test_an_empty_query_returns_no_passages) 
+... ok
+test_k_is_bounded_so_one_query_cannot_ask_for_the_whole_corpus 
+(curriculum.tests.SearchInputTests.test_k_is_bounded_so_one_query_cannot_ask_for_the_whole_corpus) ... ok
+test_a_page_transcribed_to_nothing_is_thin (curriculum.tests.ThinPageTests.test_a_page_transcribed_to_nothing_is_thin) 
+... ok
+test_a_real_page_is_not_thin (curriculum.tests.ThinPageTests.test_a_real_page_is_not_thin) ... ok
+test_empty_input_is_safe (curriculum.tests.TokenizerTests.test_empty_input_is_safe) ... ok
+test_english_and_bangla_words_are_both_tokenised 
+(curriculum.tests.TokenizerTests.test_english_and_bangla_words_are_both_tokenised) ... ok
+test_single_characters_and_punctuation_are_dropped 
+(curriculum.tests.TokenizerTests.test_single_characters_and_punctuation_are_dropped) ... ok
+test_tokenising_is_case_insensitive (curriculum.tests.TokenizerTests.test_tokenising_is_case_insensitive) ... ok
+test_a_dropped_page_is_refused_rather_than_guessed 
+(curriculum.tests.TranscriptionParsingTests.test_a_dropped_page_is_refused_rather_than_guessed)
+Three pages asked for, two bodies returned: positional assignment would file one page's ... ok
+test_a_torn_cache_line_loses_one_page_not_the_whole_cache 
+(curriculum.tests.TranscriptionParsingTests.test_a_torn_cache_line_loses_one_page_not_the_whole_cache) ... 2026-10-09 
+23:04:58 WARNING curriculum.ocr_ingest: HSC ICT (BV).jsonl line 2: unreadable cache record skipped (Unterminated 
+string starting at: line 1 column 21 (char 20))
+ok
+test_labelled_pages_are_taken_by_label 
+(curriculum.tests.TranscriptionParsingTests.test_labelled_pages_are_taken_by_label) ... ok
+test_mislabelled_pages_are_taken_in_order_when_the_count_matches 
+(curriculum.tests.TranscriptionParsingTests.test_mislabelled_pages_are_taken_in_order_when_the_count_matches) ... ok
+test_completed_submission_unlocks_before_grading_finishes_on_cache_hit (logging_app.test_tutor_availability.TutorAvaila
+bilityTests.test_completed_submission_unlocks_before_grading_finishes_on_cache_hit) ... ok
+test_newest_paper_and_withdrawal_use_the_existing_policy 
+(logging_app.test_tutor_availability.TutorAvailabilityTests.test_newest_paper_and_withdrawal_use_the_existing_policy) 
+... ok
+test_no_active_paper_allows_tutor_and_does_not_open_a_sitting (logging_app.test_tutor_availability.TutorAvailabilityTes
+ts.test_no_active_paper_allows_tutor_and_does_not_open_a_sitting) ... ok
+test_status_is_scoped_to_authenticated_caller 
+(logging_app.test_tutor_availability.TutorAvailabilityTests.test_status_is_scoped_to_authenticated_caller) ... ok
+test_ttl_expiry_is_recomputed_on_cache_hit 
+(logging_app.test_tutor_availability.TutorAvailabilityTests.test_ttl_expiry_is_recomputed_on_cache_hit) ... ok
+test_unsubmitted_pre_test_is_locked_and_matches_tutor_rejection (logging_app.test_tutor_availability.TutorAvailabilityT
+ests.test_unsubmitted_pre_test_is_locked_and_matches_tutor_rejection) ... ok
+test_a_participant_with_no_activity_gets_zeros_not_an_error 
+(logging_app.tests.DashboardAggregateTests.test_a_participant_with_no_activity_gets_zeros_not_an_error) ... ok
+test_counts_reflect_the_logged_events 
+(logging_app.tests.DashboardAggregateTests.test_counts_reflect_the_logged_events) ... ok
+test_new_activity_drops_the_cached_summary 
+(logging_app.tests.DashboardCacheTests.test_new_activity_drops_the_cached_summary) ... ok
+test_one_participants_activity_does_not_invalidate_anothers_cache 
+(logging_app.tests.DashboardCacheTests.test_one_participants_activity_does_not_invalidate_anothers_cache) ... ok
+test_the_second_read_is_served_from_cache 
+(logging_app.tests.DashboardCacheTests.test_the_second_read_is_served_from_cache) ... ok
+test_a_participant_sees_their_own_submissions 
+(logging_app.tests.DashboardScopeTests.test_a_participant_sees_their_own_submissions) ... ok
+test_anonymous_callers_get_nothing (logging_app.tests.DashboardScopeTests.test_anonymous_callers_get_nothing) ... ok
+test_participants_do_not_see_study_wide_totals 
+(logging_app.tests.DashboardScopeTests.test_participants_do_not_see_study_wide_totals) ... ok
+test_researchers_do_see_study_wide_totals 
+(logging_app.tests.DashboardScopeTests.test_researchers_do_see_study_wide_totals) ... ok
+test_the_dashboard_always_describes_the_caller 
+(logging_app.tests.DashboardScopeTests.test_the_dashboard_always_describes_the_caller) ... ok
+test_the_old_query_parameters_no_longer_select_a_subject 
+(logging_app.tests.DashboardScopeTests.test_the_old_query_parameters_no_longer_select_a_subject) ... ok
+test_a_body_cannot_attribute_an_event_to_another_participant 
+(logging_app.tests.TelemetryIdentityTests.test_a_body_cannot_attribute_an_event_to_another_participant) ... ok
+test_a_non_dict_payload_is_wrapped_rather_than_rejected 
+(logging_app.tests.TelemetryIdentityTests.test_a_non_dict_payload_is_wrapped_rather_than_rejected) ... ok
+test_an_event_is_attributed_to_the_caller 
+(logging_app.tests.TelemetryIdentityTests.test_an_event_is_attributed_to_the_caller) ... ok
+test_anonymous_telemetry_is_refused (logging_app.tests.TelemetryIdentityTests.test_anonymous_telemetry_is_refused) ... 
+ok
+test_event_type_and_problem_id_are_truncated_to_the_column_width 
+(logging_app.tests.TelemetryIdentityTests.test_event_type_and_problem_id_are_truncated_to_the_column_width) ... ok
+test_forged_identity_keys_are_stripped_from_the_stored_payload 
+(logging_app.tests.TelemetryIdentityTests.test_forged_identity_keys_are_stripped_from_the_stored_payload) ... ok
+test_telemetry_cannot_conjure_participant_accounts 
+(logging_app.tests.TelemetryIdentityTests.test_telemetry_cannot_conjure_participant_accounts) ... ok
+test_the_arm_comes_from_the_profile_not_from_the_body 
+(logging_app.tests.TelemetryIdentityTests.test_the_arm_comes_from_the_profile_not_from_the_body) ... ok
+test_the_device_id_is_recorded_from_the_signed_cookie 
+(logging_app.tests.TelemetryIdentityTests.test_the_device_id_is_recorded_from_the_signed_cookie) ... ok
+test_the_whole_study_from_enrolment_to_withdrawal 
+(tests.test_journey.ParticipantJourneyTests.test_the_whole_study_from_enrolment_to_withdrawal) ... 2026-10-09 23:05:10 
+WARNING tutor.views: Tutor model call (openai) failed: OPENAI_API_KEY is not configured
+2026-10-09 23:05:10 INFO assessment.grading: Graded submission 213: 2/15 (13%)
+2026-10-09 23:05:10 WARNING tutor.views: Tutor model call (openai) failed: OPENAI_API_KEY is not configured
+2026-10-09 23:05:11 INFO accounts.withdrawal: Participant TT-0411 withdrawn by participant: 8 events and 2 submissions 
+erased
+ok
+test_answers_without_authentication (trace_backend.tests.HealthProbeTests.test_answers_without_authentication) ... ok
+test_only_safe_methods (trace_backend.tests.HealthProbeTests.test_only_safe_methods) ... ok
+test_no_listing_and_no_traversal (trace_backend.tests.MediaServingTests.test_no_listing_and_no_traversal) ... 
+2026-10-09 23:05:11 ERROR django.security.SuspiciousFileOperation: The joined path 
+(C:\Users\shiha\AppData\Local\Temp\.env) is located outside of the base path component 
+(C:\Users\shiha\AppData\Local\Temp\tmpp255op0n)
+Traceback (most recent call last):
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\django\core\handlers\base.py", line 197, in 
+_get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\django\views\decorators\http.py", line 64, in inner
+    return func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shiha\ML-Projects\trace\Trace Tutor AI ( system Design)\Trace Tutor AI ( system 
+Design)\backend\trace_backend\views.py", line 196, in media_file
+    return serve(request, path, document_root=str(settings.MEDIA_ROOT))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\django\views\static.py", line 45, in serve
+    fullpath = Path(safe_join(document_root, path))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\site-packages\django\utils\_os.py", line 87, in safe_join
+    raise SuspiciousFileOperation(
+django.core.exceptions.SuspiciousFileOperation: The joined path (C:\Users\shiha\AppData\Local\Temp\.env) is located 
+outside of the base path component (C:\Users\shiha\AppData\Local\Temp\tmpp255op0n)
+ok
+test_refused_when_disabled (trace_backend.tests.MediaServingTests.test_refused_when_disabled) ... ok
+test_served_with_debug_off_when_enabled 
+(trace_backend.tests.MediaServingTests.test_served_with_debug_off_when_enabled) ... ok
+test_api_admin_and_files_are_not_swallowed 
+(trace_backend.tests.SpaShellTests.test_api_admin_and_files_are_not_swallowed) ... ok
+test_every_client_route_gets_the_shell (trace_backend.tests.SpaShellTests.test_every_client_route_gets_the_shell) ... 
+ok
+test_unbuilt_frontend_says_so (trace_backend.tests.SpaShellTests.test_unbuilt_frontend_says_so) ... Service 
+Unavailable: /workspace
+2026-10-09 23:05:12 ERROR django.request: Service Unavailable: /workspace
+ok
+test_writes_are_refused_with_405_not_a_csrf_403 
+(trace_backend.tests.SpaShellTests.test_writes_are_refused_with_405_not_a_csrf_403) ... ok
+test_a_broken_component_does_not_break_the_page 
+(trace_backend.tests.SystemStatusTests.test_a_broken_component_does_not_break_the_page) ... 2026-10-09 23:05:12 
+WARNING trace_backend.views: system status: component failed: docker exploded
+2026-10-09 23:05:12 WARNING trace_backend.views: system status: compiler_status failed: docker exploded
+ok
+test_a_missing_backup_is_named_as_a_problem 
+(trace_backend.tests.SystemStatusTests.test_a_missing_backup_is_named_as_a_problem) ... ok
+test_reports_every_component_and_the_problems 
+(trace_backend.tests.SystemStatusTests.test_reports_every_component_and_the_problems) ... ok
+test_requires_a_staff_token (trace_backend.tests.SystemStatusTests.test_requires_a_staff_token) ... ok
+test_cached_provider_is_preserved_when_configured_provider_changes 
+(tutor.test_model_metadata.TutorModelMetadataTests.test_cached_provider_is_preserved_when_configured_provider_changes) 
+... ok
+test_dashboard_model_metadata_changes_even_when_progress_is_cached 
+(tutor.test_model_metadata.TutorModelMetadataTests.test_dashboard_model_metadata_changes_even_when_progress_is_cached) 
+... ok
+test_legacy_cached_response_never_infers_provider_from_current_configuration (tutor.test_model_metadata.TutorModelMetad
+ataTests.test_legacy_cached_response_never_infers_provider_from_current_configuration) ... ok
+test_pre_test_gate_still_rejects_without_generating 
+(tutor.test_model_metadata.TutorModelMetadataTests.test_pre_test_gate_still_rejects_without_generating) ... ok
+test_success_reports_the_selected_response_model_in_both_arms 
+(tutor.test_model_metadata.TutorModelMetadataTests.test_success_reports_the_selected_response_model_in_both_arms) ... 
+ok
+test_textbook_fallback_does_not_claim_a_provider_generated_an_answer (tutor.test_model_metadata.TutorModelMetadataTests
+.test_textbook_fallback_does_not_claim_a_provider_generated_an_answer) ... 2026-10-09 23:05:14 WARNING tutor.views: 
+Tutor model call (openai) failed: offline
+ok
+test_an_authenticated_participant_can_read_compiler_status 
+(tutor.tests.CodeEndpointPermissionTests.test_an_authenticated_participant_can_read_compiler_status) ... ok
+test_anonymous_callers_cannot_execute_code 
+(tutor.tests.CodeEndpointPermissionTests.test_anonymous_callers_cannot_execute_code) ... ok
+test_anonymous_callers_cannot_query_the_tutor 
+(tutor.tests.CodeEndpointPermissionTests.test_anonymous_callers_cannot_query_the_tutor) ... ok
+test_anonymous_callers_cannot_read_compiler_status 
+(tutor.tests.CodeEndpointPermissionTests.test_anonymous_callers_cannot_read_compiler_status) ... ok
+test_the_tutor_requires_a_prompt (tutor.tests.CodeEndpointPermissionTests.test_the_tutor_requires_a_prompt) ... ok
+test_a_control_participant_cannot_claim_the_treatment_arm_from_the_body 
+(tutor.tests.TutorArmTests.test_a_control_participant_cannot_claim_the_treatment_arm_from_the_body) ... 2026-10-09 
+23:05:16 WARNING tutor.views: Tutor model call (openai) failed: OPENAI_API_KEY is not configured
+ok
+test_a_standalone_question_does_not_include_the_unrelated_assessment_task 
+(tutor.tests.TutorArmTests.test_a_standalone_question_does_not_include_the_unrelated_assessment_task) ... ok
+test_an_answered_turn_is_logged_server_side_with_the_profile_arm 
+(tutor.tests.TutorArmTests.test_an_answered_turn_is_logged_server_side_with_the_profile_arm) ... 2026-10-09 23:05:17 
+WARNING tutor.views: Tutor model call (openai) failed: OPENAI_API_KEY is not configured
+ok
+test_an_explicit_context_request_includes_the_visible_task_and_code 
+(tutor.tests.TutorArmTests.test_an_explicit_context_request_includes_the_visible_task_and_code) ... ok
+test_staff_may_preview_either_arm (tutor.tests.TutorArmTests.test_staff_may_preview_either_arm) ... 2026-10-09 
+23:05:18 WARNING tutor.views: Tutor model call (openai) failed: OPENAI_API_KEY is not configured
+ok
+test_the_control_arm_never_sees_the_free_ai_answer 
+(tutor.tests.TutorArmTests.test_the_control_arm_never_sees_the_free_ai_answer) ... 2026-10-09 23:05:18 WARNING 
+trace_backend.gemini: Gemini returned malformed JSON (Expecting ',' delimiter: line 1 column 460 (char 459)); repaired 
+it
+ok
+test_the_control_arm_receives_only_the_direct_answer_and_a_code_fix 
+(tutor.tests.TutorArmTests.test_the_control_arm_receives_only_the_direct_answer_and_a_code_fix) ... 2026-10-09 
+23:05:19 WARNING tutor.views: Tutor model call (openai) failed: OPENAI_API_KEY is not configured
+ok
+test_the_treatment_arm_receives_the_free_ai_answer_with_the_structured_reasoning 
+(tutor.tests.TutorArmTests.test_the_treatment_arm_receives_the_free_ai_answer_with_the_structured_reasoning) ... 
+2026-10-09 23:05:19 WARNING trace_backend.gemini: Gemini returned malformed JSON (Expecting ',' delimiter: line 1 
+column 460 (char 459)); repaired it
+ok
+test_the_treatment_arm_receives_the_full_dual_answer 
+(tutor.tests.TutorArmTests.test_the_treatment_arm_receives_the_full_dual_answer) ... 2026-10-09 23:05:20 WARNING 
+tutor.views: Tutor model call (openai) failed: OPENAI_API_KEY is not configured
+ok
+test_the_view_the_student_asked_from_is_recorded 
+(tutor.tests.TutorArmTests.test_the_view_the_student_asked_from_is_recorded) ... 2026-10-09 23:05:20 WARNING 
+trace_backend.gemini: Gemini returned malformed JSON (Expecting ',' delimiter: line 1 column 460 (char 459)); repaired 
+it
+2026-10-09 23:05:20 WARNING trace_backend.gemini: Gemini returned malformed JSON (Expecting ',' delimiter: line 1 
+column 460 (char 459)); repaired it
+ok
+test_an_empty_arm_reports_a_note_and_no_numbers 
+(assessment.tests.test_analytics.CompareArmsTests.test_an_empty_arm_reports_a_note_and_no_numbers) ... ok
+test_descriptives_are_present_even_when_the_test_cannot_run 
+(assessment.tests.test_analytics.CompareArmsTests.test_descriptives_are_present_even_when_the_test_cannot_run) ... ok
+test_identical_groups_give_no_difference_and_no_effect 
+(assessment.tests.test_analytics.CompareArmsTests.test_identical_groups_give_no_difference_and_no_effect) ... ok
+test_too_few_participants_reports_a_note_and_no_numbers 
+(assessment.tests.test_analytics.CompareArmsTests.test_too_few_participants_reports_a_note_and_no_numbers) ... ok
+test_two_constant_arms_are_not_testable 
+(assessment.tests.test_analytics.CompareArmsTests.test_two_constant_arms_are_not_testable) ... ok
+test_welch_and_cohens_d_on_a_worked_example 
+(assessment.tests.test_analytics.CompareArmsTests.test_welch_and_cohens_d_on_a_worked_example) ... ok
+test_every_declared_column_is_actually_produced 
+(assessment.tests.test_analytics.CsvColumnTests.test_every_declared_column_is_actually_produced)
+CSV_COLUMNS drives DictWriter; a column with no matching key exports blank. ... ok
+test_no_column_carries_a_real_name_or_email 
+(assessment.tests.test_analytics.CsvColumnTests.test_no_column_carries_a_real_name_or_email) ... ok
+test_a_single_value_has_no_standard_deviation 
+(assessment.tests.test_analytics.DescriptiveTests.test_a_single_value_has_no_standard_deviation) ... ok
+test_describe_reports_n_mean_and_sample_sd 
+(assessment.tests.test_analytics.DescriptiveTests.test_describe_reports_n_mean_and_sample_sd) ... ok
+test_empty_group_yields_nothing_rather_than_zero 
+(assessment.tests.test_analytics.DescriptiveTests.test_empty_group_yields_nothing_rather_than_zero) ... ok
+test_nones_are_dropped_not_counted 
+(assessment.tests.test_analytics.DescriptiveTests.test_nones_are_dropped_not_counted) ... ok
+test_a_drop_gives_a_negative_gain 
+(assessment.tests.test_analytics.NormalizedGainTests.test_a_drop_gives_a_negative_gain) ... ok
+test_hake_gain (assessment.tests.test_analytics.NormalizedGainTests.test_hake_gain) ... ok
+test_undefined_at_a_ceiling_pre_test 
+(assessment.tests.test_analytics.NormalizedGainTests.test_undefined_at_a_ceiling_pre_test) ... ok
+test_undefined_when_either_score_is_missing 
+(assessment.tests.test_analytics.NormalizedGainTests.test_undefined_when_either_score_is_missing) ... ok
+test_incomplete_beta_endpoints (assessment.tests.test_analytics.TDistributionTests.test_incomplete_beta_endpoints) ... 
+ok
+test_incomplete_beta_matches_a_closed_form_case 
+(assessment.tests.test_analytics.TDistributionTests.test_incomplete_beta_matches_a_closed_form_case) ... ok
+test_p_value_always_lies_in_the_unit_interval 
+(assessment.tests.test_analytics.TDistributionTests.test_p_value_always_lies_in_the_unit_interval) ... ok
+test_p_value_is_symmetric_in_the_sign_of_t 
+(assessment.tests.test_analytics.TDistributionTests.test_p_value_is_symmetric_in_the_sign_of_t) ... ok
+test_p_values_match_published_t_tables 
+(assessment.tests.test_analytics.TDistributionTests.test_p_values_match_published_t_tables) ... ok
+test_zero_t_is_certainly_not_significant 
+(assessment.tests.test_analytics.TDistributionTests.test_zero_t_is_certainly_not_significant) ... ok
+test_a_finished_worker_thread_releases_its_database_connection 
+(assessment.tests.test_grading.BackgroundGradingTests.test_a_finished_worker_thread_releases_its_database_connection)
+Each thread opens its own connection. close_old_connections() would keep it ... 2026-10-09 23:05:20 INFO 
+assessment.grading: Graded submission 214: 2/15 (13%)
+ok
+test_a_parallel_sweep_grades_every_row_exactly_once 
+(assessment.tests.test_grading.BackgroundGradingTests.test_a_parallel_sweep_grades_every_row_exactly_once) ... 
+2026-10-09 23:05:21 INFO assessment.grading: Graded submission 216: 2/15 (13%)
+2026-10-09 23:05:21 INFO assessment.grading: Graded submission 217: 2/15 (13%)
+2026-10-09 23:05:21 INFO assessment.grading: Graded submission 218: 2/15 (13%)
+2026-10-09 23:05:21 INFO assessment.grading: Graded submission 215: 2/15 (13%)
+2026-10-09 23:05:21 INFO assessment.grading: Graded submission 219: 2/15 (13%)
+2026-10-09 23:05:21 INFO assessment.grading: Graded submission 220: 2/15 (13%)
+ok
+test_a_row_left_pending_is_picked_up_by_the_next_enqueue 
+(assessment.tests.test_grading.BackgroundGradingTests.test_a_row_left_pending_is_picked_up_by_the_next_enqueue)
+Simulates a restart mid-queue: the orphan is drained alongside the new one. ... 2026-10-09 23:05:21 INFO 
+assessment.grading: Graded submission 222: 2/15 (13%)
+2026-10-09 23:05:21 INFO assessment.grading: Graded submission 221: 2/15 (13%)
+ok
+test_submit_returns_immediately_and_grading_completes_in_the_background (assessment.tests.test_grading.BackgroundGradin
+gTests.test_submit_returns_immediately_and_grading_completes_in_the_background) ... 2026-10-09 23:05:22 INFO 
+assessment.grading: Graded submission 223: 2/15 (13%)
+ok
+test_the_connection_is_released_even_when_grading_crashes 
+(assessment.tests.test_grading.BackgroundGradingTests.test_the_connection_is_released_even_when_grading_crashes) ... 
+2026-10-09 23:05:22 ERROR assessment.grading: Grading worker crashed on submission 224
+Traceback (most recent call last):
+  File "C:\Users\shiha\ML-Projects\trace\Trace Tutor AI ( system Design)\Trace Tutor AI ( system 
+Design)\backend\assessment\grading.py", line 193, in _worker
+    grade_now(submission_id)
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\unittest\mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\unittest\mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\projects\anaconda\envs\trace_tutor\Lib\unittest\mock.py", line 1183, in _execute_mock_call
+    raise effect
+RuntimeError: boom
+ok
+test_the_worker_command_drains_the_queue_in_parallel 
+(assessment.tests.test_grading.BackgroundGradingTests.test_the_worker_command_drains_the_queue_in_parallel)
+The command grades several submissions side by side on pool threads, each on ... 2026-10-09 23:05:23 INFO 
+assessment.grading: Graded submission 225: 2/15 (13%)
+2026-10-09 23:05:23 INFO assessment.grading: Graded submission 226: 2/15 (13%)
+2026-10-09 23:05:23 INFO assessment.grading: Graded submission 227: 2/15 (13%)
+2026-10-09 23:05:23 INFO assessment.grading: Graded submission 228: 2/15 (13%)
+ok
+test_the_whole_cohort_submitting_at_once 
+(assessment.tests.test_load.ConcurrentSubmissionTests.test_the_whole_cohort_submitting_at_once) ... skipped 'set 
+TRACE_LOAD_TEST=<n> to run the load test'
+test_a_good_item_is_not_flagged (assessment.tests.test_psychometrics.ItemFlagTests.test_a_good_item_is_not_flagged) 
+... ok
+test_difficulty_outside_the_protocol_range_is_flagged 
+(assessment.tests.test_psychometrics.ItemFlagTests.test_difficulty_outside_the_protocol_range_is_flagged) ... ok
+test_thin_data_is_reported_rather_than_judged 
+(assessment.tests.test_psychometrics.ItemFlagTests.test_thin_data_is_reported_rather_than_judged) ... ok
+test_weak_discrimination_is_flagged 
+(assessment.tests.test_psychometrics.ItemFlagTests.test_weak_discrimination_is_flagged) ... ok
+test_a_consistent_form_scores_higher_than_a_random_one 
+(assessment.tests.test_psychometrics.Kr20Tests.test_a_consistent_form_scores_higher_than_a_random_one) ... ok
+test_matches_a_hand_computed_value (assessment.tests.test_psychometrics.Kr20Tests.test_matches_a_hand_computed_value) 
+... ok
+test_no_variance_in_totals_yields_nothing 
+(assessment.tests.test_psychometrics.Kr20Tests.test_no_variance_in_totals_yields_nothing) ... ok
+test_too_little_data_yields_nothing 
+(assessment.tests.test_psychometrics.Kr20Tests.test_too_little_data_yields_nothing) ... ok
+test_chance_correction_bites_harder_with_few_raters 
+(assessment.tests.test_psychometrics.ModifiedKappaTests.test_chance_correction_bites_harder_with_few_raters)
+Same I-CVI, fewer raters: more of the agreement could be luck, so kappa drops. ... ok
+test_kappa_is_below_i_cvi_because_it_removes_chance_agreement 
+(assessment.tests.test_psychometrics.ModifiedKappaTests.test_kappa_is_below_i_cvi_because_it_removes_chance_agreement) 
+... ok
+test_kappa_is_undefined_without_raters 
+(assessment.tests.test_psychometrics.ModifiedKappaTests.test_kappa_is_undefined_without_raters) ... ok
+test_perfect_agreement_among_many_raters_gives_kappa_near_one 
+(assessment.tests.test_psychometrics.ModifiedKappaTests.test_perfect_agreement_among_many_raters_gives_kappa_near_one) 
+... ok
+test_a_perfectly_discriminating_item_scores_high 
+(assessment.tests.test_psychometrics.PointBiserialTests.test_a_perfectly_discriminating_item_scores_high)
+Everyone who passed the item has the top total; everyone who failed, the bottom. ... ok
+test_a_reversed_item_scores_negative 
+(assessment.tests.test_psychometrics.PointBiserialTests.test_a_reversed_item_scores_negative) ... ok
+test_an_item_everyone_passes_has_no_estimate 
+(assessment.tests.test_psychometrics.PointBiserialTests.test_an_item_everyone_passes_has_no_estimate) ... ok
+test_an_item_nobody_passes_has_no_estimate 
+(assessment.tests.test_psychometrics.PointBiserialTests.test_an_item_nobody_passes_has_no_estimate) ... ok
+test_identical_totals_give_no_estimate 
+(assessment.tests.test_psychometrics.PointBiserialTests.test_identical_totals_give_no_estimate) ... ok
+test_matches_a_hand_computed_value 
+(assessment.tests.test_psychometrics.PointBiserialTests.test_matches_a_hand_computed_value) ... ok
+test_lynn_thresholds (assessment.tests.test_psychometrics.VerdictTests.test_lynn_thresholds) ... ok
+test_a_dead_compiler_marks_the_item_wrong_instead_of_raising 
+(assessment.tests.test_scoring.CodeGradingTests.test_a_dead_compiler_marks_the_item_wrong_instead_of_raising) ... ok
+test_blank_submission_is_wrong_without_invoking_the_compiler 
+(assessment.tests.test_scoring.CodeGradingTests.test_blank_submission_is_wrong_without_invoking_the_compiler) ... ok
+test_only_a_full_pass_counts_as_correct 
+(assessment.tests.test_scoring.CodeGradingTests.test_only_a_full_pass_counts_as_correct) ... ok
+test_partial_pass_is_reported_but_not_correct 
+(assessment.tests.test_scoring.CodeGradingTests.test_partial_pass_is_reported_but_not_correct) ... ok
+test_a_genuine_wrong_answer_is_still_banked_not_treated_as_an_outage (assessment.tests.test_scoring.InfrastructureFailu
+reTests.test_a_genuine_wrong_answer_is_still_banked_not_treated_as_an_outage) ... ok
+test_a_grading_exception_also_fails_the_submission 
+(assessment.tests.test_scoring.InfrastructureFailureTests.test_a_grading_exception_also_fails_the_submission) ... ok
+test_a_sandbox_outage_fails_the_submission_instead_of_scoring_it (assessment.tests.test_scoring.InfrastructureFailureTe
+sts.test_a_sandbox_outage_fails_the_submission_instead_of_scoring_it) ... ok
+test_a_malformed_bank_raises_a_typed_error 
+(assessment.tests.test_scoring.ItemBankTests.test_a_malformed_bank_raises_a_typed_error) ... ok
+test_items_without_an_id_are_skipped 
+(assessment.tests.test_scoring.ItemBankTests.test_items_without_an_id_are_skipped) ... ok
+test_unknown_exam_type_falls_back_to_pre 
+(assessment.tests.test_scoring.ItemBankTests.test_unknown_exam_type_falls_back_to_pre) ... ok
+test_an_answer_for_a_different_item_does_not_count 
+(assessment.tests.test_scoring.McqGradingTests.test_an_answer_for_a_different_item_does_not_count) ... ok
+test_answer_matching_is_case_insensitive_and_trimmed 
+(assessment.tests.test_scoring.McqGradingTests.test_answer_matching_is_case_insensitive_and_trimmed) ... ok
+test_blank_and_missing_count_as_wrong_not_as_errors 
+(assessment.tests.test_scoring.McqGradingTests.test_blank_and_missing_count_as_wrong_not_as_errors) ... ok
+test_correct_answer (assessment.tests.test_scoring.McqGradingTests.test_correct_answer) ... ok
+test_wrong_answer (assessment.tests.test_scoring.McqGradingTests.test_wrong_answer) ... ok
+test_code_item_drops_test_cases_but_keeps_samples 
+(assessment.tests.test_scoring.PublicItemTests.test_code_item_drops_test_cases_but_keeps_samples) ... ok
+test_html_item_drops_checks (assessment.tests.test_scoring.PublicItemTests.test_html_item_drops_checks) ... ok
+test_mcq_keeps_options_but_drops_the_key 
+(assessment.tests.test_scoring.PublicItemTests.test_mcq_keeps_options_but_drops_the_key) ... ok
+test_no_grading_secret_survives_for_any_item_type 
+(assessment.tests.test_scoring.PublicItemTests.test_no_grading_secret_survives_for_any_item_type) ... ok
+test_every_form_loads_and_every_item_is_well_formed 
+(assessment.tests.test_scoring.RealItemBankTests.test_every_form_loads_and_every_item_is_well_formed) ... ok
+test_find_item_locates_an_item_and_its_form 
+(assessment.tests.test_scoring.RealItemBankTests.test_find_item_locates_an_item_and_its_form) ... ok
+test_find_item_returns_nothing_for_an_unknown_id 
+(assessment.tests.test_scoring.RealItemBankTests.test_find_item_returns_nothing_for_an_unknown_id) ... ok
+test_item_ids_are_unique_across_the_whole_bank 
+(assessment.tests.test_scoring.RealItemBankTests.test_item_ids_are_unique_across_the_whole_bank) ... ok
+test_mcq_answer_positions_are_balanced_on_every_form 
+(assessment.tests.test_scoring.RealItemBankTests.test_mcq_answer_positions_are_balanced_on_every_form)
+Do not let every correct answer drift back to the same visible option. ... ok
+test_a_client_supplied_score_is_ignored 
+(assessment.tests.test_scoring.SubmissionGradingTests.test_a_client_supplied_score_is_ignored)
+grade_submission derives the score itself; there is no input for a score. ... ok
+test_all_correct_and_all_wrong (assessment.tests.test_scoring.SubmissionGradingTests.test_all_correct_and_all_wrong) 
+... ok
+test_an_empty_submission_scores_zero_rather_than_failing 
+(assessment.tests.test_scoring.SubmissionGradingTests.test_an_empty_submission_scores_zero_rather_than_failing) ... ok
+test_non_dict_answers_are_tolerated 
+(assessment.tests.test_scoring.SubmissionGradingTests.test_non_dict_answers_are_tolerated) ... ok
+test_results_carry_one_entry_per_item_in_order 
+(assessment.tests.test_scoring.SubmissionGradingTests.test_results_carry_one_entry_per_item_in_order) ... ok
+test_score_is_a_rounded_percentage 
+(assessment.tests.test_scoring.SubmissionGradingTests.test_score_is_a_rounded_percentage) ... ok
+test_two_different_experts_keep_independent_ratings 
+(assessment.tests.test_teacher_portal.ConcurrentReviewTests.test_two_different_experts_keep_independent_ratings) ... ok
+test_two_sessions_cannot_both_create_the_same_expert_rating (assessment.tests.test_teacher_portal.ConcurrentReviewTests
+.test_two_sessions_cannot_both_create_the_same_expert_rating) ... ok
+test_two_sessions_cannot_both_replace_the_shared_latest_grade (assessment.tests.test_teacher_portal.ConcurrentReviewTes
+ts.test_two_sessions_cannot_both_replace_the_shared_latest_grade) ... ok
+test_project_loggers_are_handled (trace_backend.tests.ProductionLoggingTests.test_project_loggers_are_handled) ... ok
+test_request_errors_reach_stderr_whatever_debug_is 
+(trace_backend.tests.ProductionLoggingTests.test_request_errors_reach_stderr_whatever_debug_is)
+Django's default only prints while DEBUG is on and otherwise emails ADMINS, who ... ok
+test_gemini_and_unconfigured_providers_use_existing_routing 
+(tutor.test_model_metadata.PublicModelMetadataTests.test_gemini_and_unconfigured_providers_use_existing_routing) ... ok
+test_only_safe_configured_provider_and_model_fields_are_exposed 
+(tutor.test_model_metadata.PublicModelMetadataTests.test_only_safe_configured_provider_and_model_fields_are_exposed) 
+... ok
+test_the_program_cannot_overwrite_its_own_source_tree 
+(tutor.test_sandbox.ContainerIsolationTests.test_the_program_cannot_overwrite_its_own_source_tree) ... ok
+test_the_program_cannot_reach_the_network 
+(tutor.test_sandbox.ContainerIsolationTests.test_the_program_cannot_reach_the_network) ... ok
+test_the_program_cannot_write_outside_its_workdir 
+(tutor.test_sandbox.ContainerIsolationTests.test_the_program_cannot_write_outside_its_workdir) ... ok
+test_the_program_does_not_run_as_root 
+(tutor.test_sandbox.ContainerIsolationTests.test_the_program_does_not_run_as_root) ... ok
+test_a_named_container_can_be_killed_on_timeout 
+(tutor.test_sandbox.DockerCommandTests.test_a_named_container_can_be_killed_on_timeout) ... ok
+test_all_capabilities_are_dropped_and_privileges_cannot_be_regained 
+(tutor.test_sandbox.DockerCommandTests.test_all_capabilities_are_dropped_and_privileges_cannot_be_regained) ... ok
+test_compiling_gets_a_larger_memory_cap_than_running 
+(tutor.test_sandbox.DockerCommandTests.test_compiling_gets_a_larger_memory_cap_than_running) ... ok
+test_cpu_time_backstop_is_applied_when_given 
+(tutor.test_sandbox.DockerCommandTests.test_cpu_time_backstop_is_applied_when_given) ... ok
+test_memory_and_swap_are_both_capped (tutor.test_sandbox.DockerCommandTests.test_memory_and_swap_are_both_capped) ... 
+ok
+test_process_count_is_capped_against_fork_bombs 
+(tutor.test_sandbox.DockerCommandTests.test_process_count_is_capped_against_fork_bombs) ... ok
+test_the_compile_step_gets_a_writable_workdir 
+(tutor.test_sandbox.DockerCommandTests.test_the_compile_step_gets_a_writable_workdir) ... ok
+test_the_configured_image_is_used (tutor.test_sandbox.DockerCommandTests.test_the_configured_image_is_used) ... ok
+test_the_container_always_has_an_explicit_non_root_identity 
+(tutor.test_sandbox.DockerCommandTests.test_the_container_always_has_an_explicit_non_root_identity) ... ok
+test_the_container_has_no_network (tutor.test_sandbox.DockerCommandTests.test_the_container_has_no_network) ... ok
+test_the_container_is_removed_after_the_run 
+(tutor.test_sandbox.DockerCommandTests.test_the_container_is_removed_after_the_run) ... ok
+test_the_run_step_mounts_the_workdir_read_only 
+(tutor.test_sandbox.DockerCommandTests.test_the_run_step_mounts_the_workdir_read_only) ... ok
+test_sum_of_first_five_natural_numbers (tutor.test_sandbox.DockerSumTests.test_sum_of_first_five_natural_numbers) ... 
+ok
+test_a_timed_out_docker_run_is_stopped_by_container_name 
+(tutor.test_sandbox.KillTreeTests.test_a_timed_out_docker_run_is_stopped_by_container_name) ... ok
+test_it_kills_the_childs_own_group_when_that_is_not_ours 
+(tutor.test_sandbox.KillTreeTests.test_it_kills_the_childs_own_group_when_that_is_not_ours) ... skipped 'process 
+groups are POSIX'
+test_it_never_signals_the_web_servers_own_process_group 
+(tutor.test_sandbox.KillTreeTests.test_it_never_signals_the_web_servers_own_process_group) ... skipped 'process groups 
+are POSIX'
+test_a_blocked_tier_is_reprobed_so_a_late_docker_start_heals 
+(tutor.test_sandbox.PolicyTests.test_a_blocked_tier_is_reprobed_so_a_late_docker_start_heals)
+A Docker daemon still starting when the first request lands must not disable ... 2026-10-09 23:05:29 ERROR 
+tutor.sandbox: Code execution is BLOCKED: the none tier is below the required docker. docker requested but 
+unavailable: daemon starting
+ok
+test_compiler_status_is_blocked_when_only_rlimit_is_available 
+(tutor.test_sandbox.PolicyTests.test_compiler_status_is_blocked_when_only_rlimit_is_available) ... 2026-10-09 23:05:29 
+ERROR tutor.sandbox: Code execution is BLOCKED: the none tier is below the required docker. docker requested but 
+unavailable: no daemon
+ok
+test_compiler_status_reports_that_execution_is_blocked 
+(tutor.test_sandbox.PolicyTests.test_compiler_status_reports_that_execution_is_blocked) ... 2026-10-09 23:05:29 ERROR 
+tutor.sandbox: Code execution is BLOCKED: the none tier is below the required docker. 
+ok
+test_execution_is_allowed_when_the_risk_is_explicitly_accepted 
+(tutor.test_sandbox.PolicyTests.test_execution_is_allowed_when_the_risk_is_explicitly_accepted) ... 2026-10-09 
+23:05:29 WARNING tutor.sandbox: Code execution is running UNSANDBOXED. 
+ok
+test_execution_is_refused_when_containment_is_required_but_absent 
+(tutor.test_sandbox.PolicyTests.test_execution_is_refused_when_containment_is_required_but_absent) ... 2026-10-09 
+23:05:29 ERROR tutor.sandbox: Code execution is BLOCKED: the none tier is below the required docker. 
+ok
+test_html_checking_never_needs_the_sandbox (tutor.test_sandbox.PolicyTests.test_html_checking_never_needs_the_sandbox)
+HTML is parsed in-process by html5lib, so it stays available regardless. ... ok
+test_rlimit_is_accepted_only_when_explicitly_opted_into 
+(tutor.test_sandbox.PolicyTests.test_rlimit_is_accepted_only_when_explicitly_opted_into) ... 2026-10-09 23:05:29 
+WARNING tutor.sandbox: Code execution is running with partial containment (rlimit). 
+ok
+test_rlimit_is_refused_when_a_container_is_required 
+(tutor.test_sandbox.PolicyTests.test_rlimit_is_refused_when_a_container_is_required)
+rlimit caps memory and processes but leaves the host filesystem and network in ... 2026-10-09 23:05:29 ERROR 
+tutor.sandbox: Code execution is BLOCKED: the rlimit tier is below the required docker. 
+ok
+test_run_code_refuses_the_rlimit_tier_and_names_the_gap 
+(tutor.test_sandbox.PolicyTests.test_run_code_refuses_the_rlimit_tier_and_names_the_gap) ... 2026-10-09 23:05:29 ERROR 
+tutor.sandbox: Code execution is BLOCKED: the rlimit tier is below the required docker. 
+ok
+test_run_code_returns_a_refusal_rather_than_executing 
+(tutor.test_sandbox.PolicyTests.test_run_code_returns_a_refusal_rather_than_executing) ... 2026-10-09 23:05:29 ERROR 
+tutor.sandbox: Code execution is BLOCKED: the none tier is below the required docker. 
+ok
+test_a_fork_bomb_is_contained (tutor.test_sandbox.ResourceExhaustionTests.test_a_fork_bomb_is_contained) ... ok
+test_a_program_blocked_on_input_does_not_hang_the_request 
+(tutor.test_sandbox.ResourceExhaustionTests.test_a_program_blocked_on_input_does_not_hang_the_request) ... ok
+test_a_runaway_allocation_does_not_take_the_host_down 
+(tutor.test_sandbox.ResourceExhaustionTests.test_a_runaway_allocation_does_not_take_the_host_down) ... ok
+test_an_infinite_loop_is_stopped_and_reported 
+(tutor.test_sandbox.ResourceExhaustionTests.test_an_infinite_loop_is_stopped_and_reported) ... ok
+test_a_limit_the_platform_rejects_does_not_break_the_run 
+(tutor.test_sandbox.RlimitTests.test_a_limit_the_platform_rejects_does_not_break_the_run) ... skipped 'rlimit caps are 
+POSIX-only'
+test_the_limit_set_covers_memory_cpu_processes_and_file_size 
+(tutor.test_sandbox.RlimitTests.test_the_limit_set_covers_memory_cpu_processes_and_file_size) ... skipped 'rlimit caps 
+are POSIX-only'
+test_an_explicit_tier_is_honoured (tutor.test_sandbox.TierDetectionTests.test_an_explicit_tier_is_honoured) ... 
+2026-10-09 23:06:30 ERROR tutor.sandbox: Code execution is BLOCKED: the none tier is below the required docker. 
+ok
+test_an_unavailable_tier_degrades_and_says_why 
+(tutor.test_sandbox.TierDetectionTests.test_an_unavailable_tier_degrades_and_says_why) ... 2026-10-09 23:06:30 ERROR 
+tutor.sandbox: Code execution is BLOCKED: the none tier is below the required docker. docker requested but 
+unavailable: image definitely-not-an-image:0 is not built - see backend/tutor/sandbox.Dockerfile
+ok
+test_auto_prefers_the_strongest_available_tier 
+(tutor.test_sandbox.TierDetectionTests.test_auto_prefers_the_strongest_available_tier) ... 2026-10-09 23:06:30 ERROR 
+tutor.sandbox: Code execution is BLOCKED: the rlimit tier is below the required docker. docker: nope
+2026-10-09 23:06:30 ERROR tutor.sandbox: Code execution is BLOCKED: the none tier is below the required docker. 
+docker: nope; rlimit: nope
+ok
+test_detection_is_cached_until_reset (tutor.test_sandbox.TierDetectionTests.test_detection_is_cached_until_reset) ... 
+ok
+test_detection_reports_one_of_the_known_tiers 
+(tutor.test_sandbox.TierDetectionTests.test_detection_reports_one_of_the_known_tiers) ... ok
+test_status_describes_the_tier_for_the_api 
+(tutor.test_sandbox.TierDetectionTests.test_status_describes_the_tier_for_the_api) ... ok
+test_a_non_root_backend_identity_is_preserved 
+(tutor.test_sandbox.WorkdirTests.test_a_non_root_backend_identity_is_preserved) ... ok
+test_a_root_backend_uses_the_unprivileged_image_identity 
+(tutor.test_sandbox.WorkdirTests.test_a_root_backend_uses_the_unprivileged_image_identity) ... ok
+test_host_mapping_preserves_the_private_directory_name 
+(tutor.test_sandbox.WorkdirTests.test_host_mapping_preserves_the_private_directory_name) ... ok
+test_host_mapping_refuses_a_directory_outside_the_shared_root 
+(tutor.test_sandbox.WorkdirTests.test_host_mapping_refuses_a_directory_outside_the_shared_root) ... ok
+test_host_mapping_requires_the_backend_root 
+(tutor.test_sandbox.WorkdirTests.test_host_mapping_requires_the_backend_root) ... ok
+test_probe_checks_reads_writes_and_backend_visibility 
+(tutor.test_sandbox.WorkdirTests.test_probe_checks_reads_writes_and_backend_visibility) ... ok
+test_probe_rejects_a_readable_but_unwritable_mount 
+(tutor.test_sandbox.WorkdirTests.test_probe_rejects_a_readable_but_unwritable_mount) ... ok
+test_volume_compatibility_preserves_read_only_and_writable_mounts 
+(tutor.test_sandbox.WorkdirTests.test_volume_compatibility_preserves_read_only_and_writable_mounts) ... ok
+test_volume_compatibility_refuses_a_different_host_path 
+(tutor.test_sandbox.WorkdirTests.test_volume_compatibility_refuses_a_different_host_path) ... ok
+test_volume_compatibility_refuses_a_missing_directory 
+(tutor.test_sandbox.WorkdirTests.test_volume_compatibility_refuses_a_missing_directory) ... ok
+test_volume_compatibility_requires_an_explicit_shared_root 
+(tutor.test_sandbox.WorkdirTests.test_volume_compatibility_requires_an_explicit_shared_root) ... ok
+test_workdirs_use_the_configured_shared_root_and_are_cleanable 
+(tutor.test_sandbox.WorkdirTests.test_workdirs_use_the_configured_shared_root_and_are_cleanable) ... ok
+test_a_compile_error_is_reported_with_diagnostics 
+(tutor.tests.CompilerIntegrationTests.test_a_compile_error_is_reported_with_diagnostics) ... ok
+test_a_correct_program_passes_its_test_case 
+(tutor.tests.CompilerIntegrationTests.test_a_correct_program_passes_its_test_case) ... ok
+test_a_wrong_answer_is_not_a_pass (tutor.tests.CompilerIntegrationTests.test_a_wrong_answer_is_not_a_pass) ... ok
+test_a_windows_mingw_override_with_a_full_path 
+(tutor.tests.DiagnosticFlagTests.test_a_windows_mingw_override_with_a_full_path) ... ok
+test_plain_clang (tutor.tests.DiagnosticFlagTests.test_plain_clang) ... ok
+test_plain_gcc_and_g_plus_plus (tutor.tests.DiagnosticFlagTests.test_plain_gcc_and_g_plus_plus) ... ok
+test_zig_cc_is_clang (tutor.tests.DiagnosticFlagTests.test_zig_cc_is_clang) ... ok
+test_an_error_line_becomes_a_diagnostic (tutor.tests.DiagnosticParsingTests.test_an_error_line_becomes_a_diagnostic) 
+... ok
+test_empty_and_unparseable_stderr_yield_nothing 
+(tutor.tests.DiagnosticParsingTests.test_empty_and_unparseable_stderr_yield_nothing) ... ok
+test_fatal_errors_are_reported_as_errors (tutor.tests.DiagnosticParsingTests.test_fatal_errors_are_reported_as_errors) 
+... ok
+test_several_diagnostics_are_all_captured 
+(tutor.tests.DiagnosticParsingTests.test_several_diagnostics_are_all_captured) ... ok
+test_toolchain_noise_is_filtered_out (tutor.tests.DiagnosticParsingTests.test_toolchain_noise_is_filtered_out) ... ok
+test_warnings_keep_their_severity (tutor.tests.DiagnosticParsingTests.test_warnings_keep_their_severity) ... ok
+test_a_code_fence_around_the_object_is_ignored 
+(tutor.tests.GeminiJsonTests.test_a_code_fence_around_the_object_is_ignored) ... ok
+test_a_quote_before_a_variable_that_looks_like_a_json_literal_is_repaired 
+(tutor.tests.GeminiJsonTests.test_a_quote_before_a_variable_that_looks_like_a_json_literal_is_repaired) ... 2026-10-09 
+23:06:35 WARNING trace_backend.gemini: Gemini returned malformed JSON (Expecting ',' delimiter: line 1 column 18 (char 
+17)); repaired it
+ok
+test_a_raw_newline_inside_a_string_is_repaired 
+(tutor.tests.GeminiJsonTests.test_a_raw_newline_inside_a_string_is_repaired) ... 2026-10-09 23:06:35 WARNING 
+trace_backend.gemini: Gemini returned malformed JSON (Invalid control character at: line 1 column 32 (char 31)); 
+repaired it
+ok
+test_a_trailing_comma_and_surrounding_prose_are_repaired 
+(tutor.tests.GeminiJsonTests.test_a_trailing_comma_and_surrounding_prose_are_repaired) ... 2026-10-09 23:06:35 WARNING 
+trace_backend.gemini: Gemini returned malformed JSON (Expecting value: line 1 column 1 (char 0)); repaired it
+ok
+test_an_empty_reply_is_reported (tutor.tests.GeminiJsonTests.test_an_empty_reply_is_reported) ... ok
+test_an_unescaped_quote_inside_a_program_is_repaired 
+(tutor.tests.GeminiJsonTests.test_an_unescaped_quote_inside_a_program_is_repaired) ... 2026-10-09 23:06:35 WARNING 
+trace_backend.gemini: Gemini returned malformed JSON (Expecting ',' delimiter: line 1 column 28 (char 27)); repaired it
+ok
+test_clean_json_is_parsed_as_is (tutor.tests.GeminiJsonTests.test_clean_json_is_parsed_as_is) ... ok
+test_generate_json_holds_the_model_to_the_schema 
+(tutor.tests.GeminiJsonTests.test_generate_json_holds_the_model_to_the_schema) ... ok
+test_something_that_is_not_json_at_all_is_reported 
+(tutor.tests.GeminiJsonTests.test_something_that_is_not_json_at_all_is_reported) ... ok
+test_the_tutor_schema_is_one_the_sdk_accepts 
+(tutor.tests.GeminiJsonTests.test_the_tutor_schema_is_one_the_sdk_accepts) ... ok
+test_a_selector_check_detects_a_missing_element 
+(tutor.tests.HtmlCheckingTests.test_a_selector_check_detects_a_missing_element) ... ok
+test_a_selector_check_detects_a_present_element 
+(tutor.tests.HtmlCheckingTests.test_a_selector_check_detects_a_present_element) ... ok
+test_check_mode_validates_without_running_the_checks 
+(tutor.tests.HtmlCheckingTests.test_check_mode_validates_without_running_the_checks) ... ok
+test_valid_html_passes_the_default_check (tutor.tests.HtmlCheckingTests.test_valid_html_passes_the_default_check) ... 
+ok
+test_a_longer_number_does_not_satisfy_a_shorter_expectation 
+(tutor.tests.JudgeOutputTests.test_a_longer_number_does_not_satisfy_a_shorter_expectation)
+A substring test graded 17 as a correct answer to an expected 7. ... ok
+test_a_partial_word_does_not_match (tutor.tests.JudgeOutputTests.test_a_partial_word_does_not_match) ... ok
+test_an_empty_expectation_accepts_anything (tutor.tests.JudgeOutputTests.test_an_empty_expectation_accepts_anything) 
+... ok
+test_exact_match (tutor.tests.JudgeOutputTests.test_exact_match) ... ok
+test_expected_output_may_sit_inside_surrounding_prose 
+(tutor.tests.JudgeOutputTests.test_expected_output_may_sit_inside_surrounding_prose) ... ok
+test_matching_is_case_sensitive (tutor.tests.JudgeOutputTests.test_matching_is_case_sensitive) ... ok
+test_multi_token_expectations_must_appear_contiguously_and_in_order 
+(tutor.tests.JudgeOutputTests.test_multi_token_expectations_must_appear_contiguously_and_in_order) ... ok
+test_surrounding_whitespace_and_newlines_are_ignored 
+(tutor.tests.JudgeOutputTests.test_surrounding_whitespace_and_newlines_are_ignored) ... ok
+test_wrong_output_fails (tutor.tests.JudgeOutputTests.test_wrong_output_fails) ... ok
+test_a_model_that_rejects_temperature_is_retried_without_it_and_remembered 
+(tutor.tests.LlmProviderTests.test_a_model_that_rejects_temperature_is_retried_without_it_and_remembered) ... 
+2026-10-09 23:06:35 INFO trace_backend.llm: gpt-no-temp does not accept temperature; retrying without it
+ok
+test_a_refusal_is_an_error_not_an_answer (tutor.tests.LlmProviderTests.test_a_refusal_is_an_error_not_an_answer) ... ok
+test_an_explicit_provider_wins_over_the_key (tutor.tests.LlmProviderTests.test_an_explicit_provider_wins_over_the_key) 
+... ok
+test_auto_picks_openai_only_when_its_key_is_configured 
+(tutor.tests.LlmProviderTests.test_auto_picks_openai_only_when_its_key_is_configured) ... ok
+test_openai_is_held_to_the_schema_and_its_json_is_parsed 
+(tutor.tests.LlmProviderTests.test_openai_is_held_to_the_schema_and_its_json_is_parsed) ... ok
+test_quota_errors_move_to_the_next_model_and_then_fail_honestly 
+(tutor.tests.LlmProviderTests.test_quota_errors_move_to_the_next_model_and_then_fail_honestly) ... 2026-10-09 23:06:35 
+WARNING trace_backend.llm: gpt-a unavailable (rate_limit_exceeded), trying next model
+2026-10-09 23:06:35 WARNING trace_backend.llm: gpt-b unavailable (rate_limit_exceeded), trying next model
+ok
+test_strict_schema_closes_every_object_without_touching_the_original 
+(tutor.tests.LlmProviderTests.test_strict_schema_closes_every_object_without_touching_the_original) ... ok
+test_the_gemini_provider_still_goes_through_gemini 
+(tutor.tests.LlmProviderTests.test_the_gemini_provider_still_goes_through_gemini) ... ok
+test_the_openai_model_is_pinned_by_the_environment 
+(tutor.tests.LlmProviderTests.test_the_openai_model_is_pinned_by_the_environment) ... ok
+test_a_model_is_never_listed_twice (tutor.tests.ModelConfigTests.test_a_model_is_never_listed_twice) ... ok
+test_an_unparseable_temperature_falls_back_to_zero 
+(tutor.tests.ModelConfigTests.test_an_unparseable_temperature_falls_back_to_zero) ... ok
+test_fallbacks_are_opt_in (tutor.tests.ModelConfigTests.test_fallbacks_are_opt_in) ... ok
+test_generation_is_deterministic_by_default (tutor.tests.ModelConfigTests.test_generation_is_deterministic_by_default) 
+... ok
+test_no_fallback_models_by_default (tutor.tests.ModelConfigTests.test_no_fallback_models_by_default)
+A participant served by a different model than the cohort is a confound. ... ok
+test_temperature_is_configurable_but_must_be_deliberate 
+(tutor.tests.ModelConfigTests.test_temperature_is_configurable_but_must_be_deliberate) ... ok
+test_a_syntax_error_is_reported_with_a_line_number 
+(tutor.tests.PythonCheckingTests.test_a_syntax_error_is_reported_with_a_line_number) ... ok
+test_valid_python_passes_the_syntax_check (tutor.tests.PythonCheckingTests.test_valid_python_passes_the_syntax_check) 
+... ok
+test_an_unsupported_language_is_reported_not_executed 
+(tutor.tests.RunCodeGuardTests.test_an_unsupported_language_is_reported_not_executed) ... ok
+test_empty_source_is_a_compile_error (tutor.tests.RunCodeGuardTests.test_empty_source_is_a_compile_error) ... ok
+test_output_is_clipped_to_a_bounded_size (tutor.tests.RunCodeGuardTests.test_output_is_clipped_to_a_bounded_size) ... 
+ok
+test_code_in_prose_and_fallback_cannot_leak 
+(tutor.test_hint_policy.HintPolicyTests.test_code_in_prose_and_fallback_cannot_leak) ... ok
+test_english_and_bangla_hint_intent (tutor.test_hint_policy.HintPolicyTests.test_english_and_bangla_hint_intent) ... ok
+test_removes_solution_fields_and_keeps_clue 
+(tutor.test_hint_policy.HintPolicyTests.test_removes_solution_fields_and_keeps_clue) ... ok
+
+----------------------------------------------------------------------
+Ran 488 tests in 186.027s
+
+OK (skipped=5)
+Destroying test database for alias 'default' ('test_trace_teacher_qa_20261009')...
+
+  Applying sessions.0001_initial... OK
+System check identified no issues (0 silenced).
+graded 1; 0 still pending
+graded 4; 0 still pending

@@ -15,6 +15,12 @@ User=tracetutor
 Group=tracetutor
 WorkingDirectory=/opt/trace-tutor/backend
 Environment=PYTHONUNBUFFERED=1
+# PrivateTmp's /tmp is invisible to the host Docker daemon. Use a shared runtime
+# directory owned by the service user, while retaining PrivateTmp for everything else.
+RuntimeDirectory=trace-tutor-work
+RuntimeDirectoryMode=0700
+Environment=CODE_SANDBOX_WORKDIR_ROOT=/run/trace-tutor-work
+Environment=CODE_SANDBOX_HOST_WORKDIR_ROOT=/run/trace-tutor-work
 ExecStart=/opt/trace-tutor/backend/.venv/bin/python -m waitress --listen=0.0.0.0:8000 --threads=8 trace_backend.wsgi:application
 Restart=always
 RestartSec=5

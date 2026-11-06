@@ -1,0 +1,73 @@
+{
+  "status": "published",
+  "completed_at_utc": "2026-10-26T12:34:01.174429+00:00",
+  "site": "https://trace.musfiqurtuhin.me/expert",
+  "backup": "/srv/trace-tutor/deployment-backups/expert-qa-20261026-419fe54c6543",
+  "runtime_files": {
+    "src/pages/ExpertPortal.jsx": {
+      "before": "b7776420c09b7261fef1077235840a7740e869a37bcf4a9f66d21e96fe0dea53",
+      "after": "710bc16baab53286ab8f9b42129a48fa208d30a379ca7648eecd517c31324383"
+    },
+    "src/components/Layout/AppShell.jsx": {
+      "before": "c5cc7475efce6b2e27cc73f76f3da359e81c9c1b31ab24da758b4d5ff264d722",
+      "after": "70b040becab34cb34f02055f59b85b054ba4675456b51e4786d18748ffd6604a"
+    },
+    "src/services/assessmentTiming.js": {
+      "before": "97abfbacf1ae6ee09433d725cf41d7f77d627558b061c6e2ad8a8850c192a45f",
+      "after": "67a1a101f8ff79ac9192845c733f64a462fd2ee2b7e25cbb06ab7e89796f3345"
+    },
+    "src/services/expertText.js": {
+      "before": null,
+      "after": "645c515cc3b67a5f01c32cb2e2cd91c9b8a272008b376e672767516e8f5782b3"
+    }
+  },
+  "verified_assets": [
+    "assets/copy-BbyTstX0.js",
+    "assets/CodeRain-GnuhXbOD.js",
+    "assets/tutorModel-DXEjn8ZR.js",
+    "assets/users-BbB0Ra9n.js",
+    "assets/ExpertPortal-DrKBynuA.js",
+    "assets/charts-BoBzP-sS.js",
+    "assets/target-BDIpauig.js",
+    "assets/ChatMarkdown-C4LVOLZp.js",
+    "assets/assessmentTiming-BfncjULf.js",
+    "assets/school-C15kzK80.js",
+    "assets/LandingPage-DVtl8YQ5.js",
+    "assets/trending-up-DYgJ3B5v.js",
+    "assets/react--cv88Mzj.js",
+    "assets/RAGInspector-Cm6VSp7N.js",
+    "assets/refresh-cw-BQoPRd8L.js",
+    "assets/file-code-7PP2MF0w.js",
+    "assets/AssessmentPage-CsEJ31u4.js",
+    "assets/AdminDashboard-CqwwsFdb.js",
+    "assets/index-BJ646ROs.css",
+    "assets/Register-B_zZhxfw.js",
+    "assets/Workspace-CouMZkFy.js",
+    "assets/file-text-B58y2wk9.js",
+    "assets/play-5ct3g5Gb.js",
+    "assets/fields-MEMzm_ea.js",
+    "assets/circle-help-CdCIDLni.js",
+    "assets/shield-check-UT5nwznI.js",
+    "assets/editor-DcEovlLs.js",
+    "assets/score-mZCI-jHE.js",
+    "assets/code-xml-Df1Wwxis.js",
+    "assets/circle-x-1v7v8SZG.js",
+    "assets/arrow-right-BkbzXnM5.js",
+    "assets/AuthLayout-BMBEDfHX.js",
+    "assets/download-0jcPDIuv.js",
+    "assets/Profile-BvK_6bry.js",
+    "assets/index-L8ebiOEh.js",
+    "assets/trash-2-BbO3yrkJ.js",
+    "assets/layers-t3wsiFXX.js",
+    "assets/Login-DeB3QabD.js",
+    "assets/check-C29NIBU0.js",
+    "assets/Dashboard-um-aipOX.js",
+    "assets/book-open-d5JYZv4-.js",
+    "assets/info-DTDlTgUL.js",
+    "assets/bot-Cwc69zL4.js",
+    "assets/terminal-C8MI3P8Z.js"
+  ],
+  "database_health": "ok",
+  "production_database_writes": false,
+  "browser_interaction_verified": false
+}

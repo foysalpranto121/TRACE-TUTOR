@@ -22,7 +22,7 @@ from django.db import connection, transaction
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
 
-from assessment.models import ExamSubmission, PaperSitting
+from assessment.models import AssessmentTimeline, ExamSubmission, PaperSitting
 from logging_app.models import InteractionLog
 
 from .models import EDITABLE_PROFILE_FIELDS, ParticipantProfile
@@ -70,6 +70,7 @@ def withdraw(user, by=PARTICIPANT):
         events = InteractionLog.objects.filter(user=user).delete()[0]
         submissions = ExamSubmission.objects.filter(student=user).delete()[0]
         PaperSitting.objects.filter(student=user).delete()   # when they sat each paper, and for how long
+        AssessmentTimeline.objects.filter(student=user).delete()
 
         if profile.avatar:
             profile.avatar.delete(save=False)
@@ -118,6 +119,7 @@ def personal_data(user):
             'last_login': user.last_login.isoformat() if user.last_login else None,
         },
         'profile': profile_fields,
+        'assessment_timeline': AssessmentTimeline.objects.filter(student=user).values().first(),
         'submissions': [
             {
                 'exam_type': s.exam_type,

@@ -1,0 +1,53 @@
+[
+  {
+    "name": "desktop-teacher",
+    "cviDrafts": "passed",
+    "explicitSubmit": "passed",
+    "refreshDiscardWarning": "passed",
+    "scores": "passed",
+    "keyboardRefresh": "passed",
+    "focusOutline": {
+      "style": "solid",
+      "width": "2px"
+    },
+    "gradeSave": "passed",
+    "noHorizontalOverflow": true,
+    "cviAxe": [],
+    "markingAxe": [],
+    "search": "passed",
+    "pendingCachedLabelsAndTabs": "passed",
+    "pageErrors": [],
+    "teacherCodeRunMocked": "passed",
+    "teacherProfileSaveFailureAndReload": "passed",
+    "teacherArmSwitchAndReload": "passed"
+  },
+  {
+    "name": "mobile-teacher",
+    "cviDrafts": "passed",
+    "explicitSubmit": "passed",
+    "refreshDiscardWarning": "passed",
+    "scores": "passed",
+    "keyboardRefresh": "passed",
+    "focusOutline": {
+      "style": "solid",
+      "width": "2px"
+    },
+    "gradeSave": "passed",
+    "noHorizontalOverflow": true,
+    "cviAxe": [],
+    "markingAxe": [],
+    "search": "passed",
+    "pendingCachedLabelsAndTabs": "passed",
+    "pageErrors": [],
+    "teacherCodeRunMocked": "passed",
+    "teacherProfileSaveFailureAndReload": "passed",
+    "teacherArmSwitchAndReload": "passed"
+  },
+  {
+    "name": "mobile-student",
+    "frontendRoleBoundary": "passed",
+    "search": "passed",
+    "pendingCachedLabelsAndTabs": "passed",
+    "pageErrors": []
+  }
+]

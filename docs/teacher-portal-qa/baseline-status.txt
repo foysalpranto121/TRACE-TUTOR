@@ -1,0 +1,70 @@
+ M README.md
+ M backend/.env.example
+ M backend/assessment/item_bank.json
+ M backend/assessment/sittings.py
+ M backend/assessment/tests/test_scoring.py
+ M backend/assessment/tests/test_sittings.py
+ M backend/assessment/views.py
+ M backend/logging_app/views.py
+ M backend/trace_backend/llm.py
+ M backend/trace_backend/settings.py
+ M backend/trace_backend/urls.py
+ M backend/tutor/runner.py
+ M backend/tutor/sandbox.py
+ M backend/tutor/test_sandbox.py
+ M backend/tutor/tests.py
+ M backend/tutor/views.py
+ M deploy/linux/trace-tutor.service
+ M frontend/eslint.config.js
+ M frontend/package-lock.json
+ M frontend/package.json
+ M frontend/src/components/Layout/AppShell.jsx
+ M frontend/src/components/TutorPanel/AnswerOnlyPanel.jsx
+ M frontend/src/components/TutorPanel/ReasoningTracePanel.jsx
+ M frontend/src/context/AuthContext.jsx
+ M frontend/src/index.css
+ M frontend/src/pages/AssessmentPage.jsx
+ M frontend/src/pages/Dashboard.jsx
+ M frontend/src/pages/LandingPage.jsx
+ M frontend/src/pages/Login.jsx
+ M frontend/src/pages/Profile.jsx
+ M frontend/src/pages/Register.jsx
+ M frontend/src/pages/Workspace.jsx
+ M frontend/src/services/api.js
+ M frontend/tailwind.config.js
+ M frontend/vite.config.js
+?? .claude/
+?? TRACE_Tutor_Research_Proposal_v4.docx
+?? backend/logging_app/test_tutor_availability.py
+?? backend/tutor/hint_policy.py
+?? backend/tutor/test_hint_policy.py
+?? backend/tutor/test_model_metadata.py
+?? docs/TRACE-Tutor-Work-Log-2026-10-07.docx
+?? docs/assessment-phase-changes.json
+?? docs/bengali-ui-changes.json
+?? docs/deploy-assessment-phase.py
+?? docs/deploy-bengali-ui.py
+?? docs/deploy-hint-policy.py
+?? docs/deploy-settings-layout.py
+?? docs/header-search/
+?? docs/sandbox-verification/
+?? docs/tutor-model-labels/
+?? docs/tutor-pretest-ui-fix.md
+?? docs/tutor-ui-deployment/
+?? docs/tutor-ui-quiet-refresh/
+?? docs/verify-assessment-deployment.py
+?? docs/verify-bengali-ui.py
+?? docs/verify-server-compiler.py
+?? docs/verify-settings-deployment.py
+?? docs/work-log-build/
+?? frontend/public/fonts/
+?? frontend/src/components/Layout/HeaderSearch.jsx
+?? frontend/src/components/TutorPanel/TutorAvailabilityNotice.jsx
+?? frontend/src/components/TutorPanel/TutorQuestionForm.jsx
+?? frontend/src/hooks/useTutorAvailability.js
+?? frontend/src/services/assessmentEvents.js
+?? frontend/src/services/learningSearch.js
+?? frontend/src/services/tutorAvailability.js
+?? frontend/src/services/tutorModel.js
+?? frontend/tests/
+?? frontend/vitest.config.js

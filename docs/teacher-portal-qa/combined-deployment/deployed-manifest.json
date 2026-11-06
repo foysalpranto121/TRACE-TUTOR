@@ -1,0 +1,20 @@
+{
+  "head": "864de361537f161e56bcabd203e86323a275314c",
+  "candidate_sha256": "6544fb040d6ffbe7671605e4c0820f86bb4965193370012cdbb799bb2828d468",
+  "runtime_manifest_sha256": "e0ace6dc71856ba612022d381f09ca6d8ca1317c0d43e5c0d1e73831d32c6d05",
+  "files": {
+    "backend/assessment/views.py": "d7a4323706f38ebf21b199308235541bc086ccd6d46366bc1299269f59b2880f",
+    "backend/assessment/management/commands/backup_study.py": "8276b8df4b8d1bfd525b30210f3df23fca9f8d8481201570093fcca907568776",
+    "backend/logging_app/views.py": "df71e8e31cda01763d5286f2513741a979871c5a4575f1bda9c38d72866ca6b7",
+    "backend/tutor/views.py": "86df39d861498fb349b6d36494926916bc1799049f173fbf74a7318f6850b07b",
+    "frontend/src/pages/ExpertPortal.jsx": "e30f0b950f1583ffff95543176392a5362a19507132b10f26cd6885eb6d81b45",
+    "frontend/src/services/score.js": "63580b9b84a3adfdc473fde5abcf1b6b638ef539d4a66fe84cf122ccedf8854c",
+    "frontend/src/services/api.js": "ce891f90dd5d439284ea44e8f9f724f9e36aab3cf3445a2c9092e1fe25ea7ed1",
+    "frontend/src/services/tutorModel.js": "fe8eefe1bcd6abf20ed720bc275f614321c97f5cd6df430856c2a1597b83b729",
+    "frontend/src/components/TutorPanel/AnswerOnlyPanel.jsx": "7c14e6491c07b32845f2650cb71743d141441c084e52d39e028826b5f53e5751",
+    "frontend/src/components/TutorPanel/ReasoningTracePanel.jsx": "58233d5d378e643787990b541418658559ea5d977d92fa2cce68c67f9fc6ded4",
+    "frontend/src/pages/Workspace.jsx": "2a8f1325b4157149b40a28c43e3cabc79c5b31f56958e978e28d11f405a6c9dd",
+    "frontend/src/components/ui/index.jsx": "065d3eda101149a13f45292de4ece004f0e896a59823cbf123b085296f2f6719",
+    "frontend/src/pages/Dashboard.jsx": "c81e463c9725cebb715a70d7f566ec0645ec40ba9786479a773e2a1af9d0ec77"
+  }
+}

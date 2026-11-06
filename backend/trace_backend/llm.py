@@ -187,3 +187,14 @@ def generate_json(system_instruction, contents, schema=None, temperature=None):
 def configured():
     """Whether the active provider has a key - what the RAG status page reports."""
     return openai_api_key() is not None if provider() == 'openai' else gemini.api_key() is not None
+
+
+def public_metadata():
+    """Display-only allowlist for the shared tutor generation feature; never credentials."""
+    primary = model_name()
+    return {
+        'provider': provider(),
+        'primary_model': primary,
+        'fallback_models': [model for model in model_chain() if model != primary],
+        'configured': configured(),
+    }

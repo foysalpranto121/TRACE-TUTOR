@@ -1,0 +1,23 @@
+python.exe : test_a_compile_error_is_reported_with_diagnostics 
+(tutor.tests.CompilerIntegrationTests.test_a_compile_error_is_reported_with_diagnostics) ... ok
+At line:2 char:1
++ & 'E:\projects\anaconda\envs\trace_tutor\python.exe' manage.py test t ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (test_a_compile_...nostics) ... ok:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+test_a_correct_program_passes_its_test_case 
+(tutor.tests.CompilerIntegrationTests.test_a_correct_program_passes_its_test_case) ... ok
+test_a_wrong_answer_is_not_a_pass (tutor.tests.CompilerIntegrationTests.test_a_wrong_answer_is_not_a_pass) ... ok
+test_a_syntax_error_is_reported_with_a_line_number 
+(tutor.tests.PythonCheckingTests.test_a_syntax_error_is_reported_with_a_line_number) ... ok
+test_valid_python_passes_the_syntax_check (tutor.tests.PythonCheckingTests.test_valid_python_passes_the_syntax_check) 
+... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 2.774s
+
+OK
+Found 5 test(s).
+Skipping setup of unused database(s): default.
+System check identified no issues (0 silenced).

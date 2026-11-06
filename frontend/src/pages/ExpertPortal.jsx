@@ -1,4 +1,8 @@
 import { useState, useEffect } from 'react';
+import { expertText, contentLanguage } from '../services/expertText';
+import { useAuth } from '../context/useAuth';
+import { formatScore } from '../services/score';
+import { formatTimingDate, formatElapsedDays } from '../services/assessmentTiming';
 import { apiService } from '../services/api';
 import { useResetOnChange } from '../hooks/useResetOnChange';
 import {
@@ -15,15 +19,39 @@ const CRITERIA = [
   { key: 'answerability', bn: '৫. উত্তরযোগ্যতা', en: 'Defensible answerability' },
 ];
 const BLANK_RATINGS = { alignment: null, accuracy: null, clarity: null, difficulty: null, answerability: null };
-const EXAM_LABELS = {
-  pre: 'প্রি-টেস্ট (pre)',
-  post: 'পোস্ট-টেস্ট (post)',
-  transfer: 'ট্রান্সফার (transfer)',
-  withdrawal: 'উইথড্রয়াল (withdrawal)',
-};
-
-const examLabel = (t) => EXAM_LABELS[t] || t || '—';
 const autoTone = (status) => (status === 'SUCCESS' ? 'success' : status ? 'danger' : 'neutral');
+const assignedToMe = (row) => row.is_assigned !== false;
+const ratedByMe = (row) => Boolean(row.my_rating);
+const gradedByMe = (row) => row.my_grade_completed ?? (row.assigned_marks != null);
+const scopeRows = (rows, scope, completed) => scope === 'all' ? rows
+  : rows.filter(scope === 'history' ? completed : assignedToMe);
+
+const WorkScope = ({ rows, scope, completed, onChange, disabled }) => {
+  const { language } = useAuth();
+  const t = (key) => expertText(language, key);
+  const assigned = rows.filter(assignedToMe);
+  const done = assigned.filter(completed).length;
+  return (
+    <Card className="p-4 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <p className="text-xs font-bold text-on-surface">{t('Your assigned work')}: {assigned.length}</p>
+        <p className="text-[11px] text-on-surface-variant mt-1">{t('Completed')}: {done} · {t('Remaining')}: {assigned.length - done}</p>
+      </div>
+      <div className="flex flex-wrap gap-2" role="group" aria-label={t('Work list')}>
+        {[
+          ['assigned', 'Assigned', assigned.length],
+          ['history', 'Earlier work', rows.filter(completed).length],
+          ['all', 'More', rows.length],
+        ].map(([value, label, count]) => (
+          <Button key={value} size="sm" variant={scope === value ? 'primary' : 'surface'}
+            aria-pressed={scope === value} disabled={disabled} onClick={() => onChange(value)}>
+            {t(label)} ({count})
+          </Button>
+        ))}
+      </div>
+    </Card>
+  );
+};
 
 const formatWhen = (iso) => {
   if (!iso) return '—';
@@ -33,33 +61,42 @@ const formatWhen = (iso) => {
 
 const CodeBlock = ({ children }) => (
   <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/30 overflow-x-auto shadow-inner">
-    <pre className="font-mono text-xs text-primary leading-relaxed whitespace-pre-wrap">{children}</pre>
+    <pre lang={contentLanguage(children)} className="font-mono text-xs text-primary leading-relaxed whitespace-pre-wrap">{children}</pre>
   </div>
 );
 
-const ErrorBanner = ({ children, onRetry }) => (
+const ErrorBanner = ({ children, onRetry }) => {
+  const { language } = useAuth();
+  const t = (key) => expertText(language, key);
+  return (
   <div className="bg-danger/10 border border-danger/30 rounded-xl p-4 text-xs text-danger flex flex-wrap items-center gap-3">
     <AlertTriangle className="w-4 h-4 shrink-0" />
     <span className="flex-1 min-w-0">{children}</span>
-    {onRetry && <Button variant="surface" size="sm" onClick={onRetry}><RefreshCw className="w-3.5 h-3.5" /> আবার চেষ্টা করুন (Retry)</Button>}
+    {onRetry && <Button variant="surface" size="sm" onClick={onRetry}><RefreshCw className="w-3.5 h-3.5" /> {t("Retry")}</Button>}
   </div>
-);
+  );
+};
 
 // 1-4 buttons rather than a slider: a slider always carries a value, so an untouched
 // rubric would silently submit a default score the expert never chose.
-const RatingScale = ({ bn, en, value, onChange }) => (
+const RatingScale = ({ bn, en, value, onChange, disabled }) => {
+  const { language } = useAuth();
+  const t = (key) => expertText(language, key);
+  return (
   <div className="space-y-1.5">
     <div className="flex items-baseline justify-between gap-2">
       <span className="text-xs font-bold text-on-surface">
-        {bn} <span className="font-medium text-on-surface-variant">({en})</span>
+        {language === 'en' ? en : <><span lang="bn">{bn}</span> <span lang="en" className="font-medium text-on-surface-variant">({en})</span></>}
       </span>
-      <span className="text-[10px] font-mono font-bold text-on-surface-variant shrink-0">{value ? `${value} / 4` : 'অনির্ধারিত'}</span>
+      <span className="text-[10px] font-mono font-bold text-on-surface-variant shrink-0">{value ? `${value} / 4` : t("Unassigned")}</span>
     </div>
     <div className="grid grid-cols-4 gap-1.5">
       {[1, 2, 3, 4].map((n) => (
         <button
           key={n}
           type="button"
+          aria-label={language === 'en' ? `${en}: ${n} of 4` : `${bn}: ${n} / 4`}
+          disabled={disabled}
           aria-pressed={value === n}
           onClick={() => onChange(n)}
           className={`py-1.5 rounded-lg border font-mono text-xs font-extrabold press transition-colors ${
@@ -73,9 +110,19 @@ const RatingScale = ({ bn, en, value, onChange }) => (
       ))}
     </div>
   </div>
-);
+  );
+};
 
+// Research drafts stay in memory and are scoped to the authenticated account.
 export const ExpertPortal = () => {
+  const { user, role } = useAuth();
+  return <ExpertWorkbench key={String(user?.id ?? '') + ':' + role} />;
+};
+
+const ExpertWorkbench = () => {
+  const { language } = useAuth();
+  const t = (key) => expertText(language, key);
+  const examLabel = (type) => t(({ pre: 'Pre-test', post: 'Post-test', transfer: 'Transfer', withdrawal: 'Withdrawal' })[type] || type || '—');
   const [activeTab, setActiveTab] = useState('cvi_certification'); // 'cvi_certification' or 'student_marking'
 
   // Tab 1: CVI certification
@@ -83,10 +130,19 @@ export const ExpertPortal = () => {
   const [queueLoading, setQueueLoading] = useState(true);
   const [queueError, setQueueError] = useState(null);
   const [activeItemIndex, setActiveItemIndex] = useState(0);
-  const [ratings, setRatings] = useState(BLANK_RATINGS);
-  const [cviFeedback, setCviFeedback] = useState('');
+  const [itemScope, setItemScope] = useState('assigned');
+  const [drafts, setDrafts] = useState({});
+  const [gradeDrafts, setGradeDrafts] = useState({});
   const [ratingBusy, setRatingBusy] = useState(false);
+  const hasDrafts = Object.keys(drafts).length > 0 || Object.keys(gradeDrafts).length > 0;
+  useEffect(() => {
+    if (!hasDrafts) return undefined;
+    const warnBeforeLeaving = (event) => { event.preventDefault(); event.returnValue = ''; };
+    window.addEventListener('beforeunload', warnBeforeLeaving);
+    return () => window.removeEventListener('beforeunload', warnBeforeLeaving);
+  }, [hasDrafts]);
   const [ratingError, setRatingError] = useState(null);
+  const [ratingConflict, setRatingConflict] = useState(false);
   const [ratingSaved, setRatingSaved] = useState(null);
 
   // Tab 2: student submission marking
@@ -94,10 +150,10 @@ export const ExpertPortal = () => {
   const [subsLoading, setSubsLoading] = useState(true);
   const [subsError, setSubsError] = useState(null);
   const [selectedSubId, setSelectedSubId] = useState(null);
-  const [assignedMarks, setAssignedMarks] = useState('');
-  const [teacherFeedback, setTeacherFeedback] = useState('');
+  const [submissionScope, setSubmissionScope] = useState('assigned');
   const [gradeBusy, setGradeBusy] = useState(false);
   const [gradeError, setGradeError] = useState(null);
+  const [gradeConflict, setGradeConflict] = useState(false);
   const [gradeSaved, setGradeSaved] = useState(null);
 
   // Two entry points each. `fetch*` touches state only after an await, so the mount
@@ -122,13 +178,15 @@ export const ExpertPortal = () => {
     return fetchQueue();
   };
 
-  const fetchSubmissions = async () => {
+  const fetchSubmissions = async (scope = 'assigned') => {
     try {
       const data = await apiService.getStudentSubmissions();
       const rows = data.submissions || [];
       setSubmissions(rows);
-      setSelectedSubId((prev) => (rows.some((s) => s.id === prev) ? prev : rows[0]?.id ?? null));
+      const visible = scopeRows(rows, scope, gradedByMe);
+      setSelectedSubId((prev) => (visible.some((s) => s.id === prev) ? prev : visible[0]?.id ?? null));
       setSubsError(null);
+      return rows;
     } catch (err) {
       setSubsError(err.message);
     } finally {
@@ -138,7 +196,7 @@ export const ExpertPortal = () => {
 
   const loadSubmissions = () => {
     setSubsLoading(true);
-    return fetchSubmissions();
+    return fetchSubmissions(submissionScope);
   };
 
   useEffect(() => {
@@ -146,30 +204,61 @@ export const ExpertPortal = () => {
     (async () => { await Promise.all([fetchQueue(), fetchSubmissions()]); })();
   }, []);
 
-  const items = reviewData?.items_to_review || [];
+  const allItems = reviewData?.items_to_review || [];
+  const items = scopeRows(allItems, itemScope, ratedByMe);
+  const visibleSubmissions = scopeRows(submissions, submissionScope, gradedByMe);
+  const itemIndex = Math.min(activeItemIndex, Math.max(0, items.length - 1));
   const stats = reviewData?.cvi_stats;
-  const activeItem = items[activeItemIndex];
-  const activeSub = submissions.find((s) => s.id === selectedSubId) || null;
+  const activeItem = items[itemIndex];
+  const activeSub = visibleSubmissions.find((s) => s.id === selectedSubId) || null;
+  const changeItemScope = (scope) => {
+    const next = scopeRows(allItems, scope, ratedByMe);
+    setActiveItemIndex(Math.max(0, next.findIndex((item) => item.id === activeItem?.id)));
+    setItemScope(scope);
+    setRatingSaved(null);
+  };
+  const changeSubmissionScope = (scope) => {
+    const next = scopeRows(submissions, scope, gradedByMe);
+    setSelectedSubId(next.some((sub) => sub.id === selectedSubId) ? selectedSubId : next[0]?.id ?? null);
+    setSubmissionScope(scope);
+  };
+  const gradeDraft = gradeDrafts[selectedSubId];
+  const assignedMarks = gradeDraft?.marks ?? activeSub?.assigned_marks ?? '';
+  const teacherFeedback = gradeDraft?.feedback ?? activeSub?.feedback ?? '';
+  const gradeRevision = gradeDraft ? gradeDraft.revision : activeSub?.grade_revision ?? null;
+  const updateGradeDraft = (patch) => {
+    if (!activeSub || gradeBusy || subsLoading) return;
+    setGradeDrafts((previous) => ({ ...previous, [activeSub.id]: {
+      marks: assignedMarks, feedback: teacherFeedback, revision: gradeRevision,
+      ...previous[activeSub.id], ...patch,
+    } }));
+    setGradeSaved(null);
+  };
+  const serverScore = t(formatScore(activeSub?.score_pct, activeSub?.grading_status));
 
-  // Re-rating edits this expert's stored row, so open the form on what they already
-  // submitted. Done during render: an effect would briefly show the previous item's scores.
-  useResetOnChange(activeItem?.id, () => {
-    const mine = activeItem?.my_rating;
-    setRatings(mine ? Object.fromEntries(CRITERIA.map(({ key }) => [key, mine[key] ?? null])) : BLANK_RATINGS);
-    setCviFeedback(mine?.feedback || '');
-    setRatingError(null);
-  });
+  const draft = drafts[activeItem?.id];
+  const ratings = draft?.ratings ?? (activeItem?.my_rating
+    ? Object.fromEntries(CRITERIA.map(({ key }) => [key, activeItem.my_rating[key] ?? null]))
+    : BLANK_RATINGS);
+  const cviFeedback = draft?.feedback ?? activeItem?.my_rating?.feedback ?? '';
+  const updateDraft = (patch) => {
+    if (!activeItem || ratingBusy) return;
+    setDrafts((previous) => ({ ...previous, [activeItem.id]: {
+      ratings, feedback: cviFeedback, revision: activeItem.rating_revision ?? null,
+      ...previous[activeItem.id], ...patch,
+    } }));
+    setRatingSaved(null);
+  };
+  useResetOnChange(activeItem?.id, () => { setRatingError(null); setRatingConflict(false); });
 
-  // An ungraded submission starts empty - a pre-filled mark would anchor the grader,
-  // and showing the previous student's mark for a frame would anchor them worse.
+  // Values derive from the selected record's draft or server row, never another student.
   useResetOnChange(selectedSubId, () => {
-    setAssignedMarks(activeSub?.assigned_marks ?? '');
-    setTeacherFeedback(activeSub?.feedback || '');
+    setGradeConflict(false);
     setGradeError(null);
     setGradeSaved(null);
   });
 
-  const ratingsComplete = CRITERIA.every(({ key }) => ratings[key]);
+  const ratingsComplete = CRITERIA.every(({ key }) => Number.isInteger(ratings[key]) && ratings[key] >= 1 && ratings[key] <= 4);
 
   const handleSubmitCviReview = async () => {
     if (!activeItem || !ratingsComplete) return;
@@ -177,14 +266,25 @@ export const ExpertPortal = () => {
     setRatingError(null);
     setRatingSaved(null);
     try {
-      const res = await apiService.submitExpertRating(activeItem.id, ratings, cviFeedback);
+      const res = await apiService.submitExpertRating(activeItem.id, ratings, cviFeedback, draft ? draft.revision : activeItem.rating_revision ?? null);
+      setDrafts((previous) => {
+        const next = { ...previous };
+        delete next[activeItem.id];
+        return next;
+      });
+      // Preserve the successful write even if reloading the queue fails.
+      setReviewData((previous) => ({ ...previous, items_to_review: previous.items_to_review.map((item) =>
+        item.id === activeItem.id ? { ...item, my_rating: { ...ratings, feedback: cviFeedback }, rating_revision: res.rating_revision } : item) }));
       setRatingSaved(res);
+      setRatingConflict(false);
       // CVI is recomputed server-side from the stored rows, so re-read it instead of guessing.
       const fresh = await loadQueue();
-      const total = fresh?.items_to_review?.length ?? items.length;
-      setActiveItemIndex((prev) => Math.min(prev + 1, Math.max(0, total - 1)));
+      const refreshedItems = fresh ? scopeRows(fresh.items_to_review || [], itemScope, ratedByMe) : items;
+      const savedIndex = refreshedItems.findIndex((item) => item.id === activeItem.id);
+      setActiveItemIndex(Math.min(Math.max(0, savedIndex + 1), Math.max(0, refreshedItems.length - 1)));
     } catch (err) {
       setRatingError(err.message);
+      setRatingConflict(err.status === 409);
     } finally {
       setRatingBusy(false);
     }
@@ -193,34 +293,54 @@ export const ExpertPortal = () => {
   const handleGradeSubmission = async () => {
     if (!activeSub) return;
     const marks = Number(assignedMarks);
-    if (assignedMarks === '' || Number.isNaN(marks)) {
-      setGradeError('নম্বর লিখুন — ০ থেকে ১০০ (enter a mark from 0 to 100).');
+    if (String(assignedMarks).trim() === '' || !Number.isInteger(marks) || marks < 0 || marks > 100) {
+      setGradeError('Please enter a mark from 0 to 100.');
       return;
     }
     setGradeBusy(true);
     setGradeError(null);
     setGradeSaved(null);
     try {
-      const res = await apiService.gradeSubmission(activeSub.id, marks, teacherFeedback);
+      const res = await apiService.gradeSubmission(activeSub.id, marks, teacherFeedback, gradeRevision);
       setGradeSaved(res);
+      setGradeConflict(false);
+      setGradeDrafts((previous) => { const next = { ...previous }; delete next[activeSub.id]; return next; });
+      setSubmissions((previous) => previous.map((sub) => sub.id === activeSub.id
+        ? { ...sub, assigned_marks: res.assigned_marks, feedback: teacherFeedback, grade_revision: res.grade_revision,
+          my_grade_completed: true, status: 'GRADED' } : sub));
       await loadSubmissions(); // status and graded_by come back from the server, never assumed here
     } catch (err) {
       setGradeError(err.message);
+      setGradeConflict(err.status === 409);
     } finally {
       setGradeBusy(false);
     }
   };
 
+  const reloadRating = async () => {
+    const fresh = await loadQueue();
+    if (!fresh) return;
+    setDrafts((previous) => { const next = { ...previous }; delete next[activeItem.id]; return next; });
+    setRatingError(null); setRatingConflict(false);
+  };
+  const reloadGrade = async () => {
+    const rows = await loadSubmissions();
+    const fresh = rows?.find((sub) => sub.id === selectedSubId);
+    if (!fresh) return;
+    setGradeDrafts((previous) => { const next = { ...previous }; delete next[selectedSubId]; return next; });
+    setGradeError(null); setGradeConflict(false); setGradeSaved(null);
+  };
+
   return (
-    <div className="max-w-7xl mx-auto w-full space-y-5 pb-10">
+    <div lang={language === 'en' ? 'en' : 'bn'} className="max-w-7xl mx-auto w-full space-y-5 pb-10">
       {/* Header & tab selector */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-outline-variant/20 pb-4">
         <div>
           <h1 className="text-2xl font-extrabold font-display text-on-surface flex items-center gap-2">
-            <Brain className="w-7 h-7 text-primary" /> এক্সপার্ট ওয়ার্কবেঞ্চ
+            <Brain className="w-7 h-7 text-primary" /> {t("Expert workbench")}
           </h1>
           <p className="text-xs text-on-surface-variant font-medium">
-            প্রশ্ন ব্যাংক সার্টিফিকেশন ও শিক্ষার্থীর কোড মূল্যায়ন (Item certification &amp; student code marking)
+            {t("Item certification & student code marking")}
           </p>
         </div>
 
@@ -231,7 +351,7 @@ export const ExpertPortal = () => {
               activeTab === 'cvi_certification' ? 'bg-primary text-on-primary font-bold shadow-sm' : 'text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            <Sliders className="w-4 h-4" /> CVI সার্টিফিকেশন ({items.length})
+            <Sliders className="w-4 h-4" /> {t("CVI certification")} ({allItems.filter(assignedToMe).length})
           </button>
           <button
             onClick={() => setActiveTab('student_marking')}
@@ -239,7 +359,7 @@ export const ExpertPortal = () => {
               activeTab === 'student_marking' ? 'bg-primary text-on-primary font-bold shadow-sm' : 'text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            <UserCheck className="w-4 h-4" /> কোড মূল্যায়ন ({submissions.length})
+            <UserCheck className="w-4 h-4" /> {t("Code grading")} ({submissions.filter(assignedToMe).length})
           </button>
         </div>
       </div>
@@ -247,7 +367,7 @@ export const ExpertPortal = () => {
       {/* TAB 1: QUESTION BANK CVI CERTIFICATION */}
       {activeTab === 'cvi_certification' && (
         <div className="space-y-5">
-          {queueError && <ErrorBanner onRetry={loadQueue}>রিভিউ কিউ লোড করা যায়নি (could not load the review queue): {queueError}</ErrorBanner>}
+          {queueError && <ErrorBanner onRetry={loadQueue}>{t("Could not load the review queue:")} {queueError}</ErrorBanner>}
 
           {queueLoading && !reviewData ? (
             <div className="space-y-4">
@@ -256,37 +376,39 @@ export const ExpertPortal = () => {
             </div>
           ) : reviewData && (
             <>
+              <WorkScope rows={allItems} scope={itemScope} completed={ratedByMe}
+                onChange={changeItemScope} disabled={queueLoading || ratingBusy} />
               {stats && (
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  <StatTile icon={<ClipboardList className="w-5 h-5" />} label="Items in bank" value={stats.total_items} hint="ব্যাংকের মোট আইটেম" color="sky" />
-                  <StatTile icon={<CheckSquare className="w-5 h-5" />} label="Rated items" value={stats.rated_items} hint="রেটিং পাওয়া আইটেম" color="emerald" delay={60} />
-                  <StatTile icon={<Users className="w-5 h-5" />} label="Experts" value={stats.expert_count} hint="রেটিংদাতা এক্সপার্ট" color="violet" delay={120} />
-                  <StatTile icon={<BarChart2 className="w-5 h-5" />} label="Ratings stored" value={stats.ratings_count} hint="সংরক্ষিত রেটিং সারি" color="amber" delay={180} />
+                  <StatTile icon={<ClipboardList className="w-5 h-5" />} label={t("Items in bank")} value={stats.total_items} hint={t("Total items in the bank")} color="sky" />
+                  <StatTile icon={<CheckSquare className="w-5 h-5" />} label={t("Rated items")} value={stats.rated_items} hint={t("Items with ratings")} color="emerald" delay={60} />
+                  <StatTile icon={<Users className="w-5 h-5" />} label={t("Experts")} value={stats.expert_count} hint={t("Experts who submitted ratings")} color="violet" delay={120} />
+                  <StatTile icon={<BarChart2 className="w-5 h-5" />} label={t("Ratings stored")} value={stats.ratings_count} hint={t("Stored rating records")} color="amber" delay={180} />
                 </div>
               )}
 
               {/* I-CVI / S-CVI are computed from stored ratings only - no ratings, no numbers. */}
               {stats && (stats.i_cvi_pass_rate == null || stats.s_cvi_ave == null) ? (
                 <Card className="p-2">
-                  <EmptyState icon={<BarChart2 className="w-5 h-5" />} title="এখনো কোনো রেটিং নেই (No ratings yet)">
-                    I-CVI ও S-CVI/Ave কেবল সংরক্ষিত এক্সপার্ট রেটিং থেকে হিসাব হয়। রেটিং জমা পড়লে এখানে প্রকৃত মান দেখা যাবে।
+                  <EmptyState icon={<BarChart2 className="w-5 h-5" />} title={t("No ratings yet")}>
+                    {t("I-CVI and S-CVI/Ave are calculated from stored expert ratings. Actual values appear after ratings are submitted.")}
                   </EmptyState>
                 </Card>
               ) : stats && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <StatTile
                     icon={<CheckCircle2 className="w-5 h-5" />}
-                    label="I-CVI pass rate"
+                    label={t("I-CVI pass rate")}
                     value={`${Math.round(stats.i_cvi_pass_rate * 100)}%`}
-                    hint={`${stats.rated_items} আইটেমের মধ্যে I-CVI ≥ 0.78 (threshold)`}
+                    hint={`${stats.rated_items} · ${t("I-CVI ≥ 0.78 threshold")}`}
                     color="emerald"
                     animate={false}
                   />
                   <StatTile
                     icon={<Award className="w-5 h-5" />}
-                    label="S-CVI / Ave"
+                    label={t("S-CVI / Ave")}
                     value={stats.s_cvi_ave.toFixed(2)}
-                    hint="রেটিং পাওয়া আইটেমগুলোর গড় I-CVI"
+                    hint={t("Average I-CVI of rated items")}
                     color="sky"
                     animate={false}
                     delay={60}
@@ -294,20 +416,21 @@ export const ExpertPortal = () => {
                 </div>
               )}
 
-              {ratingError && <ErrorBanner>রেটিং সংরক্ষণ করা যায়নি (rating not saved): {ratingError}</ErrorBanner>}
+              {ratingConflict && <Button variant="surface" size="sm" onClick={reloadRating} disabled={queueLoading || ratingBusy}>{t("Discard draft and load latest rating")}</Button>}
+              {ratingError && <ErrorBanner>{t("Rating not saved:")} {ratingError}</ErrorBanner>}
 
               {ratingSaved && (
                 <div className="bg-success/10 border border-success/30 p-3.5 rounded-xl text-xs text-success font-mono font-bold flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  সংরক্ষিত (saved): {ratingSaved.item_id}
+                  {t("Saved:")} {ratingSaved.item_id}
                   {ratingSaved.i_cvi != null && ` · I-CVI ${Number(ratingSaved.i_cvi).toFixed(2)}`}
                 </div>
               )}
 
               {!items.length ? (
                 <Card className="p-2">
-                  <EmptyState icon={<ClipboardList className="w-5 h-5" />} title="রিভিউ করার মতো কোনো আইটেম নেই (No items to review)">
-                    প্রশ্ন ব্যাংকে এখনো কোনো আইটেম পাওয়া যায়নি।
+                  <EmptyState icon={<ClipboardList className="w-5 h-5" />} title={t("No items to review")}>
+                    {t(allItems.length ? 'No items in this work list. Choose More to review other items.' : 'There are no items in the question bank yet.')}
                   </EmptyState>
                 </Card>
               ) : activeItem && (
@@ -316,14 +439,14 @@ export const ExpertPortal = () => {
                   <div className="lg:col-span-7 space-y-4">
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-xs font-mono font-bold text-on-surface-variant">
-                        আইটেম {activeItemIndex + 1} / {items.length}
+                        {t("Item")} {itemIndex + 1} / {items.length}
                       </span>
                       <div className="flex items-center gap-2">
-                        <Button variant="surface" size="sm" disabled={activeItemIndex === 0} onClick={() => setActiveItemIndex((i) => Math.max(0, i - 1))}>
-                          <ChevronLeft className="w-3.5 h-3.5" /> আগের
+                        <Button variant="surface" size="sm" disabled={ratingBusy || itemIndex === 0} onClick={() => setActiveItemIndex(Math.max(0, itemIndex - 1))}>
+                          <ChevronLeft className="w-3.5 h-3.5" /> {t("Previous")}
                         </Button>
-                        <Button variant="surface" size="sm" disabled={activeItemIndex >= items.length - 1} onClick={() => setActiveItemIndex((i) => Math.min(items.length - 1, i + 1))}>
-                          পরের <ChevronRight className="w-3.5 h-3.5" />
+                        <Button variant="surface" size="sm" disabled={ratingBusy || itemIndex >= items.length - 1} onClick={() => setActiveItemIndex(Math.min(items.length - 1, itemIndex + 1))}>
+                          {t("Next")} <ChevronRight className="w-3.5 h-3.5" />
                         </Button>
                       </div>
                     </div>
@@ -332,24 +455,24 @@ export const ExpertPortal = () => {
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge tone="primary">{examLabel(activeItem.exam_type)}</Badge>
                         <Badge tone="secondary">{activeItem.type}</Badge>
-                        <Badge tone={activeItem.ratings_count ? 'success' : 'neutral'}>{activeItem.ratings_count} রেটিং</Badge>
-                        {activeItem.my_rating && <Badge tone="xp">আপনার রেটিং আছে (you rated this)</Badge>}
+                        <Badge tone={activeItem.ratings_count ? 'success' : 'neutral'}>{activeItem.ratings_count} {t("ratings")}</Badge>
+                        {activeItem.my_rating && <Badge tone="xp">{t("You rated this")}</Badge>}
                         <span className="ml-auto text-[10px] font-mono text-on-surface-variant">{activeItem.id}</span>
                       </div>
 
                       <div className="space-y-1">
-                        <h3 className="text-base font-bold font-display text-on-surface leading-snug">{activeItem.title}</h3>
-                        <p className="text-xs text-on-surface-variant">{activeItem.chapter}</p>
+                        <h2 className="text-base font-bold font-display text-on-surface leading-snug" lang={contentLanguage(activeItem.title)}>{activeItem.title}</h2>
+                        <p className="text-xs text-on-surface-variant" lang={contentLanguage(activeItem.chapter)}>{activeItem.chapter}</p>
                       </div>
 
-                      <p className="text-sm text-on-surface font-medium leading-relaxed">{activeItem.question_text}</p>
+                      <p className="text-sm text-on-surface font-medium leading-relaxed" lang={contentLanguage(activeItem.question_text)}>{activeItem.question_text}</p>
 
                       {activeItem.options?.length > 0 && (
                         <ul className="space-y-1.5">
                           {activeItem.options.map((opt) => (
                             <li key={opt.id} className="flex items-start gap-2 text-xs text-on-surface bg-surface-container-high rounded-xl px-3 py-2 border border-outline-variant/30">
                               <span className="font-mono font-extrabold text-primary uppercase shrink-0">{opt.id}.</span>
-                              <span className="leading-relaxed">{opt.text}</span>
+                              <span className="leading-relaxed" lang={contentLanguage(opt.text)}>{opt.text}</span>
                             </li>
                           ))}
                         </ul>
@@ -359,36 +482,37 @@ export const ExpertPortal = () => {
 
                       {activeItem.curriculum_ref && (
                         <div className="flex items-center gap-1.5 text-[11px] font-mono text-on-surface-variant border-t border-outline-variant/20 pt-3">
-                          <BookOpen className="w-3.5 h-3.5 text-primary shrink-0" /> {activeItem.curriculum_ref}
+                          <BookOpen className="w-3.5 h-3.5 text-primary shrink-0" /> <span lang={contentLanguage(activeItem.curriculum_ref)}>{activeItem.curriculum_ref}</span>
                         </div>
                       )}
                     </Card>
                   </div>
 
                   {/* Right: 5-criterion CVI rubric */}
-                  <SectionCard
+                  <SectionCard headingAs="h2"
                     icon={<Sliders className="w-4 h-4 text-primary" />}
-                    title="কনটেন্ট ভ্যালিডিটি রুব্রিক"
-                    subtitle="Content validity rubric (1-4 scale)"
+                    title={t("Content validity rubric")}
+                    subtitle={t("Content validity rubric (1-4 scale)")}
                     className="lg:col-span-5 h-fit"
                     bodyClass="p-5 space-y-5"
                   >
                     <div className="space-y-4">
                       {CRITERIA.map(({ key, bn, en }) => (
-                        <RatingScale key={key} bn={bn} en={en} value={ratings[key]} onChange={(n) => setRatings((prev) => ({ ...prev, [key]: n }))} />
+                        <RatingScale key={key} bn={bn} en={en} value={ratings[key]} disabled={ratingBusy} onChange={(n) => updateDraft({ ratings: { ...ratings, [key]: n } })} />
                       ))}
                     </div>
 
                     <div className="space-y-1.5">
                       <label htmlFor="cvi-feedback" className="text-[11px] font-bold text-on-surface uppercase tracking-wider block">
-                        এক্সপার্ট মন্তব্য (Expert comments)
+                        {t("Expert comments")}
                       </label>
                       <textarea
                         id="cvi-feedback"
                         rows="3"
                         value={cviFeedback}
-                        onChange={(e) => setCviFeedback(e.target.value)}
-                        placeholder="শব্দচয়ন বা ডিস্ট্র্যাক্টর সংশোধনের প্রস্তাব..."
+                        disabled={ratingBusy}
+                        onChange={(e) => updateDraft({ feedback: e.target.value })}
+                        placeholder={t("Suggest improvements to wording or distractors…")}
                         className="w-full bg-surface-container-high rounded-xl p-3 text-xs text-on-surface border border-outline-variant/30 outline-none focus:border-primary"
                       />
                     </div>
@@ -396,10 +520,11 @@ export const ExpertPortal = () => {
                     <div className="space-y-2">
                       <Button className="w-full" size="lg" disabled={!ratingsComplete || ratingBusy} onClick={handleSubmitCviReview}>
                         {ratingBusy ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                        {activeItem.my_rating ? 'রেটিং হালনাগাদ করুন (Update)' : 'রেটিং জমা দিন (Submit)'}
+                        {activeItem.my_rating ? t("Update rating") : t("Submit rating")}
                       </Button>
+                      {draft && <p role="status" className="text-[11px] text-warning text-center">{t("Unsaved draft · kept while this portal is open. Submit before leaving or refreshing.")}</p>}
                       {!ratingsComplete && (
-                        <p className="text-[11px] text-on-surface-variant text-center">পাঁচটি মানদণ্ডেই স্কোর দিন (score all five criteria first)</p>
+                        <p className="text-[11px] text-on-surface-variant text-center">{t("Score all five criteria first")}</p>
                       )}
                     </div>
                   </SectionCard>
@@ -413,38 +538,41 @@ export const ExpertPortal = () => {
       {/* TAB 2: STUDENT CODE SUBMISSION MARKING */}
       {activeTab === 'student_marking' && (
         <div className="space-y-5">
-          {subsError && <ErrorBanner onRetry={loadSubmissions}>সাবমিশন লোড করা যায়নি (could not load submissions): {subsError}</ErrorBanner>}
+          {subsError && <ErrorBanner onRetry={loadSubmissions}>{t("Could not load submissions:")} {subsError}</ErrorBanner>}
+          {!subsLoading && <WorkScope rows={submissions} scope={submissionScope} completed={gradedByMe}
+            onChange={changeSubmissionScope} disabled={subsLoading || gradeBusy} />}
 
           {subsLoading && !submissions.length ? (
             <div className="grid lg:grid-cols-12 gap-5">
               <Skeleton className="h-96 lg:col-span-4" />
               <Skeleton className="h-96 lg:col-span-8" />
             </div>
-          ) : !submissions.length && !subsError ? (
+          ) : !visibleSubmissions.length && !subsError ? (
             <Card className="p-2">
-              <EmptyState icon={<UserCheck className="w-5 h-5" />} title="এখনো কোনো সাবমিশন নেই (No submissions yet)">
-                শিক্ষার্থীরা পরীক্ষা জমা দিলে সেগুলো এখানে দেখা যাবে।
+              <EmptyState icon={<UserCheck className="w-5 h-5" />} title={t("No submissions yet")}>
+                {t(submissions.length ? 'No submissions in this work list. Choose More to review other submissions.' : 'Student submissions will appear here after they submit their exams.')}
               </EmptyState>
             </Card>
-          ) : submissions.length > 0 && (
+          ) : visibleSubmissions.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
               {/* Left: real submission rows, labelled by pseudonymous code */}
-              <SectionCard
+              <SectionCard headingAs="h2"
                 icon={<ClipboardList className="w-4 h-4 text-primary" />}
-                title="সাবমিশন"
-                subtitle={`Submissions (${submissions.length}) - newest first`}
+                title={t("Submissions")}
+                subtitle={`${t("Submissions")} (${visibleSubmissions.length}) · ${t("newest first")}`}
                 className="lg:col-span-4 h-fit"
                 bodyClass="p-3"
                 action={
-                  <Button variant="ghost" size="sm" onClick={loadSubmissions} disabled={subsLoading}>
-                    <RefreshCw className={`w-3.5 h-3.5 ${subsLoading ? 'animate-spin' : ''}`} />
+                  <Button variant="ghost" size="sm" aria-label={t("Refresh submissions")} aria-busy={subsLoading} onClick={loadSubmissions} disabled={subsLoading || gradeBusy}>
+                    <RefreshCw aria-hidden="true" className={`w-3.5 h-3.5 ${subsLoading ? 'animate-spin' : ''}`} />
                   </Button>
                 }
               >
                 <div className="space-y-2 max-h-[560px] overflow-y-auto pr-1">
-                  {submissions.map((s) => (
+                  {visibleSubmissions.map((s) => (
                     <button
                       key={s.id}
+                      disabled={gradeBusy || subsLoading}
                       onClick={() => setSelectedSubId(s.id)}
                       className={`w-full text-left p-3 rounded-xl border transition-colors ${
                         s.id === selectedSubId ? 'bg-primary/10 border-primary/40' : 'bg-surface-container-high border-outline-variant/30 hover:border-primary/30'
@@ -452,12 +580,12 @@ export const ExpertPortal = () => {
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-xs font-mono font-extrabold text-on-surface truncate">{s.student_label}</span>
-                        <Badge tone={s.status === 'GRADED' ? 'success' : 'warning'}>{s.status === 'GRADED' ? 'মূল্যায়িত' : 'অপেক্ষমাণ'}</Badge>
+                        <Badge tone={s.status === 'GRADED' ? 'success' : 'warning'}>{s.status === 'GRADED' ? t("Graded") : t("Pending")}</Badge>
                       </div>
                       <div className="text-[11px] text-on-surface-variant truncate mt-0.5">{examLabel(s.exam_type)} · {s.chapter}</div>
                       <div className="flex flex-wrap items-center gap-x-2 mt-1 text-[10px] font-mono text-on-surface-variant">
-                        <span>স্বয়ংক্রিয় {s.score_pct}%</span>
-                        {s.assigned_marks != null && <span>· নম্বর {s.assigned_marks}/{s.max_marks}</span>}
+                        <span>{t("Automatic")} {t(formatScore(s.score_pct, s.grading_status))}</span>
+                        {s.assigned_marks != null && <span>· {t("Marks")} {s.assigned_marks}/{s.max_marks}</span>}
                         <span>· {formatWhen(s.submitted_at)}</span>
                       </div>
                     </button>
@@ -477,37 +605,37 @@ export const ExpertPortal = () => {
                               {activeSub.student_label}
                             </span>
                             <Badge tone={activeSub.status === 'GRADED' ? 'success' : 'warning'}>
-                              {activeSub.status === 'GRADED' ? 'মূল্যায়িত (graded)' : 'অপেক্ষমাণ (pending)'}
+                              {activeSub.status === 'GRADED' ? t("Graded") : t("Pending")}
                             </Badge>
                           </div>
                           <p className="text-[11px] text-on-surface-variant mt-1.5">
-                            {activeSub.participant_code ? 'ছদ্মনাম অংশগ্রহণকারী কোড (pseudonymous participant code)' : 'ব্যবহারকারী নাম (username)'}
-                            {' · '}সাবমিশন #{activeSub.id}
+                            {activeSub.participant_code ? t("Pseudonymous participant code") : t("Username")}
+                            {' · '}{t('Submission')} #{activeSub.id}
                           </p>
                         </div>
                         <div className="text-[11px] font-mono text-on-surface-variant text-right">
                           <div>{examLabel(activeSub.exam_type)}</div>
-                          <div>{activeSub.chapter}</div>
-                          <div>জমা: {formatWhen(activeSub.submitted_at)}</div>
+                          <div lang={contentLanguage(activeSub.chapter)}>{activeSub.chapter}</div>
+                          <div>{t("Submitted:")} {formatWhen(activeSub.submitted_at)}</div>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        <StatTile icon={<BarChart2 className="w-5 h-5" />} label="Server score" value={`${activeSub.score_pct}%`} hint="সার্ভারে যাচাই করা স্কোর" color="sky" animate={false} />
+                        <StatTile icon={<BarChart2 className="w-5 h-5" />} label={t("Server score")} value={<span className={serverScore.endsWith('%') ? '' : 'block text-sm break-words'}>{serverScore}</span>} hint={t("Score verified by the server")} color="sky" animate={false} />
                         <StatTile
                           icon={<CheckCircle2 className="w-5 h-5" />}
-                          label="Correct"
+                          label={t("Correct")}
                           value={activeSub.correct != null && activeSub.total != null ? `${activeSub.correct} / ${activeSub.total}` : '—'}
-                          hint="সঠিক উত্তর"
+                          hint={t("Correct answers")}
                           color="emerald"
                           animate={false}
                           delay={60}
                         />
                         <StatTile
                           icon={<Award className="w-5 h-5" />}
-                          label="Expert marks"
-                          value={activeSub.assigned_marks != null ? `${activeSub.assigned_marks} / ${activeSub.max_marks}` : 'অনির্ধারিত'}
-                          hint={activeSub.graded_by ? `মূল্যায়ন: ${activeSub.graded_by}` : 'এখনো মূল্যায়ন হয়নি'}
+                          label={t("Expert marks")}
+                          value={activeSub.assigned_marks != null ? `${activeSub.assigned_marks} / ${activeSub.max_marks}` : t("Unassigned")}
+                          hint={activeSub.graded_by ? `${t("Marked by:")} ${activeSub.graded_by}` : t("Not yet marked")}
                           color="violet"
                           animate={false}
                           delay={120}
@@ -515,60 +643,85 @@ export const ExpertPortal = () => {
                       </div>
                     </Card>
 
-                    <SectionCard
+                    {activeSub.timing && (
+                      <Card className="p-5 space-y-3">
+                        <h2 className="text-sm font-bold">{t("Dates & time")}</h2>
+                        <p className="text-[11px] text-on-surface-variant">{t("Dhaka time · elapsed time is calculated separately for each exam")}</p>
+                        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                          {[
+                            [t("Exam opened"), formatTimingDate(activeSub.timing.opened_at)],
+                            [t("Submitted"), formatTimingDate(activeSub.timing.submitted_at)],
+                            [t("Time spent on this exam"), formatElapsedDays(activeSub.timing.paper_elapsed_days, language)],
+                            [t("Total study time"), activeSub.timing.study_completed_at ? formatElapsedDays(activeSub.timing.study_elapsed_days, language) : t("Not yet completed")],
+                            [t("Study started"), formatTimingDate(activeSub.timing.study_started_at)],
+                            [t("All exams completed"), formatTimingDate(activeSub.timing.study_completed_at)],
+                            [t("Participation window"), activeSub.timing.window_start && activeSub.timing.window_end
+                              ? `${formatTimingDate(activeSub.timing.window_start)} – ${formatTimingDate(activeSub.timing.window_end)}` : '—'],
+                          ].map(([label, value]) => (
+                            <div key={label} className="rounded-xl bg-surface-container-high p-3">
+                              <dt className="text-on-surface-variant">{label}</dt>
+                              <dd className="mt-1 font-semibold break-words">{value}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </Card>
+                    )}
+
+                    <SectionCard headingAs="h2"
                       icon={<FileCode className="w-4 h-4 text-primary" />}
-                      title="জমা দেওয়া কোড"
-                      subtitle={`Submitted code answers (${activeSub.code_answers?.length || 0})`}
+                      title={t("Submitted code")}
+                      subtitle={`${t("Submitted code answers")} (${activeSub.code_answers?.length || 0})`}
                       bodyClass="p-4 space-y-4"
                     >
                       {!activeSub.code_answers?.length ? (
-                        <EmptyState icon={<FileCode className="w-5 h-5" />} title="কোনো কোড উত্তর নেই (No code answers)">
-                          এই সাবমিশনে কোডিং আইটেমের উত্তর পাওয়া যায়নি।
+                        <EmptyState icon={<FileCode className="w-5 h-5" />} title={t("No code answers")}>
+                          {t("No coding answers were found in this submission.")}
                         </EmptyState>
                       ) : (
                         activeSub.code_answers.map((ca) => (
                           <div key={ca.item_id} className="space-y-2.5 border-b border-outline-variant/20 last:border-0 pb-4 last:pb-0">
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
-                                <h4 className="text-xs font-extrabold text-on-surface">{ca.title || ca.item_id}</h4>
-                                {ca.question && <p className="text-[11px] text-on-surface-variant leading-relaxed mt-1">{ca.question}</p>}
+                                <h3 className="text-xs font-extrabold text-on-surface" lang={contentLanguage(ca.title || ca.item_id)}>{ca.title || ca.item_id}</h3>
+                                {ca.question && <p className="text-[11px] text-on-surface-variant leading-relaxed mt-1" lang={contentLanguage(ca.question)}>{ca.question}</p>}
                               </div>
                               <Badge tone={autoTone(ca.auto?.status)} className="shrink-0">{ca.auto?.status || 'NOT RUN'}</Badge>
                             </div>
 
                             {ca.auto && (
                               <div className="text-[11px] font-mono text-on-surface-variant bg-surface-container-high rounded-xl px-3 py-2 border border-outline-variant/30">
-                                {ca.auto.total_tests != null && <span className="font-bold text-on-surface">{ca.auto.passed_count ?? 0}/{ca.auto.total_tests} টেস্ট পাস</span>}
-                                {ca.auto.detail && <span className="block mt-0.5">{ca.auto.detail}</span>}
+                                {ca.auto.total_tests != null && <span className="font-bold text-on-surface">{ca.auto.passed_count ?? 0}/{ca.auto.total_tests} {t("tests passed")}</span>}
+                                {ca.auto.detail && <span className="block mt-0.5" lang={contentLanguage(ca.auto.detail)}>{ca.auto.detail}</span>}
                               </div>
                             )}
 
-                            <CodeBlock>{ca.code || '(কোনো কোড জমা পড়েনি — no code submitted)'}</CodeBlock>
+                            <CodeBlock>{ca.code || t("(No code submitted)")}</CodeBlock>
                           </div>
                         ))
                       )}
                     </SectionCard>
 
-                    <SectionCard
+                    <SectionCard headingAs="h2"
                       icon={<Award className="w-4 h-4 text-primary" />}
-                      title="নম্বর ও মতামত"
-                      subtitle="Expert marks & feedback"
+                      title={t("Marks & feedback")}
+                      subtitle={t("Expert marks & feedback")}
                       bodyClass="p-5 space-y-5"
                     >
-                      {gradeError && <ErrorBanner>সংরক্ষণ করা যায়নি (not saved): {gradeError}</ErrorBanner>}
+                      {gradeConflict && <Button variant="surface" size="sm" onClick={reloadGrade} disabled={subsLoading || gradeBusy}>{t("Load latest marks (discard edits)")}</Button>}
+                      {gradeError && <ErrorBanner>{t("Not saved:")} {t(gradeError)}</ErrorBanner>}
 
                       {gradeSaved && (
                         <div className="bg-success/10 border border-success/30 p-3.5 rounded-xl text-xs text-success font-mono font-bold flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 shrink-0" />
-                          সংরক্ষিত (saved): সাবমিশন #{gradeSaved.submission_id} · {gradeSaved.assigned_marks} / {gradeSaved.max_marks} · {formatWhen(gradeSaved.graded_at)}
+                          {t("Saved:")} {t("Submission")} #{gradeSaved.submission_id} · {gradeSaved.assigned_marks} / {gradeSaved.max_marks} · {formatWhen(gradeSaved.graded_at)}
                         </div>
                       )}
 
                       <div className="space-y-2">
                         <label htmlFor="assigned-marks" className="text-xs font-extrabold text-on-surface uppercase tracking-wider flex justify-between gap-2">
-                          <span>প্রদত্ত নম্বর (Assigned marks)</span>
+                          <span>{t("Assigned marks")}</span>
                           <span className="text-primary font-mono text-sm">
-                            {assignedMarks === '' ? 'অনির্ধারিত' : `${assignedMarks} / ${activeSub.max_marks ?? 100}`}
+                            {assignedMarks === '' ? t("Unassigned") : `${assignedMarks} / ${activeSub.max_marks ?? 100}`}
                           </span>
                         </label>
                         <input
@@ -576,8 +729,10 @@ export const ExpertPortal = () => {
                           type="number"
                           min="0"
                           max="100"
+                          step="1"
+                          disabled={gradeBusy || subsLoading}
                           value={assignedMarks}
-                          onChange={(e) => setAssignedMarks(e.target.value)}
+                          onChange={(e) => updateGradeDraft({ marks: e.target.value })}
                           placeholder="0 - 100"
                           className="w-full bg-surface-container-high rounded-xl p-3.5 text-base text-on-surface font-mono font-extrabold border border-outline-variant/30 outline-none focus:border-primary shadow-sm"
                         />
@@ -585,22 +740,24 @@ export const ExpertPortal = () => {
 
                       <div className="space-y-2">
                         <label htmlFor="teacher-feedback" className="text-xs font-extrabold text-on-surface uppercase tracking-wider block">
-                          গুণগত মতামত (Qualitative feedback)
+                          {t("Qualitative feedback")}
                         </label>
                         <textarea
                           id="teacher-feedback"
                           rows="4"
                           value={teacherFeedback}
-                          onChange={(e) => setTeacherFeedback(e.target.value)}
-                          placeholder="লুপের শর্ত, লজিক ও কোড স্টাইল নিয়ে মতামত লিখুন..."
+                          disabled={gradeBusy || subsLoading}
+                          onChange={(e) => updateGradeDraft({ feedback: e.target.value })}
+                          placeholder={t("Write feedback on loop conditions, logic and code style…")}
                           className="w-full bg-surface-container-high rounded-xl p-3.5 text-xs text-on-surface font-medium border border-outline-variant/30 outline-none focus:border-primary shadow-sm"
                         />
                       </div>
 
-                      <Button className="w-full" size="lg" disabled={gradeBusy} onClick={handleGradeSubmission}>
+                      <Button className="w-full" size="lg" disabled={gradeBusy || subsLoading} onClick={handleGradeSubmission}>
                         {gradeBusy ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckSquare className="w-4 h-4" />}
-                        নম্বর সংরক্ষণ করুন (Save marks)
+                        {t("Save marks")}
                       </Button>
+                      {gradeDraft && <p role="status" className="text-[11px] text-warning">{t("Unsaved draft · kept while this portal is open. Save before leaving or refreshing.")}</p>}
                     </SectionCard>
                   </>
                 )}

@@ -1,0 +1,50 @@
+import { chromium } from '../browser-runtime/node_modules/playwright/index.mjs';
+import fs from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import { fileURLToPath } from 'node:url';
+const fixture = JSON.parse(await fs.readFile(new URL('./fixture-private.json', import.meta.url), 'utf8'));
+const origin = 'https://trace.musfiqurtuhin.me';
+const browser = await chromium.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
+const result = {};
+try {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await context.route('**/api/tutor/query/', route => route.abort('blockedbyclient'));
+  await context.route('**/api/assessment/submit/', route => route.abort('blockedbyclient'));
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  page.setDefaultTimeout(45000);
+  await page.goto(origin + '/login');
+  await page.locator('input[autocomplete="username"]').fill(fixture.student);
+  await page.locator('input[autocomplete="current-password"]').fill(fixture.password);
+  await page.locator('button[type="submit"]').click();
+  await page.waitForURL('**/dashboard');
+  const search = page.getByRole('combobox', { name: 'Search topics and tasks' });
+  await search.fill('loop');
+  await page.getByRole('listbox').waitFor();
+  await search.press('ArrowDown');
+  await search.press('Enter');
+  await page.waitForURL('**/workspace?problem=*');
+  await page.goto(origin + '/workspace?problem=prob_c_loop_101');
+  await page.getByRole('textbox', { name: /Ask the tutor/ }).waitFor();
+  await page.getByTitle(/Configured primary: OpenAI.*gpt-5-mini/).first().waitFor();
+  await page.waitForFunction(() => window.monaco?.editor.getModels().length > 0);
+  await page.evaluate(() => window.monaco.editor.getModels()[0].setValue('#include <stdio.h>\nint main(){int n;if(scanf("%d",&n)!=1)return 2;printf("Sum = %d\\n",n*(n+1)/2);return 0;}'));
+  const pending = page.waitForResponse(r => r.url().endsWith('/api/code/run/') && r.request().postDataJSON()?.mode === 'run');
+  await page.getByRole('button', { name: 'Run Code', exact: true }).click();
+  const response = await pending;
+  assert.equal(response.status(), 200);
+  const body = await response.json();
+  assert.equal(body.status, 'SUCCESS');
+  assert.equal(body.sandbox, 'docker');
+  assert.equal(body.passed_count, body.test_results.length);
+  assert.deepEqual(errors, []);
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true);
+  await page.screenshot({ path: fileURLToPath(new URL('./screenshots/live-mobile-student-workspace.png', import.meta.url)), fullPage: true });
+  Object.assign(result, { studentWorkspace: true, taskSelection: true, tutorInterface: true, metadata: 'OpenAI / gpt-5-mini',
+    code: body.status, cases: body.test_results, mobilePageFits: true, pageErrors: errors, paidGenerationRequested: false });
+  console.log(JSON.stringify(result, null, 2));
+} finally {
+  await fs.writeFile(new URL('./production-student-workspace-results.json', import.meta.url), JSON.stringify(result, null, 2));
+  await browser.close();
+}

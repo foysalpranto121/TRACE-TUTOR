@@ -28,7 +28,7 @@ export const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!identifier.trim() || !password) {
-      setError(bn ? 'ইউজারনেম ও পাসওয়ার্ড দিন।' : 'Enter your username and password.');
+      setError(bn ? 'ইউজারনেম বা ইমেইল এবং পাসওয়ার্ড দিন।' : 'Enter your username and password.');
       return;
     }
     setSubmitting(true);
@@ -83,7 +83,7 @@ export const Login = () => {
             <div className="flex items-center justify-between mt-2">
               <label className="flex items-center gap-2 text-xs text-on-surface-variant cursor-pointer select-none">
                 <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="w-3.5 h-3.5 rounded border-outline-variant accent-cyan-500" />
-                {bn ? 'আমাকে মনে রাখুন' : 'Remember me'}
+                {bn ? 'লগইন করা রাখুন' : 'Remember me'}
               </label>
               <button type="button" onClick={() => setShowHelp(!showHelp)} className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
                 <HelpCircle className="w-3.5 h-3.5" /> {bn ? 'পাসওয়ার্ড ভুলে গেছেন?' : 'Forgot password?'}
@@ -115,7 +115,7 @@ export const Login = () => {
         </div>
       </div>
       <p className="text-center text-[11px] text-on-surface-variant mt-4">
-        {bn ? 'শিক্ষক ও গবেষকরা একই ফর্মে সাইন ইন করুন; আপনার ভূমিকা অনুযায়ী পোর্টাল খুলবে।' : 'Teachers and researchers sign in here too - the portal opens according to your role.'}
+        {bn ? 'শিক্ষক ও গবেষকরাও এখানে লগইন করতে পারবেন। লগইনের পর আপনার জন্য নির্ধারিত পাতা খুলবে।' : 'Teachers and researchers sign in here too - the portal opens according to your role.'}
       </p>
     </AuthLayout>
   );

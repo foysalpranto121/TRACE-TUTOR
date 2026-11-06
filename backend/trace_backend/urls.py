@@ -1,4 +1,4 @@
-from django.contrib import admin
+Qualitative feedbackfrom django.contrib import admin
 from django.urls import path, re_path
 from trace_backend import views as site_views
 from accounts import views as accounts_views
@@ -53,6 +53,8 @@ urlpatterns = [
 
     # Assessment Suite & Expert CVI Ratings
     path('api/assessment/items/', assessment_views.get_items, name='get_items'),
+    path('api/assessment/schedule/', assessment_views.assessment_schedule, name='assessment_schedule'),
+    path('api/assessment/retake/', assessment_views.retake_exam, name='retake_exam'),
     path('api/assessment/submit/', assessment_views.submit_exam, name='submit_exam'),
     path('api/assessment/submissions/<int:pk>/', assessment_views.get_submission, name='get_submission'),
     path('api/expert/reviews/', assessment_views.get_expert_reviews, name='get_expert_reviews'),

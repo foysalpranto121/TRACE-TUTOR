@@ -318,18 +318,18 @@
         },
         {
           "id": "b",
-          "text": "<a href=\"...\">"
+          "text": "<url>"
         },
         {
           "id": "c",
-          "text": "<url>"
+          "text": "<a href=\"...\">"
         },
         {
           "id": "d",
           "text": "<anchor>"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "c",
       "curriculum_ref": "NCTB ICT Chapter 4 (Page 86)"
     },
     {
@@ -341,22 +341,22 @@
       "options": [
         {
           "id": "a",
-          "text": "HTTP (Port 80)"
-        },
-        {
-          "id": "b",
           "text": "HTTPS (Port 443)"
         },
         {
+          "id": "b",
+          "text": "HTTP (Port 80)"
+        },
+        {
           "id": "c",
-          "text": "FTP (Port 21)"
+          "text": "SMTP (Port 25)"
         },
         {
           "id": "d",
-          "text": "SMTP (Port 25)"
+          "text": "FTP (Port 21)"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "a",
       "curriculum_ref": "NCTB ICT Chapter 4 (Page 78)"
     },
     {
@@ -368,22 +368,22 @@
       "options": [
         {
           "id": "a",
-          "text": "<head>"
-        },
-        {
-          "id": "b",
-          "text": "<html>"
-        },
-        {
-          "id": "c",
           "text": "<body>"
         },
         {
-          "id": "d",
+          "id": "b",
+          "text": "<head>"
+        },
+        {
+          "id": "c",
           "text": "<title>"
+        },
+        {
+          "id": "d",
+          "text": "<html>"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "d",
       "curriculum_ref": "NCTB ICT Chapter 4 (Page 82)"
     },
     {
@@ -395,7 +395,7 @@
       "options": [
         {
           "id": "a",
-          "text": "rowspan"
+          "text": "cellpadding"
         },
         {
           "id": "b",
@@ -403,11 +403,11 @@
         },
         {
           "id": "c",
-          "text": "cellspacing"
+          "text": "rowspan"
         },
         {
           "id": "d",
-          "text": "cellpadding"
+          "text": "cellspacing"
         }
       ],
       "keyed_answer": "b",
@@ -422,22 +422,22 @@
       "options": [
         {
           "id": "a",
-          "text": "href"
-        },
-        {
-          "id": "b",
           "text": "src"
         },
         {
-          "id": "c",
+          "id": "b",
           "text": "alt"
         },
         {
-          "id": "d",
+          "id": "c",
           "text": "link"
+        },
+        {
+          "id": "d",
+          "text": "href"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "a",
       "curriculum_ref": "NCTB ICT Chapter 4 (Page 104)"
     },
     {
@@ -449,22 +449,22 @@
       "options": [
         {
           "id": "a",
-          "text": "একই কলামে একাধিক রেকর্ডে ডুপ্লিকেট (Duplicate) মান থাকতে পারে"
+          "text": "একটি টেবিলের সব রেকর্ডে এর মান ফাঁকা (Null) রাখা যায়"
         },
         {
           "id": "b",
-          "text": "প্রতিটি রেকর্ডকে এককভাবে (Uniquely) সনাক্ত করে এবং এর মান কখনো Null হতে পারে না"
+          "text": "একই কলামে একাধিক রেকর্ডে ডুপ্লিকেট (Duplicate) মান থাকতে পারে"
         },
         {
           "id": "c",
-          "text": "এটি শুধুমাত্র টেক্সট (Text) ডেটার ক্ষেত্রে ব্যবহৃত হয়"
+          "text": "প্রতিটি রেকর্ডকে এককভাবে (Uniquely) সনাক্ত করে এবং এর মান কখনো Null হতে পারে না"
         },
         {
           "id": "d",
-          "text": "একটি টেবিলের সব রেকর্ডে এর মান ফাঁকা (Null) রাখা যায়"
+          "text": "এটি শুধুমাত্র টেক্সট (Text) ডেটার ক্ষেত্রে ব্যবহৃত হয়"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "c",
       "curriculum_ref": "NCTB ICT Chapter 6 (Page 180)"
     },
     {
@@ -476,22 +476,22 @@
       "options": [
         {
           "id": "a",
-          "text": "EXTRACT"
+          "text": "GET"
         },
         {
           "id": "b",
-          "text": "SELECT"
-        },
-        {
-          "id": "c",
           "text": "OPEN"
         },
         {
+          "id": "c",
+          "text": "EXTRACT"
+        },
+        {
           "id": "d",
-          "text": "GET"
+          "text": "SELECT"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "d",
       "curriculum_ref": "NCTB ICT Chapter 6 (Page 195)"
     }
   ],
@@ -813,11 +813,11 @@
       "options": [
         {
           "id": "a",
-          "text": "<p>"
+          "text": "<br>"
         },
         {
           "id": "b",
-          "text": "<br>"
+          "text": "<p>"
         },
         {
           "id": "c",
@@ -828,7 +828,7 @@
           "text": "<break>"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "a",
       "curriculum_ref": "NCTB ICT Chapter 4 (Page 84)"
     },
     {
@@ -840,22 +840,22 @@
       "options": [
         {
           "id": "a",
-          "text": "এইচটিএমএল কোড লিখে ওয়েব পেজ তৈরি করা (Editing HTML code)"
+          "text": "ডাটাবেজের সঙ্গে ওয়েব পেজের সংযোগ স্থাপন করা (Connecting a web page to a database)"
         },
         {
           "id": "b",
-          "text": "ডোমেইন নামকে আইপি (IP) অ্যাড্রেসে রূপান্তর করা (Domain name to IP address translation)"
-        },
-        {
-          "id": "c",
           "text": "সার্ভারে ফাইল আপলোড ও ডাউনলোড করা (File transfer to the server)"
         },
         {
+          "id": "c",
+          "text": "ডোমেইন নামকে আইপি (IP) অ্যাড্রেসে রূপান্তর করা (Domain name to IP address translation)"
+        },
+        {
           "id": "d",
-          "text": "ডাটাবেজের সঙ্গে ওয়েব পেজের সংযোগ স্থাপন করা (Connecting a web page to a database)"
+          "text": "এইচটিএমএল কোড লিখে ওয়েব পেজ তৈরি করা (Editing HTML code)"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "c",
       "curriculum_ref": "NCTB ICT Chapter 4 (Page 76)"
     },
     {
@@ -867,7 +867,7 @@
       "options": [
         {
           "id": "a",
-          "text": "<meta charset=\"ASCII\">"
+          "text": "<meta type=\"UNICODE\">"
         },
         {
           "id": "b",
@@ -875,11 +875,11 @@
         },
         {
           "id": "c",
-          "text": "<meta encoding=\"ANSI\">"
+          "text": "<meta charset=\"ASCII\">"
         },
         {
           "id": "d",
-          "text": "<meta type=\"UNICODE\">"
+          "text": "<meta encoding=\"ANSI\">"
         }
       ],
       "keyed_answer": "b",
@@ -894,22 +894,22 @@
       "options": [
         {
           "id": "a",
-          "text": "<td>"
+          "text": "<header>"
         },
         {
           "id": "b",
-          "text": "<th>"
-        },
-        {
-          "id": "c",
           "text": "<tr >"
         },
         {
+          "id": "c",
+          "text": "<td>"
+        },
+        {
           "id": "d",
-          "text": "<header>"
+          "text": "<th>"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "d",
       "curriculum_ref": "NCTB ICT Chapter 4 (Page 96)"
     },
     {
@@ -921,11 +921,11 @@
       "options": [
         {
           "id": "a",
-          "text": "target=\"_self\""
+          "text": "target=\"_blank\""
         },
         {
           "id": "b",
-          "text": "target=\"_blank\""
+          "text": "target=\"_parent\""
         },
         {
           "id": "c",
@@ -933,10 +933,10 @@
         },
         {
           "id": "d",
-          "text": "target=\"_parent\""
+          "text": "target=\"_self\""
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "a",
       "curriculum_ref": "NCTB ICT Chapter 4 (Page 87)"
     },
     {
@@ -948,7 +948,7 @@
       "options": [
         {
           "id": "a",
-          "text": "Super Key"
+          "text": "Composite Key"
         },
         {
           "id": "b",
@@ -956,11 +956,11 @@
         },
         {
           "id": "c",
-          "text": "Composite Key"
+          "text": "Candidate Key"
         },
         {
           "id": "d",
-          "text": "Candidate Key"
+          "text": "Super Key"
         }
       ],
       "keyed_answer": "b",
@@ -975,22 +975,22 @@
       "options": [
         {
           "id": "a",
-          "text": "HAVING"
+          "text": "ORDER BY"
         },
         {
           "id": "b",
-          "text": "WHERE"
+          "text": "HAVING"
         },
         {
           "id": "c",
-          "text": "GROUP BY"
+          "text": "WHERE"
         },
         {
           "id": "d",
-          "text": "ORDER BY"
+          "text": "GROUP BY"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "c",
       "curriculum_ref": "NCTB ICT Chapter 6 (Page 196)"
     }
   ],
@@ -1319,7 +1319,7 @@
         },
         {
           "id": "b",
-          "text": "<link rel=\"stylesheet\" href=\"style.css\">"
+          "text": "<css href=\"style.css\">"
         },
         {
           "id": "c",
@@ -1327,10 +1327,10 @@
         },
         {
           "id": "d",
-          "text": "<css href=\"style.css\">"
+          "text": "<link rel=\"stylesheet\" href=\"style.css\">"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "d",
       "curriculum_ref": "NCTB ICT Chapter 4 (Page 112)"
     },
     {
@@ -1342,7 +1342,7 @@
       "options": [
         {
           "id": "a",
-          "text": "কনটেন্ট কখনো পরিবর্তন হয় না"
+          "text": "শুধুমাত্র এইচটিএমএল (HTML) দিয়ে তৈরি হয়"
         },
         {
           "id": "b",
@@ -1350,11 +1350,11 @@
         },
         {
           "id": "c",
-          "text": "শুধুমাত্র এইচটিএমএল (HTML) দিয়ে তৈরি হয়"
+          "text": "সার্ভার সাইড স্ক্রিপ্টিং (Server-side Scripting) সাপোর্ট করে না"
         },
         {
           "id": "d",
-          "text": "সার্ভার সাইড স্ক্রিপ্টিং (Server-side Scripting) সাপোর্ট করে না"
+          "text": "কনটেন্ট কখনো পরিবর্তন হয় না"
         }
       ],
       "keyed_answer": "b",
@@ -1369,22 +1369,22 @@
       "options": [
         {
           "id": "a",
-          "text": "type=\"checkbox\""
-        },
-        {
-          "id": "b",
           "text": "type=\"radio\""
         },
         {
+          "id": "b",
+          "text": "type=\"checkbox\""
+        },
+        {
           "id": "c",
-          "text": "type=\"select\""
+          "text": "type=\"button\""
         },
         {
           "id": "d",
-          "text": "type=\"button\""
+          "text": "type=\"select\""
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "a",
       "curriculum_ref": "NCTB ICT Chapter 4 (Page 107)"
     },
     {
@@ -1396,22 +1396,22 @@
       "options": [
         {
           "id": "a",
-          "text": "ওয়েব পেজের বডি (body) অংশের শুরুতে"
+          "text": "সার্চ ইঞ্জিনের টুল বারে"
         },
         {
           "id": "b",
-          "text": "ব্রাউজারের টাইটেল বার বা ট্যাবে"
+          "text": "ওয়েব পেজের বডি (body) অংশের শুরুতে"
         },
         {
           "id": "c",
-          "text": "ওয়েব পেজের ফুটার (footer) অংশে"
+          "text": "ব্রাউজারের টাইটেল বার বা ট্যাবে"
         },
         {
           "id": "d",
-          "text": "সার্চ ইঞ্জিনের টুল বারে"
+          "text": "ওয়েব পেজের ফুটার (footer) অংশে"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "c",
       "curriculum_ref": "NCTB ICT Chapter 4 (Page 81)"
     },
     {
@@ -1423,22 +1423,22 @@
       "options": [
         {
           "id": "a",
-          "text": "<i>"
-        },
-        {
-          "id": "b",
-          "text": "<em>"
-        },
-        {
-          "id": "c",
           "text": "<bold>"
         },
         {
-          "id": "d",
+          "id": "b",
           "text": "<mark>"
+        },
+        {
+          "id": "c",
+          "text": "<i>"
+        },
+        {
+          "id": "d",
+          "text": "<em>"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "d",
       "curriculum_ref": "NCTB ICT Chapter 4 (Page 90)"
     },
     {
@@ -1450,11 +1450,11 @@
       "options": [
         {
           "id": "a",
-          "text": "One-to-One"
+          "text": "One-to-Many"
         },
         {
           "id": "b",
-          "text": "One-to-Many"
+          "text": "One-to-One"
         },
         {
           "id": "c",
@@ -1465,7 +1465,7 @@
           "text": "Self Relationship"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "a",
       "curriculum_ref": "NCTB ICT Chapter 6 (Page 186)"
     },
     {
@@ -1477,7 +1477,7 @@
       "options": [
         {
           "id": "a",
-          "text": "MODIFY"
+          "text": "CHANGE"
         },
         {
           "id": "b",
@@ -1485,7 +1485,7 @@
         },
         {
           "id": "c",
-          "text": "CHANGE"
+          "text": "MODIFY"
         },
         {
           "id": "d",
@@ -1823,18 +1823,18 @@
         },
         {
           "id": "b",
-          "text": "Absolute URL"
-        },
-        {
-          "id": "c",
           "text": "Static IP"
         },
         {
-          "id": "d",
+          "id": "c",
           "text": "Local Host"
+        },
+        {
+          "id": "d",
+          "text": "Absolute URL"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "d",
       "curriculum_ref": "NCTB ICT Chapter 4 (Page 79)"
     },
     {
@@ -1846,22 +1846,22 @@
       "options": [
         {
           "id": "a",
-          "text": "// This is a comment"
-        },
-        {
-          "id": "b",
           "text": "<!-- This is a comment -->"
         },
         {
-          "id": "c",
+          "id": "b",
           "text": "/* This is a comment */"
+        },
+        {
+          "id": "c",
+          "text": "// This is a comment"
         },
         {
           "id": "d",
           "text": "# This is a comment"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "a",
       "curriculum_ref": "NCTB ICT Chapter 4 (Page 85)"
     },
     {
@@ -1877,18 +1877,18 @@
         },
         {
           "id": "b",
-          "text": "cellpadding"
+          "text": "margin"
         },
         {
           "id": "c",
-          "text": "border"
+          "text": "cellpadding"
         },
         {
           "id": "d",
-          "text": "margin"
+          "text": "border"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "c",
       "curriculum_ref": "NCTB ICT Chapter 4 (Page 99)"
     },
     {
@@ -1900,7 +1900,7 @@
       "options": [
         {
           "id": "a",
-          "text": "নতুন উইন্ডোতে (_blank)"
+          "text": "ব্যাকগ্রাউন্ড ট্যাবে (Background tab)"
         },
         {
           "id": "b",
@@ -1908,7 +1908,7 @@
         },
         {
           "id": "c",
-          "text": "ব্যাকগ্রাউন্ড ট্যাবে (Background tab)"
+          "text": "নতুন উইন্ডোতে (_blank)"
         },
         {
           "id": "d",
@@ -1927,11 +1927,11 @@
       "options": [
         {
           "id": "a",
-          "text": "মেমোরি সেভ করা (Saving memory)"
+          "text": "পাসওয়ার্ড সুরক্ষা দেওয়া (Password protection)"
         },
         {
           "id": "b",
-          "text": "ডেটা অনুসন্ধানের (Search) গতি বৃদ্ধি করা"
+          "text": "মেমোরি সেভ করা (Saving memory)"
         },
         {
           "id": "c",
@@ -1939,10 +1939,10 @@
         },
         {
           "id": "d",
-          "text": "পাসওয়ার্ড সুরক্ষা দেওয়া (Password protection)"
+          "text": "ডেটা অনুসন্ধানের (Search) গতি বৃদ্ধি করা"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "d",
       "curriculum_ref": "NCTB ICT Chapter 6 (Page 190)"
     },
     {
@@ -1954,11 +1954,11 @@
       "options": [
         {
           "id": "a",
-          "text": "DROP TABLE"
+          "text": "DELETE FROM"
         },
         {
           "id": "b",
-          "text": "DELETE FROM"
+          "text": "DROP TABLE"
         },
         {
           "id": "c",
@@ -1969,7 +1969,7 @@
           "text": "CLEAR"
         }
       ],
-      "keyed_answer": "b",
+      "keyed_answer": "a",
       "curriculum_ref": "NCTB ICT Chapter 6 (Page 200)"
     }
   ]

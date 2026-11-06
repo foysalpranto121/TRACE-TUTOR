@@ -1,3 +1,5 @@
+import { describeTutorModel } from '../services/tutorModel';
+import { formatTimingDate } from '../services/assessmentTiming';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { apiService } from '../services/api';
 import { useAuth } from '../context/useAuth';
@@ -27,6 +29,7 @@ import {
   ArrowRightLeft
 } from 'lucide-react';
 import { Button, Badge } from '../components/ui';
+import { ChatMarkdown } from '../components/TutorPanel/ChatMarkdown';
 
 // Grading runs on the server after the answers are saved; poll at this cadence, and give
 // up waiting (never resubmit - the answers are already stored) after this long.
@@ -52,6 +55,18 @@ const EXAM_TABS = [
 const PHASE_LABEL = {
   post: 'Post-Test',
   transfer: 'Transfer Test',
+};
+
+// Typed questions are normally standalone. Only attach the visible assessment item
+// when the student refers to it; preset help buttons always request that context.
+const referencesCurrentProblem = (text) => {
+  const value = String(text || '').toLowerCase();
+  return [
+    'this question', 'this problem', 'this task', 'current question', 'current problem',
+    'my code', 'my program', 'my output', 'the code above', 'compiler error',
+    'এই প্রশ্ন', 'এই সমস্যা', 'এই কোড', 'আমার কোড', 'আমার প্রোগ্রাম',
+    'ei question', 'ei problem', 'ei code', 'amar code', 'amar program',
+  ].some((marker) => value.includes(marker));
 };
 
 /**
@@ -89,6 +104,11 @@ export const AssessmentPage = () => {
   const [examType, setExamType] = useState('pre'); // 'pre', 'post', 'transfer', 'withdrawal'
   // Which papers this participant may open, as reported by the server.
   const [availableExams, setAvailableExams] = useState(['pre']);
+  const [schedule, setSchedule] = useState(null);
+  const hasSchedule = Boolean(schedule);
+  const [phaseRefreshError, setPhaseRefreshError] = useState(null);
+  const [phaseRefreshAttempt, setPhaseRefreshAttempt] = useState(0);
+  const nextExam = EXAM_TABS[EXAM_TABS.findIndex(({ type }) => type === examType) + 1];
   const [selectedChapter, setSelectedChapter] = useState('ALL'); // 'ALL', 'CHAP4', 'CHAP5', 'CHAP6'
   const [allItems, setAllItems] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -137,7 +157,7 @@ export const AssessmentPage = () => {
     setChatMessages([welcomeMessage(examType, true, !isReasoningArm)]);
   };
 
-  const loadItems = useCallback(async (type) => {
+  const loadItems = useCallback(async (type, isRetake = false) => {
     setIsSubmitted(false);
     setConfirmUnanswered(false);
     setScoreResult(null);
@@ -147,13 +167,15 @@ export const AssessmentPage = () => {
     setRunResults({});
     setCurrentIndex(0);
     try {
-      const data = await apiService.getAssessmentItems(type);
+      const data = isRetake
+        ? await apiService.retakeAssessment(type)
+        : await apiService.getAssessmentItems(type);
       if (Array.isArray(data?.available)) setAvailableExams(data.available);
+      setSchedule(data?.schedule || null);
       const itemsList = data?.items || [];
       setAllItems(itemsList);
-      // A paper is sat once. If this one is already in, show the recorded result rather
-      // than a blank form the server would refuse anyway.
-      if (data?.sitting?.status === 'completed' && data.sitting.submission_id) {
+      // A paper is sat once by default unless retaking. If this one is already in, show the recorded result
+      if (!isRetake && data?.sitting?.status === 'completed' && data.sitting.submission_id) {
         const done = await apiService.getSubmission(data.sitting.submission_id);
         setGradingState(done.grading_status);
         setScoreResult({
@@ -168,10 +190,15 @@ export const AssessmentPage = () => {
     } catch (err) {
       // A locked paper comes back 403 with the list of papers that are open.
       if (Array.isArray(err.body?.available)) setAvailableExams(err.body.available);
+      if (err.body?.schedule) setSchedule(err.body.schedule);
       setAllItems([]);
       setSubmitError(err.message || 'Could not load this paper.');
     }
   }, []);
+
+  const handleRetakeAssessment = () => {
+    loadItems(examType, true);
+  };
 
   // Declared after loadItems on purpose: the dependency array is evaluated during
   // render, so placing this above the useCallback threw "Cannot access 'loadItems'
@@ -179,6 +206,43 @@ export const AssessmentPage = () => {
   useEffect(() => {
     loadItems(examType);
   }, [examType, loadItems]);
+
+  // Refresh just availability, preserving all unsaved code and selected answers.
+  useEffect(() => {
+    if (!hasSchedule) return undefined;
+    let cancelled = false;
+    const refresh = () => apiService.getAssessmentSchedule().then((data) => {
+      if (!cancelled) {
+        setSchedule(data);
+        if (Array.isArray(data.available)) setAvailableExams(data.available);
+      }
+    }).catch(() => { /* Existing schedule remains visible; next refresh retries. */ });
+    const interval = window.setInterval(refresh, 60000);
+    const visible = () => { if (document.visibilityState === 'visible') refresh(); };
+    document.addEventListener('visibilitychange', visible);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', visible);
+    };
+  }, [hasSchedule]);
+
+  // Grading completes after the initial items response. Refresh only protocol
+  // availability, keeping the submitted answers and result visible.
+  useEffect(() => {
+    if (!isSubmitted || gradingState !== 'graded') return;
+    let cancelled = false;
+    setPhaseRefreshError(null);
+    apiService.getAssessmentItems(examType).then((data) => {
+      if (!cancelled) {
+        if (Array.isArray(data?.available)) setAvailableExams(data.available);
+        if (data?.schedule) setSchedule(data.schedule);
+      }
+    }).catch(() => {
+      if (!cancelled) setPhaseRefreshError('Your result is saved. Could not refresh the next assessment step.');
+    });
+    return () => { cancelled = true; };
+  }, [examType, isSubmitted, gradingState, phaseRefreshAttempt]);
 
   // Derived, not stored: keeping a second copy of the list in state meant every loader
   // had to remember to re-filter it, and made loadItems depend on the selected chapter.
@@ -341,6 +405,7 @@ export const AssessmentPage = () => {
           language,
           problem_title: currentItem?.title || '',
           problem_description: currentItem?.question || '',
+          use_problem_context: Boolean(queryText) || referencesCurrentProblem(textToSend),
         }
       );
 
@@ -355,6 +420,8 @@ export const AssessmentPage = () => {
             code_solution: response.code_solution || '',
             answer_only: true,
             model: response.model,
+            provider: response.provider,
+            cached: response.cached,
             ai_status: response.ai_status,
             ai_error: response.error,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -407,6 +474,8 @@ export const AssessmentPage = () => {
           independent_ai_answer: response.independent_ai_answer || response.reasoning_trace,
           retrieved_passages: response.retrieved_passages || [],
           model: response.model,
+            provider: response.provider,
+            cached: response.cached,
           ai_status: response.ai_status,
           ai_error: response.error,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -505,7 +574,9 @@ export const AssessmentPage = () => {
                   key={type}
                   onClick={() => unlocked && setExamType(type)}
                   disabled={!unlocked}
-                  title={unlocked ? undefined : 'Complete the earlier papers to unlock this one.'}
+                  title={unlocked ? undefined : schedule?.upcoming === type && schedule?.locked_until
+                    ? `Opens ${formatTimingDate(schedule.locked_until)} (Dhaka time)`
+                    : 'Complete the earlier papers and their waiting periods to unlock this one.'}
                   className={`px-3.5 py-2 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
                     active
                       ? `${activeClass} shadow-md`
@@ -521,6 +592,17 @@ export const AssessmentPage = () => {
             })}
           </div>
         </div>
+
+        {schedule && (
+          <div className="rounded-xl border border-primary/25 bg-primary/5 p-3 text-xs space-y-1" role="status">
+            <p>Post প্রথম খোলার ৭ দিন পর Transfer, এবং Transfer প্রথম খোলার ১৪ দিন পর Withdrawal খুলবে। আগের পরীক্ষাটি জমা থাকতে হবে।</p>
+            <p className="text-on-surface-variant">সময় পেরিয়েও জমা দেওয়া যাবে। Pre ও Withdrawal নিজের সুবিধামতো জমা দিন।</p>
+            {schedule.locked_until && <p className="font-bold text-primary">পরবর্তী পরীক্ষা খুলবে: {formatTimingDate(schedule.locked_until)} (ঢাকা সময়)</p>}
+            {schedule.phases?.[examType]?.next_available_at && !schedule.locked_until && (
+              <p className="text-on-surface-variant">পরের ধাপের অপেক্ষা শেষ: {formatTimingDate(schedule.phases[examType].next_available_at)} (ঢাকা সময়)</p>
+            )}
+          </div>
+        )}
 
         {/* Chapter Filter Badges */}
         <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-outline-variant/20 text-xs font-mono">
@@ -1055,7 +1137,7 @@ export const AssessmentPage = () => {
 
                           {msg.ai_status === 'fallback' && (
                             <p className="text-[10px] text-amber-500 bg-amber-500/10 border border-amber-500/30 rounded-lg p-2">
-                              {msg.model} did not respond: {msg.ai_error}
+                              AI generation is unavailable — showing textbook material. {msg.ai_error}
                             </p>
                           )}
 
@@ -1067,9 +1149,18 @@ export const AssessmentPage = () => {
                                   <Sparkles className="w-3.5 h-3.5" /> 🤖 Independent AI Explanation
                                 </span>
                                 <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold">
-                                  {msg.model || 'Gemini'}
+                                  {describeTutorModel(null, msg).label}
                                 </span>
                               </div>
+
+                              {msg.independent_ai_answer.chat_answer && (
+                                <div className="bg-surface-container p-3 rounded-lg border border-outline-variant/30">
+                                  <ChatMarkdown
+                                    text={msg.independent_ai_answer.chat_answer}
+                                    className="text-xs text-on-surface font-medium"
+                                  />
+                                </div>
+                              )}
 
                               {msg.independent_ai_answer.concept_applied && (
                                 <p className="text-xs font-bold text-on-surface">
@@ -1170,8 +1261,22 @@ export const AssessmentPage = () => {
               You completed {scoreResult.correct} out of {scoreResult.total} items correctly in this {examType.toUpperCase()} assessment session.
             </p>
 
+            {nextExam && availableExams.includes(nextExam.type) && (
+              <button
+                onClick={() => setExamType(nextExam.type)}
+                className="px-6 py-3 rounded-xl bg-primary text-on-primary font-bold text-xs inline-flex items-center gap-2"
+              >
+                <ArrowRight className="w-4 h-4" /> Continue to {nextExam.label}
+              </button>
+            )}
+            {phaseRefreshError && (
+              <p className="text-xs text-amber-500" role="alert">
+                {phaseRefreshError}{' '}
+                <button onClick={() => setPhaseRefreshAttempt((attempt) => attempt + 1)} className="underline font-bold">Try again</button>
+              </p>
+            )}
             <button
-              onClick={() => loadItems(examType)}
+              onClick={handleRetakeAssessment}
               className="px-6 py-3 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold text-xs inline-flex items-center gap-2 border border-outline-variant/30 shadow-md"
             >
               <RefreshCw className="w-4 h-4" /> Retake Assessment

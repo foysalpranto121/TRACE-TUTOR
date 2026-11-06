@@ -1,3 +1,4 @@
+import { assessmentChanged } from './assessmentEvents';
 // API service for the TRACE Tutor frontend, talking to Django through the Vite proxy.
 //
 // There is no mock/offline mode. This platform is a research instrument, so a request
@@ -139,14 +140,16 @@ export const apiService = {
   logTelemetry: (eventType, eventData) =>
     fetchApi('/telemetry/log/', { method: 'POST', body: JSON.stringify({ event_type: eventType, event_data: eventData || {} }) })
       .catch(() => ({ status: 'skipped', logged: false })),
-  getAssessmentItems: (type) => fetchApi(`/assessment/items/?type=${type}`),
+  getAssessmentItems: (type) => assessmentChanged(fetchApi(`/assessment/items/?type=${type}`)),
+  getAssessmentSchedule: () => fetchApi('/assessment/schedule/'),
+  retakeAssessment: (type) => assessmentChanged(fetchApi('/assessment/retake/', { method: 'POST', body: JSON.stringify({ exam_type: type }) })),
   // The server persists the answers at once and grades in the background: the response
   // carries grading_status ('pending' | 'grading' | 'graded' | 'failed') and, once
   // graded, { score_pct, correct, total, results }. Poll getSubmission until it settles.
-  submitExam: (examData) => fetchApi('/assessment/submit/', { method: 'POST', body: JSON.stringify(examData) }),
+  submitExam: (examData) => assessmentChanged(fetchApi('/assessment/submit/', { method: 'POST', body: JSON.stringify(examData) })),
   getSubmission: (id) => fetchApi(`/assessment/submissions/${id}/`),
   getExpertQueue: () => fetchApi('/expert/reviews/'),
-  submitExpertRating: (itemId, ratings, feedback) => fetchApi('/expert/rating/', { method: 'POST', body: JSON.stringify({ item_id: itemId, ratings, feedback }) }),
+  submitExpertRating: (itemId, ratings, feedback, expectedRevision) => fetchApi('/expert/rating/', { method: 'POST', body: JSON.stringify({ item_id: itemId, ratings, feedback, ...(expectedRevision !== undefined ? { expected_revision: expectedRevision } : {}) }) }),
   getAdminStats: () => fetchApi('/admin/stats/'),
   // Streams the real per-participant dataset straight to the browser as a download.
   exportDataset: () => downloadFile('/admin/export/', 'trace_tutor_dataset.csv'),
@@ -155,7 +158,7 @@ export const apiService = {
   
   // Student Code Submission Evaluation & Marking by Expert
   getStudentSubmissions: () => fetchApi('/expert/submissions/'),
-  gradeSubmission: (submissionId, assignedMarks, feedback) => fetchApi('/expert/grade/', { method: 'POST', body: JSON.stringify({ submission_id: submissionId, assigned_marks: assignedMarks, feedback }) }),
+  gradeSubmission: (submissionId, assignedMarks, feedback, expectedRevision) => fetchApi('/expert/grade/', { method: 'POST', body: JSON.stringify({ submission_id: submissionId, assigned_marks: assignedMarks, feedback, ...(expectedRevision !== undefined ? { expected_revision: expectedRevision } : {}) }) }),
 
   // Curriculum RAG Engine (staff only). The RAG inspector is a research tool, so a
   // failed retrieval surfaces as an error, never as plausible-looking sample passages.

@@ -13,6 +13,7 @@ from trace_backend import llm
 from trace_backend.cache import cache_key, tiered_get_or_set
 from trace_backend.throttles import CodeRunThrottle, TutorThrottle
 from . import runner
+from .hint_policy import HINT_INSTRUCTION, is_hint_request, hint_response
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,11 @@ MAX_LOGGED_PROMPT = 1000
 SYSTEM_INSTRUCTION = """You are TRACE Tutor, an expert tutor for the Bangladesh NCTB HSC ICT syllabus (Chapter 4 HTML, Chapter 5 C programming, Chapter 6 DBMS).
 You produce a DUAL answer for every student message:
 
+The student's PRIMARY REQUEST is authoritative. Answer exactly what the student asked,
+in the language they used. Assessment task/code context is supplemental: use it only
+when the request explicitly refers to that question, task, code, program, output, or
+error. Never replace an unrelated question with a solution to the assessment task.
+
 1. "rag_answer" - the TEXTBOOK answer. It must be grounded ONLY in the NCTB textbook passages supplied in the user message.
    - textbook_rule: the rule / definition the textbook states that applies to the student's question (one or two sentences).
    - curriculum_citation: list the passage tags you used, e.g. "[1] NCTB HSC ICT (BV) p.146; [3] NCTB HSC ICT (EV) p.152". Never invent page numbers.
@@ -31,11 +37,11 @@ You produce a DUAL answer for every student message:
    - grounded: true only if the passages actually support the answer.
 
 2. "independent_ai_answer" - YOUR OWN independent reasoning, not limited to the textbook.
-   - chat_answer: answer the student's message the way a top AI chat assistant would, using your full knowledge and ignoring the passages. A natural, complete, direct reply in Markdown: short paragraphs, bullet points where they help, fenced code blocks (```c or ```html) for code, no headings. Address the student's exact question and their code first, then anything else they need to know.
+   - chat_answer: answer the student's PRIMARY REQUEST the way a top AI chat assistant would, using your full knowledge and ignoring the passages. A natural, complete, direct reply in Markdown: short paragraphs, bullet points where they help, fenced code blocks (```c or ```html) for code, no headings. Address the exact request first. Use assessment context only when it is relevant to that request.
    - concept_applied: the concept name.
    - problem_breakdown: 3-6 numbered steps that answer the student's SPECIFIC question. If student code is supplied, examine it line by line and point out any bug with the line number.
    - pedagogical_justification: why this logic is correct and the common mistakes to avoid.
-   - code_solution: a complete, compilable program (C with #include <stdio.h> and int main, or full HTML) that solves the task. Use the exact output format the task specifies.
+   - code_solution: when the primary request asks for code or refers to the assessment task, provide a relevant complete program (C with #include <stdio.h> and int main, or full HTML). For a conceptual question that does not need code, return an empty string. Never solve an unrelated assessment task here.
 
 3. "direct_answer": 2-5 sentences that directly answer the question (used by the answer-only mode).
 
@@ -148,6 +154,7 @@ def answer_only_payload(payload):
     return {
         'mode': payload['mode'],
         'model': payload['model'],
+        'provider': payload.get('provider'),
         'ai_status': payload['ai_status'],
         'error': payload['error'],
         'direct_answer': payload['direct_answer'],
@@ -185,6 +192,7 @@ def _log_tutor_event(user, event_type, arm, problem_id, prompt, code, language, 
 def query_tutor(request):
     data = request.data
     prompt = (data.get('prompt') or '').strip()
+    hint_only = is_hint_request(prompt)
     code = data.get('code') or ''
     problem_id = data.get('problem_id', 'prob_assessment')
     arm = resolve_arm(request.user, data.get('arm'))
@@ -193,6 +201,7 @@ def query_tutor(request):
     problem_title = data.get('problem_title') or ''
     problem_description = data.get('problem_description') or ''
     compiler_output = data.get('compiler_output') or ''
+    use_problem_context = data.get('use_problem_context') is True
     view = data.get('view') if data.get('view') in TUTOR_VIEWS else None
 
     if not prompt:
@@ -213,24 +222,40 @@ def query_tutor(request):
             'exam_type': blocking,
         }, status=403)
 
-    retrieval_query = ' '.join(x for x in [prompt, problem_title] if x)
+    context_title = problem_title if use_problem_context else ''
+    context_description = problem_description if use_problem_context else ''
+    context_code = code if use_problem_context else ''
+    context_compiler_output = compiler_output if use_problem_context else ''
+
+    # A standalone question such as "Where is <br> used?" must retrieve for that
+    # question, not for the unrelated assessment item currently visible beside chat.
+    retrieval_query = ' '.join(x for x in [prompt, context_title] if x)
     passages = rag_engine_instance.retrieve(retrieval_query, k=5)
 
     user_message = (
-        f"STUDENT QUESTION: {prompt}\n\n"
-        f"TASK: {problem_title or problem_id}\n{problem_description}\n\n"
-        f"STUDENT CODE:\n```\n{code.strip() or '(no code yet)'}\n```\n\n"
-        + (f"COMPILER OUTPUT:\n{compiler_output}\n\n" if compiler_output else '')
-        + f"NCTB TEXTBOOK PASSAGES (retrieved by RAG):\n{_passage_block(passages)}\n"
+        "PRIMARY REQUEST (answer this directly; do not substitute another task):\n"
+        f"{prompt}\n\n"
     )
+    if use_problem_context:
+        user_message += (
+            "SUPPLEMENTAL ASSESSMENT CONTEXT (use only to answer the primary request):\n"
+            f"TASK: {context_title or problem_id}\n{context_description}\n\n"
+            f"STUDENT CODE:\n```\n{context_code.strip() or '(no code yet)'}\n```\n\n"
+            + (f"COMPILER OUTPUT:\n{context_compiler_output}\n\n" if context_compiler_output else '')
+        )
+    user_message += f"NCTB TEXTBOOK PASSAGES (retrieved by RAG):\n{_passage_block(passages)}\n"
 
     def generate():
         try:
-            parsed, model = llm.generate_json(SYSTEM_INSTRUCTION.replace('{lang_name}', _lang_name(language)),
+            instruction = SYSTEM_INSTRUCTION.replace('{lang_name}', _lang_name(language))
+            if hint_only:
+                instruction += '\n\n' + HINT_INSTRUCTION
+            parsed, model = llm.generate_json(instruction,
                                               user_message, schema=TUTOR_RESPONSE_SCHEMA)
             if not isinstance(parsed, dict) or 'independent_ai_answer' not in parsed:
                 raise ValueError('The model returned an unexpected JSON shape')
-            return {'parsed': parsed, 'model': model, 'ai_status': 'live', 'error': None}
+            return {'parsed': parsed, 'model': model, 'provider': llm.provider(),
+                    'ai_status': 'live', 'error': None}
         except Exception as e:
             logger.warning(f'Tutor model call ({llm.provider()}) failed: {e}')
             return {'parsed': _fallback_answer(prompt, code, passages, language), 'model': llm.model_name(),
@@ -242,11 +267,16 @@ def query_tutor(request):
     # 'v3': the key also carries the corpus version (the last completed ingestion run), so an
     # answer built on passages whose text or labels have since been re-indexed is never reused.
     corpus = corpus_version()
-    answer_key = cache_key('tutor-answer', 'v3', corpus, language, prompt, code.strip(), problem_id, problem_title,
-                           problem_description, compiler_output, [p.get('id') or p.get('source_ref') for p in passages])
+    answer_key = cache_key('tutor-answer', 'v5-hint-policy', corpus, language, prompt,
+                           use_problem_context, context_code.strip(),
+                           problem_id if use_problem_context else '', context_title,
+                           context_description, context_compiler_output,
+                           [p.get('id') or p.get('source_ref') for p in passages])
     result, tier = tiered_get_or_set(answer_key, generate, settings.TUTOR_ANSWER_CACHE_SECONDS,
                                      should_store=lambda r: r['ai_status'] == 'live')
     parsed, model, ai_status, error = result['parsed'], result['model'], result['ai_status'], result['error']
+    if hint_only:
+        parsed = hint_response(parsed, language)
 
     rag_answer = parsed.get('rag_answer') or {}
     rag_answer.setdefault('grounded', bool(passages))
@@ -261,6 +291,9 @@ def query_tutor(request):
     payload = {
         'mode': arm,
         'model': model,
+        # Cached answers retain the provider recorded when generated. Legacy cache
+        # entries have no provider; never infer it from today's configuration.
+        'provider': result.get('provider') if ai_status == 'live' else None,
         'ai_status': ai_status,
         'error': error,
         'retrieval_backend': rag_engine_instance.last_backend,
@@ -278,6 +311,7 @@ def query_tutor(request):
 
     _log_tutor_event(request.user, 'HELP_REQUEST', arm, problem_id, prompt, code, language,
                      ai_status=ai_status, cache_tier=tier, model=model, view=view,
+                     use_problem_context=use_problem_context,
                      exam_type=sittings.open_paper_of(request.user),
                      # Which corpus state and which passages grounded this turn, so the answer a
                      # participant saw can be reconstructed after the corpus has moved on.
@@ -294,13 +328,30 @@ def query_tutor(request):
 @permission_classes([IsAuthenticated])
 @throttle_classes([CodeRunThrottle])
 def run_code(request):
-    """Compiles and runs submitted code on the server.
-
-    Authentication is the only thing standing between this and arbitrary code
-    execution as the server user - the runner is not sandboxed (see README). Keep it
-    behind a login, and put it in a container before any internet-facing deployment.
-    """
+    """Validate the request before compiling/running under the required sandbox tier."""
     data = request.data
+    if not isinstance(data, dict):
+        return Response({'error': 'Provide a code execution request object.'}, status=400)
+    errors = {}
+    for field, default in (('language', 'c'), ('code', ''), ('mode', 'run')):
+        if not isinstance(data.get(field, default), str):
+            errors[field] = 'Must be a string.'
+    if isinstance(data.get('mode', 'run'), str) and data.get('mode', 'run') not in ('run', 'check'):
+        errors['mode'] = 'Choose run or check.'
+    cases = data.get('test_cases')
+    if cases is not None:
+        if not isinstance(cases, list):
+            errors['test_cases'] = 'Must be a list of test case objects.'
+        else:
+            for index, case in enumerate(cases):
+                if not isinstance(case, dict):
+                    errors[f'test_cases.{index}'] = 'Must be a test case object.'
+                    continue
+                for field in ('input', 'output', 'selector'):
+                    if field in case and case[field] is not None and not isinstance(case[field], str):
+                        errors[f'test_cases.{index}.{field}'] = 'Must be a string.'
+    if errors:
+        return Response({'error': 'Invalid code execution request.', 'fields': errors}, status=400)
     result = runner.run_code(
         language=data.get('language', 'c'),
         code=data.get('code', ''),

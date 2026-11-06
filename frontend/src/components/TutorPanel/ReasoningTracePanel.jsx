@@ -1,5 +1,8 @@
+import { describeTutorModel } from '../../services/tutorModel';
+import { TutorAvailabilityNotice } from './TutorAvailabilityNotice';
+import { TutorQuestionForm } from './TutorQuestionForm';
 import { useState } from 'react';
-import { Brain, BookOpen, Sparkles, CheckCircle2, Copy, Check, ChevronDown, ChevronUp, Layers, HelpCircle, ShieldCheck, AlertTriangle, FileText, Lock, MessageSquare } from 'lucide-react';
+import { Brain, BookOpen, Sparkles, CheckCircle2, Copy, Check, ChevronDown, ChevronUp, Layers, HelpCircle, ShieldCheck, AlertTriangle, FileText, MessageSquare } from 'lucide-react';
 import { apiService } from '../../services/api';
 import { ChatMarkdown } from './ChatMarkdown';
 
@@ -14,13 +17,16 @@ export const ReasoningTracePanel = ({
   groundedPassage,
   isLoading,
   error,
-  errorKind,   // 'policy' when the server refused by rule (a no-AI paper is open), else 'failure'
+  modelMetadata,
+  availability,
+  onRetryAvailability,
+  queryText,
+  onQueryChange,
   onRequestHelp,
   onCopyCode,
 }) => {
   const [copied, setCopied] = useState(false);
   const [showPassages, setShowPassages] = useState(true);
-  const [queryText, setQueryText] = useState('');
   const [viewTab, setViewTab] = useState('dual'); // 'dual' | 'rag' | 'independent'
 
   const handleCopy = (code) => {
@@ -31,14 +37,6 @@ export const ReasoningTracePanel = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleHelpSubmit = (e) => {
-    e.preventDefault();
-    if (!queryText.trim()) return;
-    // The view the question was asked from travels with it: the server records whether
-    // the student reached for the textbook answer or the free AI answer.
-    if (onRequestHelp) onRequestHelp(queryText, { view: viewTab });
-    setQueryText('');
-  };
 
   const ragData = traceData?.rag_answer || {
     textbook_rule: 'No textbook answer yet',
@@ -47,7 +45,8 @@ export const ReasoningTracePanel = ({
   };
   const indepData = traceData?.independent_ai_answer || {};
   const passages = traceData?.retrieved_passages || [];
-  const modelLabel = traceData?.model || 'Gemini';
+  const modelInfo = describeTutorModel(modelMetadata, traceData, isLoading);
+  const modelLabel = modelInfo.label;
   const isFallback = traceData?.ai_status === 'fallback';
 
   return (
@@ -62,13 +61,13 @@ export const ReasoningTracePanel = ({
             <p className="text-[10px] text-on-surface-variant font-medium truncate">RAG grounding + independent reasoning</p>
           </div>
           <div
-            title={`Retrieval-augmented answer generated with ${modelLabel}`}
+            title={modelInfo.title}
             className={`px-2 py-1 rounded-lg border text-[10px] font-mono font-bold flex items-center gap-1 shrink-0 ${
               isFallback || error ? 'bg-warning/10 border-warning/30 text-warning' : 'bg-success/10 border-success/30 text-success'
             }`}
           >
             <ShieldCheck className="w-3 h-3" />
-            <span className="hidden sm:inline">{modelLabel}{traceData?.cached ? ' · cached' : ''}</span>
+            <span className="hidden sm:inline">{modelLabel}{!isLoading && traceData?.cached ? ' · cached' : ''}</span>
           </div>
         </div>
 
@@ -87,25 +86,17 @@ export const ReasoningTracePanel = ({
         </div>
       </div>
 
+      <TutorAvailabilityNotice availability={availability} onRetry={onRetryAvailability} />
+
       <div className="flex-1 overflow-y-auto overscroll-contain p-5 space-y-5">
         {isLoading && (
           <div className="py-12 flex flex-col items-center justify-center space-y-3">
             <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-            <span className="text-xs text-primary font-mono font-bold animate-pulse">Retrieving NCTB passages & generating {modelLabel} reasoning...</span>
+            <span role="status" className="text-xs text-primary font-mono font-bold animate-pulse">Retrieving NCTB passages & generating tutor reasoning...</span>
           </div>
         )}
 
         {!isLoading && error && (
-          errorKind === 'policy' ? (
-            // A rule, not an outage: the pre-test and withdrawal task are no-AI papers.
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-xs text-amber-500 flex items-start gap-2">
-              <Lock className="w-4 h-4 shrink-0 mt-0.5" />
-              <div>
-                <div className="font-bold">Tutor paused for this paper</div>
-                <div className="mt-1 leading-relaxed">{error}</div>
-              </div>
-            </div>
-          ) : (
             <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-4 text-xs text-rose-400 flex items-start gap-2">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
               <div>
@@ -113,7 +104,6 @@ export const ReasoningTracePanel = ({
                 <div className="font-mono mt-1">{error}</div>
               </div>
             </div>
-          )
         )}
 
         {!isLoading && !error && !traceData && (
@@ -131,7 +121,7 @@ export const ReasoningTracePanel = ({
             {isFallback && (
               <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-[11px] text-amber-500 flex items-start gap-2">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span><strong>{modelLabel} did not respond</strong> - showing the retrieved textbook passage only. {traceData.error}</span>
+                <span><strong>AI generation is unavailable</strong> - showing the retrieved textbook passage only. {traceData.error}</span>
               </div>
             )}
 
@@ -258,19 +248,10 @@ export const ReasoningTracePanel = ({
         )}
       </div>
 
-      <form onSubmit={handleHelpSubmit} className="p-3.5 bg-surface-container-high border-t border-outline-variant/30 flex gap-2">
-        <input
-          type="text"
-          value={queryText}
-          onChange={(e) => setQueryText(e.target.value)}
-          placeholder={PLACEHOLDERS[viewTab] || PLACEHOLDERS.dual}
-          aria-label="Ask the tutor about your code, an error, or an NCTB concept"
-          className="flex-1 bg-surface-container text-on-surface text-xs rounded-xl px-3.5 py-2 border border-outline-variant/30 outline-none focus:border-primary"
-        />
-        <button type="submit" disabled={!queryText.trim() || isLoading} className="px-4 py-2 rounded-xl bg-primary text-on-primary font-bold text-xs shadow-md disabled:opacity-40 transition-all shrink-0">
-          Ask
-        </button>
-      </form>
+      <TutorQuestionForm queryText={queryText} onQueryChange={onQueryChange}
+        availability={availability} isLoading={isLoading}
+        onSubmit={(query) => onRequestHelp(query, { view: viewTab })}
+        placeholder={PLACEHOLDERS[viewTab] || PLACEHOLDERS.dual} label="Ask the tutor about your code, an error, or an NCTB concept" buttonLabel="Ask" />
     </div>
   );
 };

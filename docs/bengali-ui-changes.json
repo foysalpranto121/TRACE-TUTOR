@@ -1,0 +1,226 @@
+{
+  "frontend/src/pages/Register.jsx": [
+    [
+      "const suggestUsername = (name) => {\n  const ascii = name.toLowerCase().replace(/[^a-z0-9\\s]/g, '').trim().split(/\\s+/).filter(Boolean).join('.');\n  if (ascii.length >= 3) return ascii.slice(0, 30);\n  return `student${Math.floor(1000 + Math.random() * 9000)}`;\n};\n\n",
+      ""
+    ],
+    [
+      "  const usernameTouched = useRef(false);\n",
+      ""
+    ],
+    [
+      "    setForm((f) => {\n      const next = { ...f, [field]: value };\n      if (field === 'full_name' && !usernameTouched.current) next.username = suggestUsername(value);\n      if (field === 'username') usernameTouched.current = true;\n      return next;\n    });\n",
+      "    setForm((f) => ({ ...f, [field]: value }));\n"
+    ],
+    [
+      "hint=\"(login id)\"",
+      "hint={bn ? '(নিজে বেছে নিন)' : '(choose your own)'}"
+    ],
+    [
+      "placeholder=\"tanvir.rahman\" autoComplete=\"username\"",
+      "placeholder={bn ? 'আপনার পছন্দের ইউজারনেম' : 'Choose a username'} autoComplete=\"off\" autoCapitalize=\"none\" spellCheck={false}"
+    ],
+    [
+      "পটভূমি ও সম্মতি",
+      "অভিজ্ঞতা ও সম্মতি"
+    ],
+    [
+      "গবেষণার জন্য কয়েকটি তথ্য প্রয়োজন; আপনার নাম কখনো প্রকাশ করা হবে না।",
+      "গবেষণার জন্য আপনার সম্পর্কে কিছু তথ্য জানতে চাই। প্রকাশিত ফলাফলে আপনার নামের বদলে অংশগ্রহণকারী কোড ব্যবহার করা হবে।"
+    ],
+    [
+      "পাসওয়ার্ড নিশ্চিত করুন",
+      "পাসওয়ার্ড আবার লিখুন"
+    ],
+    [
+      "er.username = '3-30 letters, digits, dots, underscores or hyphens - no spaces.';",
+      "er.username = bn ? 'নিজের ইউজারনেম লিখুন: ৩–৩০টি ইংরেজি অক্ষর, সংখ্যা, ডট, আন্ডারস্কোর বা হাইফেন। স্পেস দেওয়া যাবে না।' : 'Choose a username: 3-30 letters, digits, dots, underscores or hyphens - no spaces.';"
+    ]
+  ],
+  "frontend/src/pages/LandingPage.jsx": [
+    [
+      "AI যা যুক্তি দেখায়",
+      "ধাপে ধাপে ব্যাখ্যা"
+    ],
+    [
+      "শুধু উত্তর নয় — ধাপে ধাপে লজিক, ভুলের কারণ আর NCTB বইয়ের পৃষ্ঠা নম্বরসহ ব্যাখ্যা।",
+      "সমাধানের ধাপ ও ভুলের কারণ বুঝুন। প্রাসঙ্গিক ব্যাখ্যার সঙ্গে NCTB বইয়ের পৃষ্ঠা নম্বরও দেখুন।"
+    ],
+    [
+      "সত্যিকারের কম্পাইলার",
+      "C কোড চালিয়ে দেখুন"
+    ],
+    [
+      "আপনার C কোড সত্যিই কম্পাইল ও রান হয়। ভুল লাইনে লাল দাগ, টেস্ট কেস পাস/ফেল — VS Code-এর মতো।",
+      "C কোড লিখে চালান। কোথায় ভুল হয়েছে এবং কোন টেস্ট কেস মিলেছে, তা ফলাফলে দেখুন।"
+    ],
+    [
+      "অধ্যায় ৪-এর টেবিল, লিংক, লিস্ট লিখুন — সঙ্গে সঙ্গে রেন্ডার দেখুন আর ট্যাগের ভুল ধরুন।",
+      "চতুর্থ অধ্যায়ের টেবিল, লিংক ও লিস্ট তৈরি করুন। পাশে প্রিভিউ দেখে HTML-এর ভুল ঠিক করুন।"
+    ],
+    [
+      "প্রতিটি সমাধানে XP, প্রতিদিন অনুশীলনে স্ট্রিক, আর দক্ষতা অনুযায়ী ব্যাজ আনলক করুন।",
+      "অনুশীলন করে XP ও ব্যাজ সংগ্রহ করুন। কত দিন নিয়মিত অনুশীলন করছেন, সেটিও দেখতে পাবেন।"
+    ],
+    [
+      "NCTB বই থেকেই উত্তর",
+      "পাঠ্যবইয়ের সাহায্যে শিখুন"
+    ],
+    [
+      "বাংলা ও ইংরেজি সংস্করণের পাঠ্যবই থেকে হুবহু অনুচ্ছেদ ও পৃষ্ঠা উদ্ধৃতিসহ উত্তর।",
+      "NCTB বইয়ের প্রাসঙ্গিক অংশের ভিত্তিতে ব্যাখ্যা দেখুন। পৃষ্ঠা নম্বর ধরে বইয়ের সঙ্গে মিলিয়ে নিতে পারবেন।"
+    ],
+    [
+      "প্রি-টেস্ট, পোস্ট-টেস্ট ও ট্রান্সফার টাস্ক — নিজের অগ্রগতি সংখ্যায় দেখুন।",
+      "শেখার আগে ও পরে পরীক্ষা দিন। নতুন সমস্যায় শেখা বিষয়গুলো কাজে লাগিয়ে নিজের অগ্রগতি দেখুন।"
+    ],
+    [
+      "কলেজ, শ্রেণি ও অভিজ্ঞতা জানান — ৩০ সেকেন্ডেই শেষ।",
+      "নিজের ইউজারনেম বেছে নিন। কলেজ, শ্রেণি ও আগের অভিজ্ঞতার তথ্য দিয়ে অ্যাকাউন্ট খুলুন।"
+    ],
+    [
+      "অধ্যায় ৪ ও ৫-এর টাস্কে কোড লিখুন, টেস্ট কেস পাস করান।",
+      "চতুর্থ ও পঞ্চম অধ্যায়ের সমস্যা সমাধান করুন। কোড চালিয়ে ফলাফল মিলিয়ে নিন।"
+    ],
+    [
+      "আটকে গেলে বাংলায় প্রশ্ন করুন — যুক্তিসহ ব্যাখ্যা পাবেন।",
+      "কোথাও আটকে গেলে বাংলায় প্রশ্ন করুন। আপনার টিউটর মোড অনুযায়ী সাহায্য পাবেন।"
+    ],
+    [
+      "অগ্রগতি ট্র্যাক করুন",
+      "নিজের অগ্রগতি দেখুন"
+    ],
+    [
+      "XP, স্ট্রিক, দক্ষতা চার্ট আর পরীক্ষার স্কোর এক ড্যাশবোর্ডে।",
+      "ড্যাশবোর্ডে অনুশীলনের হিসাব, অর্জিত XP ও পরীক্ষার ফল দেখুন।"
+    ],
+    [
+      "ড্যাশবোর্ডে যান (Go to dashboard)",
+      "ড্যাশবোর্ডে যান"
+    ],
+    [
+      "মুখস্থ নয় —<br />",
+      "কোড লিখে,<br />"
+    ],
+    [
+      "যুক্তি বুঝে",
+      "ধাপে ধাপে"
+    ],
+    [
+      "এমন একটা AI টিউটর যে শুধু উত্তর দেয় না — <strong className=\"text-on-surface font-semibold\">প্রতিটা ধাপের যুক্তি দেখায়</strong>, NCTB পাঠ্যবইয়ের পৃষ্ঠা থেকে উদ্ধৃতি দেয়, আর আপনার কোড সত্যিকারের কম্পাইলারে চালিয়ে ভুলটা ঠিক কোন লাইনে তা ধরিয়ে দেয়।",
+      "এইচএসসি আইসিটির C ও HTML অনুশীলন করুন। <strong className=\"text-on-surface font-semibold\">কোড লিখুন, চালান, ভুল ঠিক করুন।</strong> আটকে গেলে AI টিউটরের সাহায্য নিন।"
+    ],
+    [
+      "আগে থেকেই অ্যাকাউন্ট আছে",
+      "অ্যাকাউন্ট থাকলে লগইন করুন"
+    ],
+    [
+      "গবেষণা-অনুমোদিত",
+      "শেখার ওপর গবেষণা"
+    ],
+    [
+      "প্র্যাকটিস টাস্ক",
+      "অনুশীলনের সমস্যা"
+    ],
+    [
+      "কপি-পেস্ট করে পরীক্ষায় পাস করা যায় না। তাই প্রতিটা উত্তরের সঙ্গে যুক্তি, পাঠ্যবইয়ের রেফারেন্স আর সত্যিকারের কম্পাইলার ফিডব্যাক।",
+      "কোড লিখে অনুশীলন করুন, ফলাফল দেখুন এবং ভুলগুলো বুঝে ঠিক করুন। ব্যাখ্যা ও পাঠ্যবইয়ের সূত্র শেখা বিষয়গুলো মিলিয়ে নিতে সাহায্য করবে।"
+    ],
+    [
+      "বোর্ড বইয়ের অধ্যায় ধরে ধরে — প্রতিটা টপিকে অনুশীলন, টেস্ট কেস আর AI ব্যাখ্যা।",
+      "পাঠ্যবইয়ের চতুর্থ, পঞ্চম ও ষষ্ঠ অধ্যায়ের বিষয়গুলো অনুশীলন করুন।"
+    ],
+    [
+      "আজই প্রথম প্রোগ্রামটা",
+      "আপনার প্রথম প্রোগ্রাম"
+    ],
+    [
+      "রান করে ফেলুন",
+      "চালিয়ে দেখুন"
+    ],
+    [
+      "কোনো ইনস্টল লাগবে না, কোনো খরচ নেই। শুধু একটা অ্যাকাউন্ট খুলুন আর ব্রাউজারেই কোডিং শুরু করুন।",
+      "ব্রাউজারেই কোড লিখে চালাতে পারবেন। অ্যাকাউন্ট খুলে অনুশীলন শুরু করুন।"
+    ],
+    [
+      "<div className=\"min-h-screen",
+      "<div lang=\"bn\" className=\"min-h-screen"
+    ]
+  ],
+  "frontend/src/index.css": [
+    [
+      "@tailwind base;",
+      "/* Use the regular Bengali face for Bengali glyphs at every UI weight.\n   Latin headings and code retain their existing fonts and weights. */\n@font-face {\n  font-family: 'TRACE Bengali';\n  font-style: normal;\n  font-weight: 100 900;\n  font-display: swap;\n  src: url('/fonts/noto-sans-bengali-regular.ttf') format('truetype');\n  unicode-range: U+0980-09FF, U+200C-200D, U+25CC;\n}\n\n@tailwind base;"
+    ]
+  ],
+  "frontend/tailwind.config.js": [
+    [
+      "        sans: [\"Hind Siliguri\", \"Inter\", \"Noto Sans Bengali\", \"system-ui\", \"sans-serif\"],",
+      "        sans: [\"TRACE Bengali\", \"Hind Siliguri\", \"Inter\", \"Noto Sans Bengali\", \"system-ui\", \"sans-serif\"],"
+    ],
+    [
+      "        display: [\"Space Grotesk\", \"Hind Siliguri\", \"Inter\", \"sans-serif\"],",
+      "        display: [\"TRACE Bengali\", \"Space Grotesk\", \"Hind Siliguri\", \"Inter\", \"sans-serif\"],"
+    ],
+    [
+      "        headline: [\"Space Grotesk\", \"Hind Siliguri\", \"Inter\", \"sans-serif\"],",
+      "        headline: [\"TRACE Bengali\", \"Space Grotesk\", \"Hind Siliguri\", \"Inter\", \"sans-serif\"],"
+    ],
+    [
+      "        body: [\"Hind Siliguri\", \"Inter\", \"Noto Sans Bengali\", \"sans-serif\"],",
+      "        body: [\"TRACE Bengali\", \"Hind Siliguri\", \"Inter\", \"Noto Sans Bengali\", \"sans-serif\"],"
+    ],
+    [
+      "        mono: [\"JetBrains Mono\", \"ui-monospace\", \"monospace\"],",
+      "        mono: [\"TRACE Bengali\", \"JetBrains Mono\", \"ui-monospace\", \"monospace\"],"
+    ],
+    [
+      "        code: [\"JetBrains Mono\", \"ui-monospace\", \"monospace\"],",
+      "        code: [\"TRACE Bengali\", \"JetBrains Mono\", \"ui-monospace\", \"monospace\"],"
+    ]
+  ],
+  "frontend/src/context/AuthContext.jsx": [
+    [
+      "  const login = async",
+      "  useEffect(() => {\n    document.documentElement.lang = user?.language || guestLanguage;\n  }, [user?.language, guestLanguage]);\n\n  const login = async"
+    ]
+  ],
+  "frontend/src/pages/Login.jsx": [
+    [
+      "আমাকে মনে রাখুন",
+      "লগইন করা রাখুন"
+    ],
+    [
+      "ইউজারনেম ও পাসওয়ার্ড দিন।",
+      "ইউজারনেম বা ইমেইল এবং পাসওয়ার্ড দিন।"
+    ],
+    [
+      "শিক্ষক ও গবেষকরা একই ফর্মে সাইন ইন করুন; আপনার ভূমিকা অনুযায়ী পোর্টাল খুলবে।",
+      "শিক্ষক ও গবেষকরাও এখানে লগইন করতে পারবেন। লগইনের পর আপনার জন্য নির্ধারিত পাতা খুলবে।"
+    ]
+  ],
+  "frontend/src/pages/Dashboard.jsx": [
+    [
+      "Workspace-এ গিয়ে কোড রান করুন — আপনার প্রতিদিনের অগ্রগতি এখানে গ্রাফে দেখা যাবে।",
+      "কোড অনুশীলনের পাতায় কোড চালান। প্রতিদিনের অনুশীলনের হিসাব এখানে দেখতে পাবেন।"
+    ],
+    [
+      "Workspace-এ কোড রান করুন বা AI টিউটরকে প্রশ্ন করুন — প্রতিটি কাজ এখানে লগ হবে।",
+      "কোড চালালে বা AI টিউটরকে প্রশ্ন করলে সেই কাজের রেকর্ড এখানে দেখতে পাবেন।"
+    ]
+  ],
+  "frontend/src/pages/Profile.jsx": [
+    [
+      "প্রোফাইল সংরক্ষিত হয়েছে।",
+      "প্রোফাইলের তথ্য সেভ হয়েছে।"
+    ],
+    [
+      "চেহারা ও অ্যানিমেশন",
+      "থিম ও অ্যানিমেশন"
+    ],
+    [
+      "নতুন পাসওয়ার্ড নিশ্চিত করুন",
+      "নতুন পাসওয়ার্ড আবার লিখুন"
+    ]
+  ]
+}

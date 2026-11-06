@@ -1,3 +1,14 @@
+/* Use the regular Bengali face for Bengali glyphs at every UI weight.
+   Latin headings and code retain their existing fonts and weights. */
+@font-face {
+  font-family: 'TRACE Bengali';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/noto-sans-bengali-regular.ttf') format('truetype');
+  unicode-range: U+0980-09FF, U+200C-200D, U+25CC;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

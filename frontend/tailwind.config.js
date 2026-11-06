@@ -61,12 +61,12 @@ export default {
         snug: "1.55",
       },
       fontFamily: {
-        sans: ["Hind Siliguri", "Inter", "Noto Sans Bengali", "system-ui", "sans-serif"],
-        display: ["Space Grotesk", "Hind Siliguri", "Inter", "sans-serif"],
-        headline: ["Space Grotesk", "Hind Siliguri", "Inter", "sans-serif"],
-        body: ["Hind Siliguri", "Inter", "Noto Sans Bengali", "sans-serif"],
-        mono: ["JetBrains Mono", "ui-monospace", "monospace"],
-        code: ["JetBrains Mono", "ui-monospace", "monospace"],
+        sans: ["TRACE Bengali", "Hind Siliguri", "Inter", "Noto Sans Bengali", "system-ui", "sans-serif"],
+        display: ["TRACE Bengali", "Space Grotesk", "Hind Siliguri", "Inter", "sans-serif"],
+        headline: ["TRACE Bengali", "Space Grotesk", "Hind Siliguri", "Inter", "sans-serif"],
+        body: ["TRACE Bengali", "Hind Siliguri", "Inter", "Noto Sans Bengali", "sans-serif"],
+        mono: ["TRACE Bengali", "JetBrains Mono", "ui-monospace", "monospace"],
+        code: ["TRACE Bengali", "JetBrains Mono", "ui-monospace", "monospace"],
       },
       borderRadius: {
         DEFAULT: "0.375rem",

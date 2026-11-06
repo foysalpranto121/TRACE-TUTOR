@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Code, LayoutDashboard, FileCheck, Brain, Database, Sliders, Search, Bell, User, Languages, LogOut,
-  Sun, Moon, Zap, Flame, ChevronRight, Menu, Sparkles, Repeat, Lock,
+  Code, LayoutDashboard, FileCheck, Brain, Database, Sliders, Bell, User, Languages, LogOut,
+  Sun, Moon, Zap, Flame, ChevronRight, Menu, Sparkles, Repeat, Lock, X,
 } from 'lucide-react';
 import { useAuth } from '../../context/useAuth';
 import { useTheme } from '../../context/useTheme';
@@ -11,6 +11,7 @@ import { useResetOnChange } from '../../hooks/useResetOnChange';
 import { computeXp, levelInfo } from '../../data/gamification';
 import { armLabel } from '../../data/profileOptions';
 import { ProgressBar, Avatar } from '../ui';
+import { HeaderSearch } from './HeaderSearch';
 
 const NAV = [
   { path: '/dashboard', label: 'ড্যাশবোর্ড', en: 'Dashboard', icon: LayoutDashboard, roles: ['STUDENT', 'EXPERT_TEACHER', 'RESEARCHER_ADMIN'] },
@@ -33,6 +34,11 @@ const TAGLINES = {
   EXPERT_TEACHER: 'NCTB প্রশ্ন ও শিক্ষার্থীর কোড মূল্যায়ন করুন',
   RESEARCHER_ADMIN: 'গবেষণা অ্যানালিটিক্স ও সিস্টেম কন্ট্রোল',
 };
+const EN_TAGLINES = {
+  STUDENT: 'Learn programming step by step',
+  EXPERT_TEACHER: 'Review NCTB questions and student code',
+  RESEARCHER_ADMIN: 'Research analytics and system controls',
+};
 
 export const AppShell = ({ children }) => {
   const { user, role, arm, language, logout, toggleArm, setLanguage } = useAuth();
@@ -41,6 +47,10 @@ export const AppShell = ({ children }) => {
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
+  const drawerRef = useRef(null);
+  const menuButtonRef = useRef(null);
+  const bn = language === 'bn';
+  const logoutLabel = bn ? 'লগ আউট' : 'Log out';
   const [progress, setProgress] = useState(null);
 
   const isStudent = role === 'STUDENT';
@@ -57,6 +67,24 @@ export const AppShell = ({ children }) => {
 
   // Navigating closes the mobile drawer before paint, not a frame later.
   useResetOnChange(location.pathname, () => setMobileNav(false));
+
+  useEffect(() => {
+    if (!mobileNav) return undefined;
+    const drawer = drawerRef.current;
+    const opener = menuButtonRef.current;
+    const desktop = window.matchMedia('(min-width: 1024px)');
+    const closeOnDesktop = () => { if (desktop.matches) setMobileNav(false); };
+    // Native modal dialogs contain keyboard focus and make the background inert.
+    drawer.showModal();
+    drawer.querySelector('button').focus();
+    closeOnDesktop();
+    desktop.addEventListener('change', closeOnDesktop);
+    return () => {
+      desktop.removeEventListener('change', closeOnDesktop);
+      drawer.close();
+      opener?.focus();
+    };
+  }, [mobileNav]);
 
   const level = progress ? levelInfo(computeXp(progress.stats, progress.assessments)) : null;
   const streak = progress?.stats?.streak_days || 0;
@@ -75,7 +103,7 @@ export const AppShell = ({ children }) => {
           </div>
           <div className="leading-tight min-w-0">
             <span className="font-display font-bold text-base block">TRACE Tutor</span>
-            <span className="text-[9px] font-mono text-primary font-bold uppercase tracking-[0.14em]">HSC ICT · বাংলাদেশ</span>
+            <span className="text-[9px] font-mono text-primary font-bold uppercase tracking-[0.14em]">HSC ICT · {bn ? 'বাংলাদেশ' : 'Bangladesh'}</span>
           </div>
         </Link>
       </div>
@@ -84,7 +112,7 @@ export const AppShell = ({ children }) => {
       <div className="px-3.5 pb-3">
         <div className="rounded-2xl bg-surface-container border border-outline-variant/40 p-3.5 space-y-3">
           <div className="flex items-center gap-2.5">
-            <Link to="/profile" title="প্রোফাইল ও ছবি বদলান" className="shrink-0 hover:scale-105 transition-transform">
+            <Link to="/profile" title={bn ? 'প্রোফাইল ও ছবি বদলান' : 'Edit profile and photo'} className="shrink-0 hover:scale-105 transition-transform">
               <Avatar user={user} size={38} />
             </Link>
             <div className="min-w-0 flex-1">
@@ -113,7 +141,7 @@ export const AppShell = ({ children }) => {
             </div>
           )}
 
-          {!isStudent && <p className="text-[10px] text-on-surface-variant leading-relaxed italic">{TAGLINES[role]}</p>}
+          {!isStudent && <p className="text-[10px] text-on-surface-variant leading-relaxed italic">{bn ? TAGLINES[role] : EN_TAGLINES[role]}</p>}
 
           {/* Tutor mode. Participants may switch it while the study allows self-selection
               (arm_self_select, reported by the server); when a controlled run locks it,
@@ -137,7 +165,7 @@ export const AppShell = ({ children }) => {
             <button
               onClick={toggleArm}
               className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-surface-container-high border border-outline-variant/40 text-[10px] hover:border-primary/40 press"
-              title={`টিউটর মোড: ${armLabel(arm)} — বদলাতে ক্লিক করুন (switch tutor mode)`}
+              title={bn ? `টিউটর মোড: ${armLabel(arm)} — বদলাতে ক্লিক করুন` : `Tutor mode: ${armLabel(arm)} — click to switch`}
             >
               <span className="flex items-center gap-1.5 font-mono font-bold">
                 <span className={`w-2 h-2 rounded-full ${arm === 'REASONING_VISIBLE' ? 'bg-success animate-pulse' : 'bg-warning'}`} />
@@ -164,8 +192,8 @@ export const AppShell = ({ children }) => {
               {active && <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-primary" />}
               <Icon className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${active ? 'text-primary' : ''}`} />
               <span className="min-w-0 leading-tight">
-                <span className="block truncate">{item.label}</span>
-                <span className="block text-[9px] font-mono text-on-surface-variant/80 truncate">{item.en}</span>
+                <span className="block truncate">{bn ? item.label : item.en}</span>
+                {bn && <span lang="en" className="block text-[9px] font-mono text-on-surface-variant/80 truncate">{item.en}</span>}
               </span>
               {active && <ChevronRight className="w-3.5 h-3.5 ml-auto shrink-0" />}
             </Link>
@@ -175,16 +203,16 @@ export const AppShell = ({ children }) => {
 
       <div className="px-3.5 pt-3 mt-2 border-t border-outline-variant/30 space-y-2">
         <div className="flex items-center justify-between px-2.5 py-2 rounded-xl bg-surface-container border border-outline-variant/40 text-[11px]">
-          <span className="flex items-center gap-1.5 font-semibold text-on-surface-variant"><Languages className="w-3.5 h-3.5 text-primary" /> ভাষা</span>
-          <button onClick={() => setLanguage(language === 'bn' ? 'en' : 'bn')} className="px-2 py-0.5 rounded-lg bg-surface-container-high font-mono font-bold text-xs press hover:text-primary">
+          <span className="flex items-center gap-1.5 font-semibold text-on-surface-variant"><Languages className="w-3.5 h-3.5 text-primary" /> {bn ? 'ভাষা' : 'Language'}</span>
+          <button aria-label={bn ? 'ইংরেজিতে পরিবর্তন করুন' : 'Switch to Bengali'} onClick={() => setLanguage(language === 'bn' ? 'en' : 'bn')} className="px-2 py-0.5 rounded-lg bg-surface-container-high font-mono font-bold text-xs press hover:text-primary">
             {language === 'bn' ? 'বাংলা' : 'EN'}
           </button>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={toggleTheme} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-surface-container border border-outline-variant/40 text-[11px] font-bold press hover:border-primary/40" title="Toggle theme">
-            {isDark ? <><Sun className="w-3.5 h-3.5 text-warning" /> Soft</> : <><Moon className="w-3.5 h-3.5 text-secondary" /> Dark</>}
+          <button onClick={toggleTheme} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-surface-container border border-outline-variant/40 text-[11px] font-bold press hover:border-primary/40" title={bn ? 'থিম পরিবর্তন করুন' : 'Toggle theme'}>
+            {isDark ? <><Sun className="w-3.5 h-3.5 text-warning" /> {bn ? 'হালকা' : 'Soft'}</> : <><Moon className="w-3.5 h-3.5 text-secondary" /> {bn ? 'গাঢ়' : 'Dark'}</>}
           </button>
-          <button onClick={handleLogout} className="px-3 py-2 rounded-xl bg-danger/10 text-danger border border-danger/30 press hover:bg-danger/20" title="Log out">
+          <button onClick={handleLogout} className="px-3 py-2 rounded-xl bg-danger/10 text-danger border border-danger/30 press hover:bg-danger/20" aria-label={logoutLabel} title={logoutLabel}>
             <LogOut className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -193,7 +221,7 @@ export const AppShell = ({ children }) => {
   );
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-surface text-on-surface flex">
+    <div className="fixed inset-0 overflow-hidden bg-surface text-on-surface flex">
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex w-[268px] h-full bg-surface-container-lowest border-r border-outline-variant/30 flex-col pb-5 shrink-0 z-30">
         {sidebar}
@@ -201,17 +229,23 @@ export const AppShell = ({ children }) => {
 
       {/* Mobile drawer */}
       {mobileNav && (
-        <>
-          <div className="lg:hidden fixed inset-0 bg-black/60 z-40 animate-fade-in" onClick={() => setMobileNav(false)} />
-          <aside className="lg:hidden fixed inset-y-0 left-0 w-[280px] bg-surface-container-lowest border-r border-outline-variant/30 flex flex-col pb-5 z-50 animate-slide-in">
+        <dialog ref={drawerRef} id="mobile-navigation" aria-modal="true" aria-label={bn ? 'মূল নেভিগেশন' : 'Main navigation'}
+          className="fixed inset-0 m-0 p-0 w-full max-w-none h-full max-h-none border-0 bg-transparent text-on-surface backdrop:bg-black/60"
+          onCancel={() => setMobileNav(false)} onClose={() => setMobileNav(false)}
+          onClick={(event) => { if (event.target === event.currentTarget) setMobileNav(false); }}>
+          <aside className="w-[280px] max-w-full h-full bg-surface-container-lowest border-r border-outline-variant/30 flex flex-col pb-5 overflow-y-auto animate-slide-in">
+            <button type="button" onClick={() => setMobileNav(false)} aria-label={bn ? 'মেনু বন্ধ করুন' : 'Close menu'}
+              className="self-end shrink-0 m-2 p-2 rounded-xl hover:bg-surface-container-high">
+              <X aria-hidden="true" className="w-4 h-4" />
+            </button>
             {sidebar}
           </aside>
-        </>
+        </dialog>
       )}
 
       <div className="flex-1 flex flex-col h-full min-w-0 min-h-0 overflow-hidden">
         <header className="h-16 glass-panel border-x-0 border-t-0 z-20 flex items-center justify-between gap-3 px-3 sm:px-5 shrink-0">
-          <button onClick={() => setMobileNav(true)} className="lg:hidden p-2 rounded-xl bg-surface-container border border-outline-variant/40" aria-label="Open menu">
+          <button ref={menuButtonRef} onClick={() => setMobileNav(true)} className="lg:hidden p-2 rounded-xl bg-surface-container border border-outline-variant/40" aria-label={bn ? 'মেনু খুলুন' : 'Open menu'} aria-expanded={mobileNav} aria-controls={mobileNav ? 'mobile-navigation' : undefined}>
             <Menu className="w-4 h-4" />
           </button>
 
@@ -219,16 +253,13 @@ export const AppShell = ({ children }) => {
             {current && (
               <>
                 <current.icon className="w-4 h-4 text-primary shrink-0" />
-                <span className="font-display font-bold text-sm truncate">{current.label}</span>
-                <span className="text-[10px] font-mono text-on-surface-variant hidden xl:inline">/ {current.en}</span>
+                <span className="font-display font-bold text-sm truncate">{bn ? current.label : current.en}</span>
+                {bn && <span lang="en" className="text-[10px] font-mono text-on-surface-variant hidden xl:inline">/ {current.en}</span>}
               </>
             )}
           </div>
 
-          <div className="flex-1 md:flex-none md:w-72 flex items-center bg-surface-container rounded-xl px-3 py-2 border border-outline-variant/40 focus-within:border-primary/60 transition-colors">
-            <Search className="w-3.5 h-3.5 text-on-surface-variant mr-2 shrink-0" />
-            <input type="text" placeholder="টপিক বা টাস্ক খুঁজুন..." aria-label="টপিক বা টাস্ক খুঁজুন (search topics or tasks)" className="bg-transparent border-none outline-none text-xs w-full placeholder:text-outline" />
-          </div>
+          <HeaderSearch />
 
           <div className="flex items-center gap-2 shrink-0">
             {isStudent && level && (
@@ -240,13 +271,13 @@ export const AppShell = ({ children }) => {
             )}
 
             <div className="relative">
-              <button onClick={() => setShowNotifications(!showNotifications)} className="p-2 rounded-xl bg-surface-container text-on-surface-variant hover:text-on-surface border border-outline-variant/40 press" aria-label="Notifications">
+              <button onClick={() => setShowNotifications(!showNotifications)} className="p-2 rounded-xl bg-surface-container text-on-surface-variant hover:text-on-surface border border-outline-variant/40 press" aria-label={bn ? 'নোটিফিকেশন' : 'Notifications'}>
                 <Bell className="w-4 h-4" />
                 <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
               </button>
               {showNotifications && (
                 <div className="absolute right-0 mt-2 w-80 glass-panel rounded-2xl shadow-lift p-3 z-50 space-y-2 animate-scale-in">
-                  <h4 className="text-[10px] font-extrabold uppercase tracking-wider text-on-surface-variant px-1">নোটিফিকেশন</h4>
+                  <h4 className="text-[10px] font-extrabold uppercase tracking-wider text-on-surface-variant px-1">{bn ? 'নোটিফিকেশন' : 'Notifications'}</h4>
                   {isStudent && streak > 0 && (
                     <div className="p-3 rounded-xl bg-streak/10 border border-streak/25 text-xs flex items-start gap-2">
                       <Flame className="w-4 h-4 text-streak shrink-0 mt-0.5" />
@@ -255,20 +286,20 @@ export const AppShell = ({ children }) => {
                   )}
                   <div className="p-3 rounded-xl bg-surface-container border border-outline-variant/30 text-xs flex items-start gap-2">
                     <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                    <span><strong className="text-on-surface">RAG কর্পাস সিঙ্ক হয়েছে</strong> <span className="text-on-surface-variant">— NCTB অধ্যায় ৪ ও ৫ ইনডেক্স করা আছে।</span></span>
+                    <span><strong className="text-on-surface">{bn ? 'RAG কর্পাস সিঙ্ক হয়েছে' : 'RAG corpus synced'}</strong> <span className="text-on-surface-variant">{bn ? '— NCTB অধ্যায় ৪ ও ৫ ইনডেক্স করা আছে।' : '— NCTB chapters 4 and 5 are indexed.'}</span></span>
                   </div>
                 </div>
               )}
             </div>
 
-            <button onClick={handleLogout} className="hidden sm:inline-flex px-3 py-2 rounded-xl bg-danger/10 text-danger border border-danger/30 font-bold text-xs items-center gap-1.5 press hover:bg-danger/20">
-              <LogOut className="w-3.5 h-3.5" /> <span className="hidden lg:inline">লগ আউট</span>
+            <button onClick={handleLogout} aria-label={logoutLabel} title={logoutLabel} className="hidden sm:inline-flex px-3 py-2 rounded-xl bg-danger/10 text-danger border border-danger/30 font-bold text-xs items-center gap-1.5 press hover:bg-danger/20">
+              <LogOut aria-hidden="true" className="w-3.5 h-3.5" /> <span className="hidden lg:inline">{logoutLabel}</span>
             </button>
           </div>
         </header>
 
         {/* key on the route so each page fades in - cheap sense of motion between screens */}
-        <main key={location.pathname} className="flex-1 min-h-0 p-3 sm:p-4 flex flex-col overflow-y-auto animate-fade-in">
+        <main key={location.pathname} className="flex-1 min-h-0 p-3 sm:p-4 flex flex-col overflow-y-auto overscroll-contain animate-fade-in">
           {children}
         </main>
       </div>

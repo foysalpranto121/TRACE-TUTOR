@@ -25,6 +25,10 @@ export default defineConfig({
     // "can't reach this page" whenever it resolves localhost to IPv4.
     // Use host: true instead to also serve the LAN (classroom sessions).
     host: '127.0.0.1',
+      allowedHosts: [
+    'unscathed-placate-heaving.ngrok-free.dev',
+  ],
+
     proxy: {
       // 127.0.0.1, not localhost: Node resolves localhost to ::1 first, but
       // `runserver 8000` binds IPv4, so a localhost target makes every

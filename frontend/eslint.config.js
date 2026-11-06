@@ -7,6 +7,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 export default [
   { ignores: ['dist/**', 'node_modules/**'] },
   js.configs.recommended,
+  { files: ['tests/**/*.{js,jsx,mjs}', 'vitest.config.js'], languageOptions: { globals: { ...globals.node } } },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {

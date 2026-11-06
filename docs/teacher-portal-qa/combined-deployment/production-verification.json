@@ -1,0 +1,59 @@
+{
+  "health": "healthy",
+  "sandbox": {
+    "tier": "docker",
+    "label": "docker (no network, memory and process caps, read-only root)",
+    "isolated": true,
+    "enforced": true,
+    "required_tier": "docker",
+    "allowed": true,
+    "detail": null,
+    "image": "trace-tutor-runner:1"
+  },
+  "limits": {
+    "run": {
+      "memory_mb": 256,
+      "cpu_seconds": 5,
+      "max_processes": 64,
+      "max_file_mb": 4
+    },
+    "compile": {
+      "memory_mb": 1024,
+      "cpu_seconds": 60,
+      "max_processes": 128,
+      "max_file_mb": 64
+    }
+  },
+  "safe_compiler_results": [
+    {
+      "status": "SUCCESS",
+      "sandbox": "docker",
+      "actual": [
+        {
+          "id": 1,
+          "input": "",
+          "expected": "",
+          "actual": "15",
+          "stderr": "",
+          "exit_code": 0,
+          "timed_out": false,
+          "time_ms": 382,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "status": "COMPILE_ERROR",
+      "sandbox": "docker",
+      "actual": []
+    }
+  ],
+  "metadata": {
+    "provider": "openai",
+    "primary_model": "gpt-5-mini",
+    "fallback_models": [],
+    "configured": true
+  },
+  "existing_records_unchanged": true,
+  "actual_paid_generation": "unverified; no request made"
+}

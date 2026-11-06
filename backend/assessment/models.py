@@ -102,6 +102,20 @@ class ExamSubmission(models.Model):
         return self.grading_status == self.GRADED
 
 
+class AssessmentTimeline(models.Model):
+    """First-ever phase starts; retakes cannot reset protocol waiting periods."""
+    student = models.OneToOneField(User, on_delete=models.CASCADE, related_name='assessment_timeline')
+    window_start = models.DateTimeField(null=True, blank=True)
+    window_end = models.DateTimeField(null=True, blank=True)
+    pre_started_at = models.DateTimeField(null=True, blank=True)
+    post_started_at = models.DateTimeField(null=True, blank=True)
+    transfer_started_at = models.DateTimeField(null=True, blank=True)
+    withdrawal_started_at = models.DateTimeField(null=True, blank=True)
+    is_synthetic = models.BooleanField(default=False)
+    provenance = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class PaperSitting(models.Model):
     """One participant's sitting of one paper: opened when the items are first served,
     closed when the submission lands.
@@ -148,3 +162,41 @@ class ExpertGrade(models.Model):
 
     def __str__(self):
         return f"Grade {self.assigned_marks}/{self.max_marks} for Sub {self.submission_id}"
+
+
+class ExpertFeedback(ExpertGrade):
+    """Admin view of existing submission feedback; shares ExpertGrade's table."""
+
+    class Meta:
+        proxy = True
+        verbose_name = 'Expert feedback'
+        verbose_name_plural = 'Expert feedback'
+
+
+class TeacherComment(ExpertRating):
+    """Admin view of existing item comments; shares ExpertRating's table."""
+
+    class Meta:
+        proxy = True
+        verbose_name = 'Teacher comment'
+        verbose_name_plural = 'Teacher comment'
+
+
+class TeacherReviewAssignment(models.Model):
+    """Roster membership distinguishes an empty personal queue from legacy access."""
+    expert_user = models.OneToOneField(User, on_delete=models.CASCADE)
+    assigned_at = models.DateTimeField(auto_now_add=True)
+
+
+class ItemReviewAssignment(models.Model):
+    """One primary reviewer per bank item; other experts may still review it."""
+    item_key = models.CharField(max_length=50, unique=True)
+    expert_user = models.ForeignKey(User, on_delete=models.CASCADE)
+    assigned_at = models.DateTimeField(auto_now_add=True)
+
+
+class SubmissionReviewAssignment(models.Model):
+    """One primary marker per submission, without restricting additional reviews."""
+    submission = models.OneToOneField(ExamSubmission, on_delete=models.CASCADE)
+    expert_user = models.ForeignKey(User, on_delete=models.CASCADE)
+    assigned_at = models.DateTimeField(auto_now_add=True)

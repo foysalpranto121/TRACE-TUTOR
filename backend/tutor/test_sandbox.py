@@ -7,9 +7,13 @@ run everywhere, because that is the check that keeps a deployment from silently
 executing untrusted code with no protection at all.
 """
 import os
+import shutil
+import stat
+import tempfile
 import textwrap
 import unittest
 from unittest.mock import Mock, patch
+from pathlib import Path
 
 from django.test import SimpleTestCase, override_settings
 
@@ -145,9 +149,11 @@ class PolicyTests(SimpleTestCase):
         """A Docker daemon still starting when the first request lands must not disable
         code execution for the life of the process."""
         sandbox.reset_detection()
-        with patch('tutor.sandbox._docker_usable', return_value=(False, 'daemon starting')):
+        with patch('tutor.sandbox._docker_usable', return_value=(False, 'daemon starting')), \
+             patch('tutor.sandbox.time.monotonic', return_value=100):
             self.assertEqual(sandbox.detect()[0], sandbox.NONE)
-        with patch('tutor.sandbox._docker_usable', return_value=(True, None)):
+        with patch('tutor.sandbox._docker_usable', return_value=(True, None)), \
+             patch('tutor.sandbox.time.monotonic', return_value=101):
             self.assertEqual(sandbox.detect()[0], sandbox.DOCKER, 're-probed, not the cached NONE')
 
     @override_settings(CODE_SANDBOX='docker', CODE_SANDBOX_REQUIRED=True)
@@ -195,6 +201,7 @@ class KillTreeTests(SimpleTestCase):
         proc.kill.assert_not_called()
 
 
+@override_settings(CODE_SANDBOX_WORKDIR_ROOT='', CODE_SANDBOX_HOST_WORKDIR_ROOT='', CODE_SANDBOX_MOUNT_STYLE='bind')
 class DockerCommandTests(SimpleTestCase):
     """The container flags are the containment, so assert on them directly."""
 
@@ -227,12 +234,14 @@ class DockerCommandTests(SimpleTestCase):
 
     def test_the_run_step_mounts_the_workdir_read_only(self):
         argv = self.command()
-        self.assertTrue(any(a.endswith(':/work:ro') for a in argv))
+        self.assertIn('--mount', argv)
+        self.assertTrue(any(a.endswith('target=/work,readonly') for a in argv))
+        self.assertNotIn('--volume', argv)
         self.assertIn('--read-only', argv)
 
     def test_the_compile_step_gets_a_writable_workdir(self):
         argv = self.command(kind='compile', writable=True)
-        self.assertTrue(any(a.endswith(':/work') for a in argv))
+        self.assertTrue(any(a.endswith('target=/work') for a in argv))
         self.assertNotIn('--read-only', argv)
 
     def test_compiling_gets_a_larger_memory_cap_than_running(self):
@@ -260,6 +269,148 @@ class DockerCommandTests(SimpleTestCase):
         with override_settings(CODE_SANDBOX_IMAGE='my-runner:7'):
             self.assertIn('my-runner:7', self.command())
 
+    def test_the_container_always_has_an_explicit_non_root_identity(self):
+        argv = self.command()
+        self.assertEqual(argv[argv.index('--user') + 1],
+                         ':'.join(map(str, sandbox.docker_identity())))
+        self.assertNotEqual(sandbox.docker_identity()[0], 0)
+
+
+@override_settings(CODE_SANDBOX_WORKDIR_ROOT='', CODE_SANDBOX_HOST_WORKDIR_ROOT='', CODE_SANDBOX_MOUNT_STYLE='bind')
+class WorkdirTests(SimpleTestCase):
+    def test_volume_compatibility_preserves_read_only_and_writable_mounts(self):
+        with tempfile.TemporaryDirectory() as root, \
+             override_settings(CODE_SANDBOX_WORKDIR_ROOT=root,
+                               CODE_SANDBOX_HOST_WORKDIR_ROOT=root,
+                               CODE_SANDBOX_MOUNT_STYLE='volume'):
+            path = sandbox.create_workdir()
+            try:
+                self.assertEqual(sandbox.docker_mount(path, False), ['--volume', f'{path.resolve()}:/work:ro'])
+                self.assertEqual(sandbox.docker_mount(path, True), ['--volume', f'{path.resolve()}:/work'])
+            finally:
+                shutil.rmtree(path)
+
+    @override_settings(CODE_SANDBOX_MOUNT_STYLE='volume')
+    def test_volume_compatibility_requires_an_explicit_shared_root(self):
+        with self.assertRaises(sandbox.SandboxUnavailable):
+            sandbox.docker_mount('/tmp/work', False)
+
+    def test_volume_compatibility_refuses_a_different_host_path(self):
+        with tempfile.TemporaryDirectory() as root, \
+             override_settings(CODE_SANDBOX_WORKDIR_ROOT=root,
+                               CODE_SANDBOX_HOST_WORKDIR_ROOT=str(Path(root) / 'host'),
+                               CODE_SANDBOX_MOUNT_STYLE='volume'):
+            with self.assertRaises(sandbox.SandboxUnavailable):
+                sandbox.docker_mount(Path(root) / 'work', False)
+
+    def test_volume_compatibility_refuses_a_missing_directory(self):
+        with tempfile.TemporaryDirectory() as root, \
+             override_settings(CODE_SANDBOX_WORKDIR_ROOT=root, CODE_SANDBOX_MOUNT_STYLE='volume'):
+            with self.assertRaises(sandbox.SandboxUnavailable):
+                sandbox.docker_mount(Path(root) / 'missing', False)
+
+    def test_a_non_root_backend_identity_is_preserved(self):
+        with patch('tutor.sandbox.os.name', 'posix'), \
+             patch('tutor.sandbox.os.geteuid', return_value=1001, create=True), \
+             patch('tutor.sandbox.os.getegid', return_value=1002, create=True):
+            self.assertEqual(sandbox.docker_identity(), (1001, 1002))
+
+    def test_a_root_backend_uses_the_unprivileged_image_identity(self):
+        with patch('tutor.sandbox.os.name', 'posix'), \
+             patch('tutor.sandbox.os.geteuid', return_value=0, create=True):
+            self.assertEqual(sandbox.docker_identity(), (65532, 65532))
+
+    def test_workdirs_use_the_configured_shared_root_and_are_cleanable(self):
+        with tempfile.TemporaryDirectory() as root, \
+             override_settings(CODE_SANDBOX_WORKDIR_ROOT=root):
+            path = sandbox.create_workdir()
+            self.assertEqual(path.parent, Path(root))
+            sandbox.write_workfile(path / 'main.c', 'int main(){return 0;}')
+            if os.name == 'posix':
+                self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o700)
+                self.assertEqual(stat.S_IMODE((path / 'main.c').stat().st_mode), 0o600)
+                self.assertEqual(path.stat().st_uid, sandbox.docker_identity()[0])
+                self.assertEqual((path / 'main.c').stat().st_uid, sandbox.docker_identity()[0])
+            shutil.rmtree(path)
+            self.assertFalse(path.exists())
+
+    def test_host_mapping_preserves_the_private_directory_name(self):
+        with tempfile.TemporaryDirectory() as root, \
+             override_settings(CODE_SANDBOX_WORKDIR_ROOT=root,
+                               CODE_SANDBOX_HOST_WORKDIR_ROOT=str(Path(root) / 'host')):
+            path = Path(root) / 'trace_run_abc'
+            self.assertEqual(sandbox.docker_workdir(path), str(Path(root) / 'host' / path.name))
+
+    def test_host_mapping_refuses_a_directory_outside_the_shared_root(self):
+        with tempfile.TemporaryDirectory() as root, \
+             override_settings(CODE_SANDBOX_WORKDIR_ROOT=str(Path(root) / 'shared'),
+                               CODE_SANDBOX_HOST_WORKDIR_ROOT=root):
+            with self.assertRaises(sandbox.SandboxUnavailable):
+                sandbox.docker_workdir(Path(root) / 'unshared')
+
+    def test_host_mapping_requires_the_backend_root(self):
+        with override_settings(CODE_SANDBOX_WORKDIR_ROOT='',
+                               CODE_SANDBOX_HOST_WORKDIR_ROOT='/host/shared'):
+            with self.assertRaises(sandbox.SandboxUnavailable):
+                sandbox.docker_workdir('/tmp/work')
+
+    def test_probe_checks_reads_writes_and_backend_visibility(self):
+        calls = []
+
+        def docker_run(argv, **kwargs):
+            calls.append(argv)
+            if argv[1:3] == ['image', 'inspect']:
+                return Mock(returncode=0)
+            mount = argv[argv.index('--mount') + 1]
+            source = mount.split('source=', 1)[1].split(',target=', 1)[0]
+            path = Path(source)
+            token = (path / 'probe.txt').read_text()
+            if argv[-2:] == ['cat', 'probe.txt']:
+                return Mock(returncode=0, stdout=token, stderr='')
+            (path / 'written.txt').write_text(token)
+            return Mock(returncode=0, stdout='', stderr='')
+
+        with patch('tutor.sandbox.shutil.which', return_value='docker'), \
+             patch('tutor.sandbox.subprocess.run', side_effect=docker_run):
+            self.assertEqual(sandbox._docker_usable(), (True, None))
+        self.assertEqual(len(calls), 3)
+
+    def test_probe_rejects_a_readable_but_unwritable_mount(self):
+        # Reuse the real workspace/token while simulating Docker's permission error.
+        def docker_run(argv, **kwargs):
+            if argv[1:3] == ['image', 'inspect']:
+                return Mock(returncode=0)
+            if argv[-2:] == ['cat', 'probe.txt']:
+                mount = argv[argv.index('--mount') + 1]
+                source = mount.split('source=', 1)[1].split(',target=', 1)[0]
+                return Mock(returncode=0, stdout=(Path(source) / 'probe.txt').read_text(), stderr='')
+            return Mock(returncode=1, stdout='', stderr='Permission denied')
+
+        with patch('tutor.sandbox.shutil.which', return_value='docker'), \
+             patch('tutor.sandbox.subprocess.run', side_effect=docker_run):
+            ok, reason = sandbox._docker_usable()
+        self.assertFalse(ok)
+        self.assertIn('could not write', reason)
+
+
+@unittest.skipUnless(active_tier() == sandbox.DOCKER, 'needs the docker tier')
+class DockerSumTests(SimpleTestCase):
+    def test_sum_of_first_five_natural_numbers(self):
+        result = runner.run_code(language='c', code=textwrap.dedent('''\
+            #include <stdio.h>
+            int main() {
+                int n, sum = 0;
+                scanf("%d", &n);
+                for (int i = 1; i <= n; i++) sum += i;
+                printf("%d\\n", sum);
+                return 0;
+            }
+        '''), test_cases=[{'input': '5', 'output': '15'}])
+        self.assertEqual(result['sandbox'], sandbox.DOCKER)
+        self.assertEqual(result['status'], 'SUCCESS', result)
+        self.assertEqual(result['test_results'][0]['actual'], '15')
+        self.assertEqual(result['test_results'][0]['exit_code'], 0)
+
 
 @unittest.skipUnless(os.name == 'posix', 'rlimit caps are POSIX-only')
 class RlimitTests(SimpleTestCase):
@@ -285,7 +436,8 @@ class RlimitTests(SimpleTestCase):
             sandbox._rlimit_preexec('run')()  # must not raise
 
 
-@unittest.skipUnless(C_AVAILABLE, 'no C toolchain available')
+@unittest.skipUnless(C_AVAILABLE and active_tier() == sandbox.DOCKER,
+                     'resource exhaustion tests require the isolated Docker tier')
 class ResourceExhaustionTests(SimpleTestCase):
     """Programs that try to take the host down. These run under whatever tier is active;
     the assertions are about the platform surviving and reporting, not about the tier."""

@@ -1,0 +1,281 @@
+
+> trace-tutor-frontend@1.0.0 test
+> node --test tests/*.test.mjs && vitest run
+
+✔ completed grading unlocks transfer from server response without clearing results (3.3722ms)
+✔ pending and failed grading do not unlock a later phase (0.2004ms)
+✔ a response from a previous phase is ignored after cleanup (1.0823ms)
+✔ refresh failure preserves availability and reports a retryable error (0.9451ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 85.9404
+
+ RUN  v4.1.11 C:/Users/shiha/ML-Projects/trace/Trace Tutor AI ( system Design)/Trace Tutor AI ( system Design)/frontend
+
+ ❯ tests/tutor-model-labels.test.jsx (12 tests | 2 failed) 786ms
+   × Dashboard missing scores remain unavailable instead of becoming null percentages or zero marks 45ms
+   × Dashboard genuine zero scores display as zero percentages 34ms
+node.exe : 
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/tutor-model-labels.test.jsx > Dashboard missing scores remain unavailable instead of becoming null 
+percentages or zero marks
+TestingLibraryElementError: Found multiple elements with the text: 0%
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33mclass[39m=[32m"text-on-surface font-bold"[39m
+[36m>[39m
+  [0m0[0m
+  [0m%[0m
+[36m</span>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33mclass[39m=[32m"font-bold text-on-surface-variant"[39m
+[36m>[39m
+  [0m0[0m
+  [0m%[0m
+[36m</span>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33mclass[39m=[32m"font-bold text-on-surface-variant"[39m
+[36m>[39m
+  [0m0[0m
+  [0m%[0m
+[36m</span>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33mclass[39m=[32m"font-bold text-on-surface-variant"[39m
+[36m>[39m
+  [0m0[0m
+  [0m%[0m
+[36m</span>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33mclass[39m=[32m"font-bold text-on-surface-variant"[39m
+[36m>[39m
+  [0m0[0m
+  [0m%[0m
+[36m</span>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33mclass[39m=[32m"font-bold text-on-surface-variant"[39m
+[36m>[39m
+  [0m0[0m
+  [0m%[0m
+[36m</span>[39m
+
+Ignored nodes: comments, script, style
+[36m<span[39m
+  [33mclass[39m=[32m"font-bold text-on-surface-variant"[39m
+[36m>[39m
+  [0m0[0m
+  [0m%[0m
+[36m</span>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or 
+`findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"max-w-7xl mx-auto w-full space-y-4 pb-10"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"bg-surface-container rounded-2xl border border-outline-variant/40 shadow-lift  relative 
+overflow-hidden p-5 animate-fade-up"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"absolute inset-0 bg-grid opacity-50 pointer-events-none"[39m
+        [36m/>[39m
+        [36m<div[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"absolute -top-24 -right-16 w-72 h-72 rounded-full bg-primary/10 blur-[90px] 
+pointer-events-none"[39m
+        [36m/>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33maria-label[39m=[32m"Level 1"[39m
+              [33mclass[39m=[32m"shrink-0"[39m
+              [33mtitle[39m=[32m"Level 1 · 120 XP → Lv.2"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative shrink-0"[39m
+                [33mstyle[39m=[32m"width: 84px; height: 84px;"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33mclass[39m=[32m"-rotate-90"[39m
+                  [33mheight[39m=[32m"84"[39m
+                  [33mwidth[39m=[32m"84"[39m
+                [36m>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"42"[39m
+                    [33mcy[39m=[32m"42"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mr[39m=[32m"39"[39m
+                    [33mstroke[39m=[32m"rgb(var(--surface-container-highest))"[39m
+                    [33mstroke-width[39m=[32m"6"[39m
+                  [36m/>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"42"[39m
+                    [33mcy[39m=[32m"42"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mr[39m=[32m"39"[39m
+                    [33mstroke[39m=[32m"rgb(var(--primary))"[39m
+                    [33mstroke-dasharray[39m=[32m"245.04422698000386"[39m
+                    [33mstroke-dashoffset[39m=[32m"245.04422698000386"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"6"[39m
+                    [33mstyle[39m=[32m"transition: stroke-dashoffset .9s cubic-bezier(.22,1,.36,1);"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"absolute inset-0 flex flex-col items-center justify-center"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33maria-label[39m=[32m"Student"[39m
+                    [33mclass[39m=[32m"rounded-2xl overflow-hidden shrink-0 flex items-center justify-center 
+font-extrabold font-display select-none  !rounded-full bg-primary/15 border border-primary/30 text-primary"[39m
+
+                    [33mstyle[39m=[32m"width: 58px; height: 58px; font-size: 20.88px;"[39m
+                  [36m>[39m
+                    [0mS[0m
+                  [36m</div>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"absolute -bottom-1 px-1.5 py-0.5 rounded-full bg-surface-container border 
+border-xp/40 text-[9px] font-mono font-extrabold text-xp leading-none"[39m
+                  [36m>[39m
+                    [0mLv.[0m
+                    [0m1[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"min-w-0 flex-1"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"text-[10px] font-mono font-bold text-primary uppercase tracking-wider 
+truncate"[39m
+              [36m>[39m
+                [0mNovice Coder[0m
+              [36m</div>[39m
+              [36m<h1[39m
+                [33mclass[39m=[32m"text-lg sm:text-2xl font-extrabold font-display leading-tight"[39m
+              [36m>[39m
+                [0mশুভ সন্ধ্যা[0m
+                [0m, [0m
+                [0mStudent[0m
+              [36m</h1>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-wrap items-center gap-1.5 mt-1.5"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] 
+font-mono font-extrabold bg-primary/12 text-primary border-primary/30 "[39m
+                [36m>[39m
+ Test Files  1 failed | 5 passed (6)
+      Tests  2 failed | 102 passed (104)
+   Start at  23:14:37
+   Duration  4.01s (transform 1.03s, setup 0ms, import 3.06s, tests 5.56s, environment 4.46s)
+
+                  [0mSTUDENT[0m
+                [36m</span>[39m
+                [36m<a[39m
+                  [33mclass[39m=[32m"hidden sm:inline-flex"[39m
+                  [33mhref[39m=[32m"/profile"[39m
+                  [33mtitle[39m=[32m"টিউটর মোড বদলান (change tutor mode)"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] 
+font-mono font-extrabold bg-warning/12 text-warning border-warning/30 hover:brightness-125"[39m
+                  [36m>[39m
+                    [0mAnswer-Only[0m
+                  [36m</span>[39m
+                [36m</a>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"hidden sm:flex items-center gap-2.5 shrink-0"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"px-3.5 py-2.5 rounded-2xl bg-xp/10 border border-xp/30 text-center 
+min-w-[86px]"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-center gap-1 text-xp"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33mclass[39m=[32m"lucide lucide-zap w-3.5 h-3.5"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 
+10h7a1 1 0 0 1 .78 1...
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ getElementError node_modules/@testing-library/dom/dist/query-helpers.js:20:35
+ ❯ getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:23:10
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:55:13
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ tests/tutor-model-labels.test.jsx:117:65
+    115|   mount(<Dashboard />); await screen.findByText('OpenAI · gpt-configur…
+    116|   expect(screen.getAllByText('Score unavailable')).toHaveLength(2);
+    117|   expect(screen.queryByText('null%')).toBeNull(); expect(screen.queryB…
+       |                                                                 ^
+    118| });
+    119| it('Dashboard genuine zero scores display as zero percentages', async …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/tutor-model-labels.test.jsx > Dashboard genuine zero scores display as zero percentages
+AssertionError: expected [ <div …(1)></div>, …(8) ] to have a length of 2 but got 9
+
+- Expected
++ Received
+
+- 2
++ 9
+
+ ❯ tests/tutor-model-labels.test.jsx:122:37
+    120|   mocks.getDashboard.mockResolvedValue({ ...dashboard(), assessments: …
+    121|   mount(<Dashboard />); await screen.findByText('OpenAI · gpt-configur…
+    122|   expect(screen.getAllByText('0%')).toHaveLength(2); expect(screen.que…
+       |                                     ^
+    123| });
+    124|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

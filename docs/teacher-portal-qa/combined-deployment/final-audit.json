@@ -1,0 +1,43 @@
+{
+  "healthy": true,
+  "original_records_unchanged": true,
+  "table_counts": {
+    "accounts_participantprofile": 11,
+    "assessment_assessmentitem": 0,
+    "assessment_examsubmission": 11,
+    "assessment_expertgrade": 0,
+    "assessment_expertrating": 0,
+    "assessment_papersitting": 14,
+    "auth_group": 0,
+    "auth_group_permissions": 0,
+    "auth_permission": 72,
+    "auth_user": 11,
+    "auth_user_groups": 0,
+    "auth_user_user_permissions": 0,
+    "authtoken_token": 4,
+    "curriculum_curriculumpassage": 0,
+    "curriculum_ingestrun": 0,
+    "curriculum_ocrpage": 0,
+    "django_admin_log": 0,
+    "django_content_type": 18,
+    "django_migrations": 38,
+    "django_session": 0,
+    "logging_app_interactionlog": 232,
+    "trace_cache": 43
+  },
+  "qa_cleanup": {
+    "assessment.ExpertGrade": 2,
+    "authtoken.Token": 2,
+    "accounts.ParticipantProfile": 3,
+    "assessment.ExpertRating": 2,
+    "auth.User": 3,
+    "logging_app.InteractionLog": 17,
+    "assessment.ExamSubmission": 2
+  },
+  "backup_verified": "/srv/trace-tutor/deployment-backups/combined-teacher-docker-20261009T175621Z",
+  "environment_unchanged": true,
+  "database_permissions_unchanged": true,
+  "source_hashes_match": true,
+  "private_clusters_removed": true,
+  "critical_log_errors": false
+}
