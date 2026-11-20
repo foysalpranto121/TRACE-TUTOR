@@ -1,4 +1,4 @@
-Qualitative feedbackfrom django.contrib import admin
+from django.contrib import admin
 from django.urls import path, re_path
 from trace_backend import views as site_views
 from accounts import views as accounts_views

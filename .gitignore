@@ -39,6 +39,7 @@ dist/
 Thumbs.db
 .vscode/
 .idea/
+.claude/settings.local.json
 
 # Uploaded user files (profile pictures) - participant data, never commit
 backend/media/
@@ -55,3 +56,9 @@ backend/data/ocr/
 # Study backups (participant data) - keep on another disk, never in git
 backups/
 backend/logs/
+
+# Research exports contain participant identities and teacher feedback.
+outputs/trace_exports_*/source_snapshot.json
+outputs/trace_exports_*/*.csv
+!outputs/trace_exports_*/data_dictionary.csv
+outputs/trace_exports_*/*.zip
