@@ -254,7 +254,7 @@ def _run_html(code, checks, mode):
     return result
 
 
-def run_code(language, code, test_cases=None, mode='run'):
+def run_code(language, code, test_cases=None, mode='run', *, strict_output=False):
     language = (language or 'c').lower()
     if language not in ('c', 'cpp', 'python', 'html'):
         return {'status': 'UNSUPPORTED', 'message': f'Language {language} is not compiled server-side.'}
@@ -308,7 +308,10 @@ def run_code(language, code, test_cases=None, mode='run'):
             if stdin_text and not stdin_text.endswith('\n'):
                 stdin_text += '\n'
             run = _run_process(run_argv, stdin_text, workdir, container_argv=container_argv)
-            passed = (run['exit_code'] == 0) and judge_output(tc.get('output', ''), run['stdout'])
+            expected = tc.get('output', '')
+            matches = (_normalize(expected) == _normalize(run['stdout']) if strict_output
+                       else judge_output(expected, run['stdout']))
+            passed = (run['exit_code'] == 0) and matches
             if run['exit_code'] != 0:
                 any_runtime_error = True
             all_passed = all_passed and passed

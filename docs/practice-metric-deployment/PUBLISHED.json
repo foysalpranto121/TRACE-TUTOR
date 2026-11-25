@@ -1,0 +1,6 @@
+{
+  "completed_at": "2026-11-23T16:40:18.481215+00:00",
+  "backup": "/srv/trace-tutor/deployment-backups/practice-metric-v2-20261123T164009Z",
+  "files": 21,
+  "verification": "{\"health\": \"ok\", \"public_assets\": \"hash verified\", \"routes\": \"ok\", \"metric_version\": 2, \"dashboard_fields\": \"verified\", \"forged_result\": \"rejected\", \"html_checks\": \"SUCCESS\", \"c_checks\": \"SUCCESS\", \"catalog_sha256\": \"30184cf8d032bf727daf932e18581c3bb6d70ce9e4997f896e8fd8fe78af1bce\"}"
+}

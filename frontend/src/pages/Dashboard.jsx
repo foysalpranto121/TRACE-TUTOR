@@ -113,10 +113,10 @@ export const Dashboard = () => {
 
   const derived = useMemo(() => {
     const progressById = Object.fromEntries((data?.problems || []).map((p) => [p.problem_id, p]));
-    const solvedIds = new Set((data?.problems || []).filter((p) => p.solved).map((p) => p.problem_id));
+    const solvedIds = new Set((data?.problems || []).filter((p) => p.verified_passed).map((p) => p.problem_id));
     const attempted = (data?.problems || []).filter((p) => p.attempts > 0 || p.help_requests > 0);
     const byRecency = [...attempted].sort((a, b) => (b.last_at || '').localeCompare(a.last_at || ''));
-    const lastUnsolved = byRecency.find((p) => !p.solved && PROBLEM_BY_ID[p.problem_id]);
+    const lastUnsolved = byRecency.find((p) => !p.verified_passed && PROBLEM_BY_ID[p.problem_id]);
     const unsolved = NCTB_PROBLEMS.filter((p) => !solvedIds.has(p.id));
     const continueProblem = (lastUnsolved && PROBLEM_BY_ID[lastUnsolved.problem_id]) || unsolved[0] || null;
     const lastSkill = byRecency[0] ? PROBLEM_BY_ID[byRecency[0].problem_id]?.skill : null;
@@ -135,7 +135,7 @@ export const Dashboard = () => {
       const score = items.reduce((acc, p) => {
         const prog = progressById[p.id];
         if (!prog) return acc;
-        if (prog.solved) return acc + 100;
+        if (prog.verified_passed) return acc + 100;
         if (prog.attempts > 0) return acc + (prog.total_tests ? Math.round((prog.best_passed / prog.total_tests) * 70) : 40);
         return acc + (prog.help_requests > 0 ? 15 : 0);
       }, 0);
@@ -160,7 +160,7 @@ export const Dashboard = () => {
   const stats = data?.stats || {};
   const colors = CHART_COLORS[isDark ? 'dark' : 'soft'];
   const isStaff = role === 'EXPERT_TEACHER' || role === 'RESEARCHER_ADMIN';
-  const overallPct = Math.round(((stats.problems_solved || 0) / NCTB_PROBLEMS.length) * 100);
+  const overallPct = Math.round(((stats.practice_tasks_passed || 0) / NCTB_PROBLEMS.length) * 100);
   const chartHasData = (data?.daily || []).some((d) => d.code_runs || d.help_requests);
   const bn = language === 'bn';
   const goalPct = Math.min(100, Math.round((derived.today.code_runs / DAILY_GOAL_RUNS) * 100));
@@ -312,11 +312,16 @@ export const Dashboard = () => {
       {data && !isStaff && (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <StatTile icon={<CheckCircle2 className="w-5 h-5" />} label="সমাধান হয়েছে" value={`${stats.problems_solved || 0}/${NCTB_PROBLEMS.length}`} hint={`${overallPct}% সম্পন্ন · ${stats.problems_attempted || 0} চেষ্টা`} color="emerald" delay={0} animate={false} />
+            <StatTile icon={<CheckCircle2 className="w-5 h-5" />} label={bn ? 'টেস্ট পাস করা টাস্ক' : 'Test-passed tasks'} value={`${stats.practice_tasks_passed || 0}/${NCTB_PROBLEMS.length}`} hint={`${overallPct}% · ${bn ? 'প্রতি টাস্ক একবার গণনা' : 'Each task counted once'}`} color="emerald" delay={0} animate={false} />
             <StatTile icon={<Award className="w-5 h-5" />} label="ব্যাজ অর্জিত" value={`${derived.earned.length}/${derived.badges.length}`} hint={derived.earned.length ? derived.earned[derived.earned.length - 1].title : 'প্রথম ব্যাজ অপেক্ষা করছে'} color="violet" delay={60} animate={false} />
             <StatTile icon={<Trophy className="w-5 h-5" />} label="সেরা স্কোর" value={derived.hasAssessments ? formatScore(derived.bestAssessment) : '—'} hint={derived.hasAssessments ? `${Object.keys(data.assessments).length}/4 পরীক্ষা দেওয়া` : 'এখনো পরীক্ষা দেননি'} color="amber" delay={120} animate={false} />
             <StatTile icon={<Bot className="w-5 h-5" />} label="AI প্রশ্ন" value={stats.help_requests || 0} hint={`${stats.code_runs || 0} রান · ${stats.copy_paste || 0} কপি`} color="sky" delay={180} />
           </div>
+
+          <p className="text-xs text-on-surface-variant">
+            {bn ? 'টাস্কের সব পরীক্ষা পাস হলে অগ্রগতি গণনা হয়। অনুশীলনে AI সহায়তা নেওয়া যায়।' : 'Progress counts tasks that pass all checks. AI help is allowed during practice.'}
+            {stats.legacy_tasks_successful > 0 && ` ${bn ? 'আগের নিয়মে সফল টাস্কের রেকর্ড:' : 'Earlier successful-task records:'} ${stats.legacy_tasks_successful}.`}
+          </p>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
             <div className="lg:col-span-7 space-y-4">
@@ -354,7 +359,7 @@ export const Dashboard = () => {
                   </div>
                 ) : (
                   <EmptyState icon={<Crown className="w-5 h-5 text-xp" />} title="সব টাস্ক সম্পন্ন!" action={<Button as={Link} to="/assessment" size="sm">পরীক্ষা দিন <ArrowRight className="w-3.5 h-3.5" /></Button>}>
-                    {NCTB_PROBLEMS.length}টি অনুশীলন টাস্কই সমাধান করেছেন। এবার মূল্যায়ন পরীক্ষায় নিজেকে যাচাই করুন।
+                    {NCTB_PROBLEMS.length}টি অনুশীলন টাস্কের সব পরীক্ষা পাস করেছেন। এবার মূল্যায়ন পরীক্ষায় নিজেকে যাচাই করুন।
                   </EmptyState>
                 )}
               </SectionCard>
@@ -413,7 +418,7 @@ export const Dashboard = () => {
 
             <div className="lg:col-span-5 space-y-4">
               {/* Skill mastery */}
-              <SectionCard icon={<TrendingUp className="w-4 h-4 text-primary" />} title="দক্ষতার অগ্রগতি" subtitle="Skill mastery" className="animate-fade-up stagger-2">
+              <SectionCard icon={<TrendingUp className="w-4 h-4 text-primary" />} title="দক্ষতা অনুযায়ী অনুশীলন" subtitle="Practice by skill" className="animate-fade-up stagger-2">
                 <div className="space-y-3">
                   {derived.mastery.map((m) => (
                     <div key={m.skill}>
@@ -434,7 +439,7 @@ export const Dashboard = () => {
                 action={<Link to="/workspace" className="text-[11px] font-mono font-bold text-primary hover:underline">সব টাস্ক</Link>}
               >
                 {derived.recommended.length === 0 ? (
-                  <EmptyState icon={<Crown className="w-5 h-5 text-xp" />} title="সব শেষ!">প্রতিটি টাস্ক সমাধান হয়ে গেছে।</EmptyState>
+                  <EmptyState icon={<Crown className="w-5 h-5 text-xp" />} title="সব শেষ!">প্রতিটি টাস্কের পরীক্ষা পাস হয়েছে।</EmptyState>
                 ) : (
                   <div className="space-y-2">
                     {derived.recommended.map((p) => (

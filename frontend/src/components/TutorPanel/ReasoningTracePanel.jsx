@@ -1,4 +1,5 @@
 import { describeTutorModel } from '../../services/tutorModel';
+import { describeTextbookSupport, hasTextbookAnswer } from '../../services/textbookSupport';
 import { TutorAvailabilityNotice } from './TutorAvailabilityNotice';
 import { TutorQuestionForm } from './TutorQuestionForm';
 import { useState } from 'react';
@@ -39,7 +40,6 @@ export const ReasoningTracePanel = ({
 
 
   const ragData = traceData?.rag_answer || {
-    textbook_rule: 'No textbook answer yet',
     curriculum_citation: '',
     textbook_explanation: typeof groundedPassage === 'string' ? groundedPassage : groundedPassage?.passage || '',
   };
@@ -48,6 +48,7 @@ export const ReasoningTracePanel = ({
   const modelInfo = describeTutorModel(modelMetadata, traceData, isLoading);
   const modelLabel = modelInfo.label;
   const isFallback = traceData?.ai_status === 'fallback';
+  const textbookSupport = describeTextbookSupport(ragData, traceData?.ai_status);
 
   return (
     <div className="flex flex-col h-full bg-surface-container rounded-2xl border border-outline-variant/30 overflow-hidden shadow-2xl">
@@ -125,16 +126,20 @@ export const ReasoningTracePanel = ({
               </div>
             )}
 
-            {(viewTab === 'dual' || viewTab === 'rag') && (
+            {(viewTab === 'dual' || viewTab === 'rag') && hasTextbookAnswer(ragData) && (
               <div className="bg-sky-500/10 border border-sky-500/30 rounded-xl p-4 space-y-2.5 shadow-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-extrabold text-sky-400 uppercase tracking-wider flex items-center gap-1.5 font-mono">
                     <BookOpen className="w-4 h-4 text-sky-400" /> NCTB Textbook RAG Answer
                   </span>
                   <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold border ${
-                    ragData.grounded === false ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-sky-500/20 text-sky-300 border-sky-500/30'
+                    textbookSupport.tone === 'neutral'
+                      ? 'bg-surface-container-high text-on-surface-variant border-outline-variant/30'
+                      : textbookSupport.tone === 'caution'
+                        ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                        : 'bg-sky-500/20 text-sky-300 border-sky-500/30'
                   }`}>
-                    {ragData.grounded === false ? 'Not covered by passages' : 'Curriculum Grounded'}
+                    {textbookSupport.label}
                   </span>
                 </div>
 
@@ -144,6 +149,11 @@ export const ReasoningTracePanel = ({
                   <p className="text-xs text-on-surface leading-relaxed italic bg-surface-container p-3 rounded-lg border border-outline-variant/20 whitespace-pre-wrap">
                     {ragData.textbook_explanation}
                   </p>
+                  {textbookSupport.level === 'concepts' && (
+                    <p className="text-xs text-amber-400 leading-relaxed">
+                      The retrieved passages support these concepts; a complete worked solution is not provided.
+                    </p>
+                  )}
                 </div>
 
                 <div className="pt-1">

@@ -16,7 +16,7 @@ export const NCTB_PROBLEMS = [
       { input: '5', output: 'Sum = 15' },
       { input: '10', output: 'Sum = 55' },
     ],
-    starterCode: `#include <stdio.h>\n\nint main() {\n    int n, sum = 0;\n    printf("Enter N: ");\n    if (scanf("%d", &n) != 1) return 0;\n    \n    // Write for loop to calculate sum from 1 to N\n    for(int i = 1; i <= n; i++) {\n        sum += i;\n    }\n    \n    printf("Sum = %d\\n", sum);\n    return 0;\n}`,
+    starterCode: `#include <stdio.h>\n\nint main() {\n    int n;\n    if (scanf("%d", &n) != 1) return 1;\n\n    // TODO: Use a loop to calculate the sum from 1 to n.\n    // Print the result in the required output format.\n\n    return 0;\n}`,
   },
   {
     id: 'prob_c_cond_102',
@@ -34,7 +34,7 @@ export const NCTB_PROBLEMS = [
       { input: '8', output: '8 is Even' },
       { input: '15', output: '15 is Odd' },
     ],
-    starterCode: `#include <stdio.h>\n\nint main() {\n    int num;\n    printf("Enter an integer: ");\n    scanf("%d", &num);\n    \n    // Write if-else condition to check even or odd\n    if (num % 2 == 0) {\n        printf("%d is Even\\n", num);\n    } else {\n        printf("%d is Odd\\n", num);\n    }\n    \n    return 0;\n}`,
+    starterCode: `#include <stdio.h>\n\nint main() {\n    int num;\n    if (scanf("%d", &num) != 1) return 1;\n\n    // TODO: Check whether num is even or odd.\n    // Print the result in the required output format.\n\n    return 0;\n}`,
   },
   {
     id: 'prob_c_fact_103',
@@ -52,7 +52,7 @@ export const NCTB_PROBLEMS = [
       { input: '5', output: 'Factorial of 5 = 120' },
       { input: '4', output: 'Factorial of 4 = 24' },
     ],
-    starterCode: `#include <stdio.h>\n\nint main() {\n    int n;\n    long long fact = 1;\n    printf("Enter a number: ");\n    scanf("%d", &n);\n    \n    // Compute factorial using a loop\n    for(int i = 1; i <= n; i++) {\n        fact *= i;\n    }\n    \n    printf("Factorial of %d = %lld\\n", n, fact);\n    return 0;\n}`,
+    starterCode: `#include <stdio.h>\n\nint main() {\n    int n;\n    if (scanf("%d", &n) != 1) return 1;\n\n    // TODO: Calculate the factorial of n.\n    // Print the result in the required output format.\n\n    return 0;\n}`,
   },
   {
     id: 'prob_c_max3_104',
@@ -70,7 +70,7 @@ export const NCTB_PROBLEMS = [
       { input: '12 45 23', output: 'Maximum = 45' },
       { input: '99 10 50', output: 'Maximum = 99' },
     ],
-    starterCode: `#include <stdio.h>\n\nint main() {\n    int a, b, c;\n    printf("Enter 3 numbers: ");\n    scanf("%d %d %d", &a, &b, &c);\n    \n    int max = a;\n    if (b > max) max = b;\n    if (c > max) max = c;\n    \n    printf("Maximum = %d\\n", max);\n    return 0;\n}`,
+    starterCode: `#include <stdio.h>\n\nint main() {\n    int a, b, c;\n    if (scanf("%d %d %d", &a, &b, &c) != 3) return 1;\n\n    // TODO: Find the largest of the three numbers.\n    // Print the result in the required output format.\n\n    return 0;\n}`,
   },
   {
     id: 'prob_c_prime_105',
@@ -88,7 +88,7 @@ export const NCTB_PROBLEMS = [
       { input: '17', output: '17 is a Prime Number' },
       { input: '20', output: '20 is Not a Prime Number' },
     ],
-    starterCode: `#include <stdio.h>\n\nint main() {\n    int n, isPrime = 1;\n    printf("Enter number: ");\n    scanf("%d", &n);\n    \n    if (n <= 1) isPrime = 0;\n    for(int i = 2; i * i <= n; i++) {\n        if (n % i == 0) {\n            isPrime = 0;\n            break;\n        }\n    }\n    \n    if (isPrime)\n        printf("%d is a Prime Number\\n", n);\n    else\n        printf("%d is Not a Prime Number\\n", n);\n        \n    return 0;\n}`,
+    starterCode: `#include <stdio.h>\n\nint main() {\n    int n;\n    if (scanf("%d", &n) != 1) return 1;\n\n    // TODO: Determine whether n is prime.\n    // Print the result in the required output format.\n\n    return 0;\n}`,
   },
   {
     id: 'prob_html_table_201',
@@ -111,7 +111,7 @@ export const NCTB_PROBLEMS = [
       { name: 'Header row uses <th> cells for Roll and Marks', selector: 'table th', min: 2, text_includes: ['Roll', 'Marks'] },
       { name: 'Data row has 2 <td> cells', selector: 'table td', min: 2 },
     ],
-    starterCode: `<!DOCTYPE html>\n<html>\n<head>\n  <title>Student Table</title>\n</head>\n<body>\n  <table border="1">\n    <tr>\n      <th>Roll</th>\n      <th>Marks</th>\n    </tr>\n    <tr>\n      <td>101</td>\n      <td>85</td>\n    </tr>\n  </table>\n</body>\n</html>`,
+    starterCode: `<!DOCTYPE html>\n<html>\n<head>\n  <title>Student Table</title>\n</head>\n<body>\n  <!-- TODO: Create the marks table described in the task. -->\n</body>\n</html>`,
   },
   {
     id: 'prob_html_imglink_202',
@@ -129,12 +129,10 @@ export const NCTB_PROBLEMS = [
       { input: 'Hyperlink Anchor', output: 'Target Website Navigation' },
     ],
     html_checks: [
-      { name: 'Has a hyperlink (<a href>) to https://nctb.gov.bd', selector: 'a[href*="nctb.gov.bd"]' },
-      { name: 'The <img> is placed inside the <a> link', selector: 'a img' },
-      { name: 'Image source is college.jpg', selector: 'img[src$="college.jpg" i]' },
-      { name: 'Image has alt text', selector: 'img[alt]' },
+      { name: 'Links to https://nctb.gov.bd', selector: 'a[href="https://nctb.gov.bd"]' },
+      { name: 'The linked image uses college.jpg and has alt text', selector: 'a[href="https://nctb.gov.bd"] img[src$="college.jpg" i][alt]' },
     ],
-    starterCode: `<!DOCTYPE html>\n<html>\n<body>\n  <a href="https://nctb.gov.bd" target="_blank">\n    <img src="college.jpg" alt="NCTB Logo" width="200" height="100">\n  </a>\n</body>\n</html>`,
+    starterCode: `<!DOCTYPE html>\n<html>\n<head>\n  <title>Image Link</title>\n</head>\n<body>\n  <!-- TODO: Create the clickable image described in the task. -->\n</body>\n</html>`,
   },
   {
     id: 'prob_html_ol_203',
@@ -152,11 +150,11 @@ export const NCTB_PROBLEMS = [
       { input: 'Ordered List', output: '1. Bangla 2. English 3. ICT' },
     ],
     html_checks: [
-      { name: 'Uses an ordered list (<ol>)', selector: 'ol' },
+      { name: 'Uses a numbered ordered list', selector: 'ol:not([type]), ol[type="1"]' },
       { name: 'List has at least 3 items (<li>)', selector: 'ol li', min: 3 },
-      { name: 'Every item name is bold (<b> or <strong>)', selector: 'ol li b, ol li strong', min: 3 },
+      { name: 'Item names are bold (<b> or <strong>)', selector: 'ol li b, ol li strong', min: 3 },
     ],
-    starterCode: `<!DOCTYPE html>\n<html>\n<body>\n  <ol type="1">\n    <li><b>Bangla</b></li>\n    <li><b>English</b></li>\n    <li><b>ICT</b></li>\n  </ol>\n</body>\n</html>`,
+    starterCode: `<!DOCTYPE html>\n<html>\n<head>\n  <title>Subject List</title>\n</head>\n<body>\n  <!-- TODO: Create the formatted ordered list described in the task. -->\n</body>\n</html>`,
   },
 ];
 

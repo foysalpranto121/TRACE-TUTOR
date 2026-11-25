@@ -18,7 +18,7 @@ const snapshotProgress = (d) => {
     xp,
     level: levelInfo(xp).level,
     badges: new Set(evaluateBadges(d).filter((b) => b.earned).map((b) => b.id)),
-    solved: new Set((d.problems || []).filter((p) => p.solved).map((p) => p.problem_id)),
+    solved: new Set((d.problems || []).filter((p) => p.verified_passed).map((p) => p.problem_id)),
   };
 };
 
@@ -71,15 +71,14 @@ export const Workspace = () => {
   const handleCompileResult = async (out) => {
     setLastCompile(out);
     const before = progressRef.current;
-    if (out.status !== 'SUCCESS' || !before || before.solved.has(activeProblem.id)) return;
+    if (out.status !== 'SUCCESS' || out.practice_metric_version !== 2 || !before || before.solved.has(activeProblem.id)) return;
 
-    // The run is logged fire-and-forget by the editor; give it a moment to land.
-    await new Promise((r) => setTimeout(r, 700));
+    // The server records the result before the run response, so progress is ready now.
     try {
       const after = snapshotProgress(await apiService.getDashboard());
       const gained = after.xp - before.xp;
       if (gained > 0) {
-        celebrate.toast({ kind: 'xp', title: 'টাস্ক সমাধান হয়েছে!', subtitle: activeProblem.title, amount: `${gained} XP` });
+        celebrate.toast({ kind: 'xp', title: 'টাস্কের সব পরীক্ষা পাস!', subtitle: activeProblem.title, amount: `${gained} XP` });
       }
       [...after.badges].filter((id) => !before.badges.has(id)).forEach((id, i) => {
         const badge = BADGES.find((b) => b.id === id);

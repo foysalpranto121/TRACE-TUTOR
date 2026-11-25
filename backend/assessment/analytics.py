@@ -19,6 +19,7 @@ from django.db.models import Count, Min, Q
 
 from accounts.models import ParticipantProfile
 from logging_app.models import InteractionLog
+from tutor import practice
 from . import sittings
 from .models import ExamSubmission
 
@@ -40,6 +41,7 @@ CSV_COLUMNS = [
     'pre_minutes', 'post_minutes', 'transfer_minutes', 'withdrawal_minutes',
     'normalized_gain', 'withdrawal_drop',
     'help_requests', 'help_fallbacks', 'code_runs', 'copy_paste',
+    'practice_tasks_passed_v2', 'legacy_tasks_successful',
     'pre_attempts', 'post_attempts', 'transfer_attempts', 'withdrawal_attempts',
     'first_submission_at', 'last_submission_at',
 ]
@@ -244,6 +246,7 @@ def participant_rows():
                 .order_by('participant_code', 'pk'))
     submissions = _first_submissions()
     events = _event_counts()
+    practice_successes = practice.successful_tasks_by_user()
     first_switches = _first_switch_times()
     minutes = sittings.minutes_by_paper()
 
@@ -290,6 +293,8 @@ def participant_rows():
             'help_fallbacks': counts.get('HELP_FALLBACK', 0),
             'code_runs': counts.get('CODE_RESULT', 0),
             'copy_paste': counts.get('COPY_PASTE', 0),
+            'practice_tasks_passed_v2': len(practice_successes.get(student_id, {}).get('verified', set())),
+            'legacy_tasks_successful': len(practice_successes.get(student_id, {}).get('legacy', set())),
             'first_submission_at': min(stamps).isoformat() if stamps else None,
             'last_submission_at': max(stamps).isoformat() if stamps else None,
         }

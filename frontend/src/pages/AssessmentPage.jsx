@@ -1,4 +1,5 @@
 import { describeTutorModel } from '../services/tutorModel';
+import { describeTextbookSupport, hasTextbookAnswer } from '../services/textbookSupport';
 import { formatTimingDate } from '../services/assessmentTiming';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { apiService } from '../services/api';
@@ -1082,7 +1083,10 @@ export const AssessmentPage = () => {
 
               {/* Chat History Body */}
               <div ref={chatContainerRef} className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-3.5 text-xs">
-                {chatMessages.map((msg, idx) => (
+                {chatMessages.map((msg, idx) => {
+                  const textbookSupport = describeTextbookSupport(msg.rag_answer, msg.ai_status);
+                  const hasRagAnswer = hasTextbookAnswer(msg.rag_answer);
+                  return (
                   <div
                     key={idx}
                     className={`flex items-start gap-2.5 ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}
@@ -1103,21 +1107,34 @@ export const AssessmentPage = () => {
                       ) : (
                         <div className="space-y-3">
                           {/* SECTION A: RAG NCTB TEXTBOOK GROUNDED ANSWER */}
-                          {isReasoningArm && (chatFilterMode === 'dual' || chatFilterMode === 'rag') && msg.rag_answer && (
+                          {isReasoningArm && (chatFilterMode === 'dual' || chatFilterMode === 'rag') && hasRagAnswer && (
                             <div className="bg-sky-500/10 border border-sky-500/30 rounded-xl p-3 space-y-1.5">
                               <div className="flex items-center justify-between">
                                 <span className="text-[11px] font-extrabold text-sky-400 font-mono flex items-center gap-1">
                                   <BookOpen className="w-3.5 h-3.5" /> 📖 NCTB Textbook RAG Answer
                                 </span>
-                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-bold">
-                                  Grounded
+                                <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                                  textbookSupport.tone === 'neutral'
+                                    ? 'bg-surface-container-high text-on-surface-variant'
+                                    : textbookSupport.tone === 'caution'
+                                      ? 'bg-amber-500/20 text-amber-400'
+                                      : 'bg-sky-500/20 text-sky-300'
+                                }`}>
+                                  {textbookSupport.label}
                                 </span>
                               </div>
                               <h5 className="font-bold text-on-surface text-xs">{msg.rag_answer.textbook_rule}</h5>
-                              <p className="text-[10px] text-on-surface-variant font-mono">📍 {msg.rag_answer.curriculum_citation}</p>
+                              {msg.rag_answer.curriculum_citation && (
+                                <p className="text-[10px] text-on-surface-variant font-mono">📍 {msg.rag_answer.curriculum_citation}</p>
+                              )}
                               <p className="text-[11px] italic bg-surface-container p-2.5 rounded-lg border border-outline-variant/20 leading-relaxed text-on-surface whitespace-pre-wrap">
                                 &ldquo;{msg.rag_answer.textbook_explanation}&rdquo;
                               </p>
+                              {textbookSupport.level === 'concepts' && (
+                                <p className="text-[11px] text-amber-400 leading-relaxed">
+                                  The retrieved passages support these concepts; a complete worked solution is not provided.
+                                </p>
+                              )}
                               {msg.retrieved_passages?.length > 0 && (
                                 <details className="text-[10px] text-on-surface-variant">
                                   <summary className="cursor-pointer font-mono font-bold text-sky-400">Retrieved passages ({msg.retrieved_passages.length})</summary>
@@ -1192,7 +1209,7 @@ export const AssessmentPage = () => {
                           )}
 
                           {/* Answer-only view (control arm) and any plain text reply */}
-                          {(msg.answer_only || (!msg.rag_answer && !msg.independent_ai_answer)) && (
+                          {(msg.answer_only || (!hasRagAnswer && !msg.independent_ai_answer)) && (
                             <div className="space-y-2">
                               <p className={`leading-relaxed whitespace-pre-wrap ${msg.isError ? 'text-rose-400 font-mono' : ''}`}>{msg.text}</p>
                               {msg.code_solution && (
@@ -1210,7 +1227,8 @@ export const AssessmentPage = () => {
                       </span>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
 
                 {isAiLoading && (
                   <div className="flex items-center gap-2 text-xs text-primary font-mono animate-pulse p-2">

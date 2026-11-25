@@ -74,9 +74,9 @@ const SERVER_LANGS = ['c', 'cpp', 'python', 'html'];
 const CHECK_DEBOUNCE_MS = 900;
 
 const DEFAULT_CODE = {
-  c: `#include <stdio.h>\n\nint main() {\n    printf("Sum = 15\\n");\n    return 0;\n}`,
-  cpp: `#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Sum = 15" << endl;\n    return 0;\n}`,
-  python: `n = 5\nprint("Sum =", sum(range(1, n + 1)))`,
+  c: `#include <stdio.h>\n\nint main() {\n    // TODO: Write your program here.\n    return 0;\n}`,
+  cpp: `#include <iostream>\nusing namespace std;\n\nint main() {\n    // TODO: Write your program here.\n    return 0;\n}`,
+  python: `# TODO: Write your program here.\n`,
   html: `<!DOCTYPE html>\n<html>\n<body>\n  <h2>NCTB HSC ICT Chapter 4</h2>\n  <p>Hello Web Design!</p>\n</body>\n</html>`,
 };
 
@@ -250,7 +250,7 @@ export const CodeEditor = ({
 
     if (selectedLang === 'html') {
       try {
-        const res = await apiService.runCode('html', code, htmlChecks, 'run');
+        const res = await apiService.runCode('html', code, htmlChecks, 'run', activeProblem?.id);
         const diags = res.diagnostics || [];
         publishDiagnostics(diags);
         const hasErrors = diags.some((d) => d.severity === 'error');
@@ -263,13 +263,13 @@ export const CodeEditor = ({
           compile_output: res.compile_output || '',
           testResults: res.test_results || [],
           passed_count: res.passed_count ?? 0,
+          practice_metric_version: res.practice_metric_version,
         };
         setConsoleOutput(out);
         if (onCompileResult) onCompileResult(out);
-        apiService.logTelemetry('CODE_RESULT', { problem_id: activeProblem?.id, language: 'html', status: res.status, passed_count: res.passed_count ?? 0, total: (res.test_results || []).length });
         setActiveTab(hasErrors ? 'problems' : anyFailed ? 'testcases' : 'preview');
       } catch (err) {
-        setConsoleOutput({ status: 'SUCCESS', htmlContent: code, compile_output: `HTML validation unavailable (${err.message}) - showing the preview only.`, testResults: [] });
+        setConsoleOutput({ status: 'ERROR', htmlContent: code, compile_output: `HTML validation unavailable (${err.message}) - showing the preview only.`, testResults: [] });
         setActiveTab('preview');
       } finally {
         setIsRunning(false);
@@ -278,7 +278,7 @@ export const CodeEditor = ({
     }
 
     try {
-      const res = await apiService.runCode(selectedLang, code, sampleCases, 'run');
+      const res = await apiService.runCode(selectedLang, code, sampleCases, 'run', activeProblem?.id);
       const diags = res.diagnostics || [];
       publishDiagnostics(diags);
       const out = {
@@ -288,11 +288,11 @@ export const CodeEditor = ({
         compile_output: res.compile_output || '',
         testResults: res.test_results || [],
         passed_count: res.passed_count ?? 0,
+        practice_metric_version: res.practice_metric_version,
         message: res.message,
       };
       setConsoleOutput(out);
       if (onCompileResult) onCompileResult(out);
-      apiService.logTelemetry('CODE_RESULT', { problem_id: activeProblem?.id, language: selectedLang, status: res.status, passed_count: res.passed_count ?? 0, total: (res.test_results || []).length });
       setActiveTab(res.status === 'COMPILE_ERROR' ? 'problems' : 'testcases');
     } catch (err) {
       setConsoleOutput({ status: 'ERROR', stderr: err.message });
@@ -394,6 +394,7 @@ export const CodeEditor = ({
             <span className="text-on-surface-variant text-[11px]">Lang:</span>
             <select
               value={selectedLang}
+              disabled={Boolean(activeProblem)}
               onChange={(e) => {
                 const next = e.target.value;
                 setSelectedLang(next);
@@ -629,7 +630,7 @@ export const CodeEditor = ({
             <div className="text-on-surface-variant py-2 italic font-medium select-none">
               {selectedLang === 'html'
                 ? "Click 'Render HTML' to validate the markup, check the task requirements and preview the page."
-                : "Click 'Run Code' to compile and run the sample test cases."}
+                : "Click 'Run Code' to compile and run the task checks. Match the required output without input prompts."}
             </div>
           )}
 

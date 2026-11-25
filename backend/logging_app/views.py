@@ -12,6 +12,7 @@ from accounts.models import ParticipantProfile, STAFF_ROLES
 from assessment.models import ExamSubmission, ExpertGrade
 from assessment import sittings
 from trace_backend import llm
+from tutor import practice
 from .models import InteractionLog
 from .signals import dashboard_cache_key
 
@@ -32,6 +33,8 @@ def log_telemetry(request):
     participant or its own arm can silently invalidate the analysis.
     """
     event_type = request.data.get('event_type', 'GENERIC_EVENT')
+    if str(event_type)[:50] == 'CODE_RESULT':
+        return Response({'error': 'Code results are recorded by the server when a practice task is run.'}, status=400)
     event_data = request.data.get('event_data') or {}
     if not isinstance(event_data, dict):
         event_data = {'value': event_data}
@@ -131,6 +134,7 @@ def _build_dashboard(user):
             continue
         p = problems.setdefault(pid, {
             'problem_id': pid, 'attempts': 0, 'solved': False, 'help_requests': 0,
+            'verified_passed': False,
             'last_status': None, 'best_passed': 0, 'total_tests': 0, 'language': None,
             'first_at': None, 'last_at': None,
         })
@@ -141,6 +145,7 @@ def _build_dashboard(user):
             passed = int(payload.get('passed_count') or 0)
             total = int(payload.get('total') or 0)
             p['solved'] = p['solved'] or status == 'SUCCESS'
+            p['verified_passed'] = p['verified_passed'] or (status == 'SUCCESS' and practice.is_verified_result(pid, payload))
             p['best_passed'] = max(p['best_passed'], passed)
             p['total_tests'] = max(p['total_tests'], total)
             p['last_status'] = status
@@ -152,6 +157,20 @@ def _build_dashboard(user):
         ts = timezone.localtime(log.timestamp).isoformat()
         p['first_at'] = p['first_at'] or ts
         p['last_at'] = ts
+
+    # Lifetime completion must survive the recent-activity window. Keep the older
+    # successful-run count available, but never award current practice credit for it.
+    successes = practice.successful_tasks_by_user(user.id).get(user.id, {}) if user else {}
+    verified_ids = successes.get('verified', set())
+    legacy_ids = successes.get('legacy', set())
+    for pid in verified_ids | legacy_ids:
+        p = problems.setdefault(pid, {
+            'problem_id': pid, 'attempts': 0, 'solved': True, 'help_requests': 0,
+            'last_status': None, 'best_passed': 0, 'total_tests': 0, 'language': None,
+            'first_at': None, 'last_at': None,
+        })
+        p['solved'] = True
+        p['verified_passed'] = pid in verified_ids
 
     counts = Counter(l.event_type for l in logs)
     day_set = {_local_date(l.timestamp) for l in logs}
@@ -167,14 +186,18 @@ def _build_dashboard(user):
         day = today - timedelta(days=i)
         daily.append({'date': day.isoformat(), 'label': day.strftime('%d %b'), 'code_runs': 0, 'help_requests': 0, 'solved': 0})
     by_date = {d['date']: d for d in daily}
+    daily_passed = {}
     for l in logs:
         bucket = by_date.get(_local_date(l.timestamp).isoformat())
         if not bucket:
             continue
         if l.event_type == 'CODE_RESULT':
             bucket['code_runs'] += 1
-            if (l.payload or {}).get('status') == 'SUCCESS':
-                bucket['solved'] += 1
+            payload = l.payload or {}
+            if payload.get('status') == 'SUCCESS' and practice.is_verified_result(l.problem_id, payload):
+                ids = daily_passed.setdefault(bucket['date'], set())
+                ids.add(l.problem_id)
+                bucket['solved'] = len(ids)
         elif l.event_type == 'HELP_REQUEST':
             bucket['help_requests'] += 1
 
@@ -232,6 +255,8 @@ def _build_dashboard(user):
         'stats': {
             'problems_attempted': sum(1 for p in problems.values() if p['attempts'] > 0),
             'problems_solved': sum(1 for p in problems.values() if p['solved']),
+            'practice_tasks_passed': len(verified_ids),
+            'legacy_tasks_successful': len(legacy_ids),
             'code_runs': counts.get('CODE_RESULT', 0),
             'help_requests': counts.get('HELP_REQUEST', 0),
             'copy_paste': counts.get('COPY_PASTE', 0),
@@ -240,6 +265,7 @@ def _build_dashboard(user):
             'last_active': timezone.localtime(logs[0].timestamp).isoformat() if logs else None,
         },
         'problems': list(problems.values()),
+        'practice_metric_version': practice.METRIC_VERSION,
         'daily': daily,
         'assessments': assessments,
         'recent': recent,

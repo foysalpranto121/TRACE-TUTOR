@@ -10,7 +10,7 @@ from .models import InteractionLog
 
 
 def dashboard_cache_key(user_id):
-    return f"dashboard:v1:{user_id or 'anon'}"
+    return f"dashboard:v2:{user_id or 'anon'}"
 
 
 def invalidate_dashboard(user_id):

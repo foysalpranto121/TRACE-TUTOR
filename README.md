@@ -360,7 +360,7 @@ All endpoints are prefixed `/api/`.
 | `POST` | `accounts/withdraw/` | Leave the study: erases the participant's data, closes the account |
 | `POST` | `admin/participants/<code>/withdraw/` | The same erasure, actioned by a researcher for a withdrawal received offline |
 | `POST` | `tutor/query/` | One tutoring turn — retrieval, generation, arm-filtered response |
-| `POST` | `code/run/` | Compile and run a submission |
+| `POST` | `code/run/` | Compile/run code; a known practice `problem_id` selects server-owned task checks and records the result |
 | `GET` | `code/status/` | Compiler availability |
 | `GET` | `assessment/items/?type=pre` | Serve an exam form |
 | `POST` | `assessment/submit/` | Save a submission (graded in the background) |
@@ -398,6 +398,14 @@ Everything except `accounts/register/` and `accounts/login/` requires a token. `
 - *Dependency* — the performance drop when the tutor is withdrawn, plus behavioural logs and self-report
 
 **Logged events.** `WORKSPACE_ENTER`, `HELP_REQUEST`, `CODE_RUN`, `CODE_RESULT`, `COPY_PASTE`, `SUBMIT_ASSESSMENT`, `ARM_SWITCH`, `LOGIN` / `LOGOUT` / `REGISTER` — each with the arm, the problem id, and a signed anonymous device id.
+
+**Practice completion, version 2.** The student-facing counter is **Test-passed tasks** (`stats.practice_tasks_passed`), not a measure of independent problem solving. Each of the eight practice tasks opens with an incomplete scaffold. A practice run must provide a known `problem_id` and the task's specified language. The server selects the checks in `backend/tutor/practice_tasks.json`, ignoring any client-supplied replacements. C tasks include additional inputs beyond the displayed examples and require exact output after whitespace normalization; students should omit input prompts. HTML tasks must pass validation and their structural requirements. Syntax checks and generic code/assessment runs award no practice credit.
+
+The code endpoint persists a `CODE_RESULT` before returning, tagged with the server source, metric version, check-catalog SHA-256, source-code SHA-256 and length, and passed/total checks. Client telemetry cannot create `CODE_RESULT` events. A task earns credit once it has a server-recorded `SUCCESS` under the current version and catalog; repeated passes and later failures leave that distinct-task count unchanged. Completion uses the full event history, even when a success falls outside the dashboard's 3,000-event recent-activity window. Check passing does not prove the intended algorithm was used or that the participant wrote the code independently. AI help remains available during practice; learning and independence are measured by the relevant assessments.
+
+**Historical data and exports.** Earlier success logs are preserved without modification and are never upgraded to version 2 completions. The dashboard reports their distinct-task count separately as `legacy_tasks_successful`; its older `problems_solved` field remains a compatibility count of recorded successful tasks across both categories. The participant CSV exports `practice_tasks_passed_v2` and `legacy_tasks_successful` as separate columns. The study manifest records the version, catalog hash and definitions. These two counts can overlap for a participant who passes an earlier task again under version 2, so they must not be added together. Counts cover the full history; an analysis relating practice to a later outcome must restrict exposure to events before that outcome and report the measurement period.
+
+Changing the website cannot establish authorship for previously collected data. In a thesis using earlier records, define the predictor as recorded successful practice tasks, disclose the supplied solutions and logging limitations, and interpret its coefficient as an association with recorded practice activity. Run sensitivity analyses or use independently assessed outcomes if the retained data permit them. Any coefficient such as 5.83 must be checked against the original dataset/model; this code change does not validate or revise it. Deploy frontend and backend together and refresh open clients. No database migration or historical backfill is required.
 
 **Item certification.** Items are authored against retrieved curriculum passages, screened automatically, then rated by 6–8 practising HSC ICT teachers on five criteria. Items certify at I-CVI ≥ 0.78, are revised at 0.60–0.77, and discarded below 0.60; the bank must reach S-CVI/Ave ≥ 0.90. A psychometric pilot then filters on difficulty (0.30–0.90), point-biserial discrimination (≥ 0.20) and student clarity.
 

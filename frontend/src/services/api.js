@@ -132,8 +132,8 @@ export const apiService = {
     fetchApi('/tutor/query/', { method: 'POST', body: JSON.stringify({ prompt, code, problem_id: problemId, arm, ...extra }) }),
 
   // Real compiler service (compile + run test cases, or syntax-check only)
-  runCode: (language, code, testCases = [], mode = 'run') =>
-    fetchApi('/code/run/', { method: 'POST', body: JSON.stringify({ language, code, test_cases: testCases, mode }) }),
+  runCode: (language, code, testCases = [], mode = 'run', problemId = null) =>
+    fetchApi('/code/run/', { method: 'POST', body: JSON.stringify({ language, code, test_cases: testCases, mode, ...(problemId ? { problem_id: problemId } : {}) }) }),
   getCodeStatus: () => fetchApi('/code/status/'),
   getRagStatus: () => fetchApi('/curriculum/status/'),
   // Fire-and-forget: a dropped telemetry event must never break the page the student is on.

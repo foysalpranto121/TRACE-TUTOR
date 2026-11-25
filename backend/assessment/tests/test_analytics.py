@@ -224,6 +224,7 @@ class CsvColumnTests(SimpleTestCase):
             'withdrawn', 'consent_given', 'grade', 'medium', 'area_type',
             'prior_experience', 'ai_tool_familiarity', 'normalized_gain', 'withdrawal_drop',
             'help_requests', 'help_fallbacks', 'code_runs', 'copy_paste',
+            'practice_tasks_passed_v2', 'legacy_tasks_successful',
             'first_submission_at', 'last_submission_at',
         }
         for exam_type in analytics.EXAM_TYPES:

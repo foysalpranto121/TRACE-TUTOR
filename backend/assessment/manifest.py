@@ -83,6 +83,7 @@ def _corpus():
 
 def build():
     from tutor import sandbox
+    from tutor import practice
     from trace_backend import llm
     dirty = _git('status', '--porcelain')
     return {
@@ -118,6 +119,14 @@ def build():
             'debug': settings.DEBUG,
         },
         'item_bank': _item_bank(),
+        'practice': {
+            'metric_version': practice.METRIC_VERSION,
+            'catalog_sha256': practice.CATALOG_SHA256,
+            'tasks': len(practice.TASKS),
+            'practice_tasks_passed_v2': 'Distinct practice task IDs with a server-recorded SUCCESS against this catalog, over the full event history.',
+            'legacy_tasks_successful': 'Distinct task IDs with earlier or other-version SUCCESS logs; not reclassified as version 2 completions.',
+            'authorship': 'Passing checks does not establish independent authorship; AI assistance is permitted during practice.',
+        },
         'corpus': _corpus(),
         'versions': _versions(),
     }

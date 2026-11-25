@@ -66,17 +66,16 @@ class ParticipantJourneyTests(ApiTestCase):
 
         html = alice_c.post('/api/code/run/', {
             'language': 'html',
-            'code': '<!DOCTYPE html><html><body><table><tr><td>1</td></tr></table></body></html>',
-            'test_cases': [{'selector': 'table', 'name': 'has a table'}],
+            'problem_id': 'prob_html_table_201',
+            'code': '<!DOCTYPE html><html><head><title>Marks</title></head><body><table>'
+                    '<tr><th>Roll</th><th>Marks</th></tr><tr><td>1</td><td>85</td></tr>'
+                    '</table></body></html>',
         }, format='json').json()
         self.assertEqual(html['status'], 'SUCCESS')
         self.assertTrue(html['test_results'][0]['passed'])
 
-        alice_c.post('/api/telemetry/log/', {'event_type': 'CODE_RESULT',
-                                             'event_data': {'problem_id': 'p1', 'status': 'SUCCESS',
-                                                            'passed_count': 1, 'total': 1}}, format='json')
-        # HELP_REQUEST is logged server-side by the tutor endpoint now, not posted by the
-        # browser, so at this point only the one workspace event (CODE_RESULT) exists.
+        # Practice results are persisted before the run response; the browser does
+        # not post its own verdict. Tutor turns are also logged by their endpoint.
         logged = InteractionLog.objects.filter(user__username='alice')
         self.assertEqual(logged.count(), 1, 'CODE_RESULT only')
         self.assertTrue(all(e.arm == alice['arm'] for e in logged), 'arm comes from the profile')

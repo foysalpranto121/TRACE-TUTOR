@@ -62,3 +62,6 @@ outputs/trace_exports_*/source_snapshot.json
 outputs/trace_exports_*/*.csv
 !outputs/trace_exports_*/data_dictionary.csv
 outputs/trace_exports_*/*.zip
+
+# Raw research-result archives contain identifiable student and teacher data.
+/backend/file/trace/*.zip

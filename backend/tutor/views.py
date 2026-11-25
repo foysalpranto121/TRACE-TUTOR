@@ -1,4 +1,6 @@
+import hashlib
 import logging
+import re
 from django.conf import settings
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import IsAuthenticated
@@ -9,6 +11,7 @@ from assessment import sittings
 from curriculum.ocr_ingest import corpus_version
 from curriculum.rag_engine import rag_engine_instance
 from logging_app.models import InteractionLog
+from . import practice
 from trace_backend import llm
 from trace_backend.cache import cache_key, tiered_get_or_set
 from trace_backend.throttles import CodeRunThrottle, TutorThrottle
@@ -30,11 +33,17 @@ in the language they used. Assessment task/code context is supplemental: use it 
 when the request explicitly refers to that question, task, code, program, output, or
 error. Never replace an unrelated question with a solution to the assessment task.
 
-1. "rag_answer" - the TEXTBOOK answer. It must be grounded ONLY in the NCTB textbook passages supplied in the user message.
-   - textbook_rule: the rule / definition the textbook states that applies to the student's question (one or two sentences).
+1. "rag_answer" - the TEXTBOOK answer. Ground its factual claims ONLY in the NCTB textbook passages supplied in the user message.
+   Do not require an exact wording match or a complete worked solution in the book.
+   First look for relevant underlying concepts, rules, definitions, and examples across the supplied passages.
+   If the exact solution is absent but related concepts are supported, teach those concepts with citations and explain how they relate to the student's request. Do not stop at a refusal or a list of passage numbers.
+   For example, if the student asks for a product from 1 to N and the passages teach for-loop initialization, conditions, updates, and multiplication, explain those supported concepts and how they can be applied; do not claim the textbook contains the complete product algorithm.
+   Clearly distinguish an application of textbook concepts from a worked solution actually stated in the passages. Briefly identify any missing support after the useful concept explanation. Never import unsupported facts from the independent AI answer or invent a textbook quotation, rule, example, or page.
+   - textbook_rule: the relevant rule(s) / definition(s) supported by the passages (one or two sentences).
    - curriculum_citation: list the passage tags you used, e.g. "[1] NCTB HSC ICT (BV) p.146; [3] NCTB HSC ICT (EV) p.152". Never invent page numbers.
-   - textbook_explanation: explain the answer using the passages, quoting short phrases from them. If the passages do not cover the question, say so honestly and set grounded=false.
-   - grounded: true only if the passages actually support the answer.
+   - textbook_explanation: explain the supported answer or relevant concepts in the student's language, using short quotations only when useful. For concept-only coverage, connect each concept to the request before noting what the passages do not supply. If no relevant concepts are present, say so briefly and leave curriculum_citation empty.
+   - support_level: "full" when the passages support the complete requested answer; "concepts" when they support useful related concepts but not the complete requested answer; "none" when they contain no relevant support or no passages were retrieved.
+   - grounded: true for "full" or "concepts" only when the explanation you actually give is supported by the cited passages. This does not assert that a full worked solution appears in the book. False for "none".
 
 2. "independent_ai_answer" - YOUR OWN independent reasoning, not limited to the textbook.
    - chat_answer: answer the student's PRIMARY REQUEST the way a top AI chat assistant would, using your full knowledge and ignoring the passages. A natural, complete, direct reply in Markdown: short paragraphs, bullet points where they help, fenced code blocks (```c or ```html) for code, no headings. Address the exact request first. Use assessment context only when it is relevant to that request.
@@ -61,9 +70,11 @@ TUTOR_RESPONSE_SCHEMA = {
                 'textbook_rule': {'type': 'string'},
                 'curriculum_citation': {'type': 'string'},
                 'textbook_explanation': {'type': 'string'},
+                'support_level': {'type': 'string', 'enum': ['full', 'concepts', 'none']},
                 'grounded': {'type': 'boolean'},
             },
-            'required': ['textbook_rule', 'curriculum_citation', 'textbook_explanation', 'grounded'],
+            'required': ['textbook_rule', 'curriculum_citation', 'textbook_explanation',
+                         'support_level', 'grounded'],
         },
         'independent_ai_answer': {
             'type': 'object',
@@ -100,9 +111,50 @@ def _passage_block(passages):
     return '\n\n'.join(lines)
 
 
-# Below this similarity the top passage is a keyword-overlap or seed-passage fallback, not a
-# retrieval hit, and the offline answer must not present it as textbook grounding.
-FALLBACK_GROUNDED_MIN_SIMILARITY = 0.5
+def _normalize_textbook_answer(answer, passages, language):
+    """Keep coverage labels consistent without treating retrieved hits as proof.
+
+    Concept support describes the explanation given, not the presence of an exact
+    worked solution. Older responses can retain their explicit grounded flag;
+    missing coverage metadata must never be upgraded to full support.
+    """
+    if not isinstance(answer, dict) or not answer:
+        return {}
+    answer = dict(answer)
+    if not passages:
+        bn = language.startswith('bn')
+        answer.update({
+            'textbook_rule': ('প্রাসঙ্গিক পাঠ্যবইয়ের অনুচ্ছেদ পাওয়া যায়নি।' if bn
+                              else 'No relevant textbook passages were retrieved.'),
+            'curriculum_citation': '',
+            'textbook_explanation': (
+                'উদ্ধৃত করার মতো অনুচ্ছেদ না থাকায় এই প্রশ্নের প্রাসঙ্গিক ধারণাগুলো পাঠ্যবই থেকে ব্যাখ্যা করা যাচ্ছে না।'
+                if bn else 'Without retrieved passages, relevant textbook concepts cannot be identified or cited.'),
+            'support_level': 'none',
+            'grounded': False,
+        })
+        return answer
+    support = answer.get('support_level')
+    if support in ('full', 'concepts', 'none'):
+        citation = str(answer.get('curriculum_citation') or '')
+        tags = {int(tag) for tag in re.findall(r'\[(\d+)\]', citation)}
+        cited = [passages[tag - 1] for tag in tags if 1 <= tag <= len(passages)]
+        usable_citations = bool(tags) and len(cited) == len(tags) and all(
+            str(passage.get('passage') or '').strip()
+            and passage.get('doc') != 'seed'
+            and not str(passage.get('id') or '').startswith('seed_')
+            for passage in cited
+        )
+        if support != 'none' and not usable_citations:
+            support = 'none'
+            answer['support_level'] = support
+        answer['grounded'] = support != 'none'
+        if support == 'none':
+            answer['curriculum_citation'] = ''
+    else:
+        answer.pop('support_level', None)
+        answer['grounded'] = answer.get('grounded') is True
+    return answer
 
 
 def _fallback_answer(prompt, code, passages, language):
@@ -113,7 +165,9 @@ def _fallback_answer(prompt, code, passages, language):
             'textbook_rule': top['chapter'] if top else ('পাঠ্যবই থেকে কোনো অনুচ্ছেদ পাওয়া যায়নি' if bn else 'No textbook passage retrieved'),
             'curriculum_citation': f"[1] {top['source_ref']}" if top else 'RAG index empty',
             'textbook_explanation': top['passage'][:700] if top else ('RAG ইনডেক্স এখনো তৈরি হয়নি।' if bn else 'The RAG index has not been built yet.'),
-            'grounded': bool(top) and float(top.get('similarity_score') or 0) >= FALLBACK_GROUNDED_MIN_SIMILARITY,
+            # An unassessed excerpt remains available, but similarity alone does
+            # not establish support for the requested answer or its concepts.
+            'grounded': False,
         },
         'independent_ai_answer': {
             'chat_answer': '',
@@ -264,10 +318,10 @@ def query_tutor(request):
     # The same question about the same code with the same textbook passages gets the same answer, so
     # live answers are kept in the persistent (database) cache with the memory cache in front:
     # repeats are instant and spend no Gemini quota. Fallback answers are never cached.
-    # 'v3': the key also carries the corpus version (the last completed ingestion run), so an
-    # answer built on passages whose text or labels have since been re-indexed is never reused.
+    # The corpus version invalidates re-indexed passages; the response-policy version
+    # also prevents old exact-solution refusals from masking concept-based answers.
     corpus = corpus_version()
-    answer_key = cache_key('tutor-answer', 'v5-hint-policy', corpus, language, prompt,
+    answer_key = cache_key('tutor-answer', 'v6-textbook-concepts', corpus, language, prompt,
                            use_problem_context, context_code.strip(),
                            problem_id if use_problem_context else '', context_title,
                            context_description, context_compiler_output,
@@ -278,8 +332,7 @@ def query_tutor(request):
     if hint_only:
         parsed = hint_response(parsed, language)
 
-    rag_answer = parsed.get('rag_answer') or {}
-    rag_answer.setdefault('grounded', bool(passages))
+    rag_answer = _normalize_textbook_answer(parsed.get('rag_answer'), passages, language)
     indep = parsed.get('independent_ai_answer') or {}
     breakdown = indep.get('problem_breakdown') or []
     if isinstance(breakdown, str):
@@ -318,6 +371,7 @@ def query_tutor(request):
                      corpus_version=corpus,
                      passage_ids=[p.get('id') or p.get('source_ref') for p in passages],
                      retrieval_backend=rag_engine_instance.last_backend,
+                     support_level=rag_answer.get('support_level'),
                      grounded=bool(rag_answer.get('grounded')))
     response = Response(payload)
     response['X-Trace-Cache'] = 'miss' if tier == 'computed' else f'hit-{tier}'
@@ -352,12 +406,42 @@ def run_code(request):
                         errors[f'test_cases.{index}.{field}'] = 'Must be a string.'
     if errors:
         return Response({'error': 'Invalid code execution request.', 'fields': errors}, status=400)
-    result = runner.run_code(
-        language=data.get('language', 'c'),
-        code=data.get('code', ''),
-        test_cases=data.get('test_cases') or [],
-        mode=data.get('mode', 'run'),
-    )
+    language = data.get('language', 'c').lower()
+    mode = data.get('mode', 'run')
+    code = data.get('code', '')
+    problem_id = data.get('problem_id')
+    task = None
+    if problem_id is not None:
+        task = practice.TASKS.get(problem_id) if isinstance(problem_id, str) else None
+        if not task:
+            return Response({'error': 'Unknown practice task.'}, status=400)
+        if language != task['language']:
+            return Response({'error': 'Use the language specified for this practice task.'}, status=400)
+
+    options = {'strict_output': True} if task else {}
+    result = runner.run_code(language=language, code=code,
+                             test_cases=task['test_cases'] if task else data.get('test_cases') or [],
+                             mode=mode, **options)
+    if task and mode == 'run':
+        profile = ParticipantProfile.objects.filter(user=request.user).only('assigned_arm').first()
+        payload = {
+            'source': practice.RESULT_SOURCE,
+            'practice_metric_version': practice.METRIC_VERSION,
+            'catalog_sha256': practice.CATALOG_SHA256,
+            'problem_id': problem_id, 'language': language,
+            'status': result['status'],
+            'passed_count': result.get('passed_count', 0),
+            'total': len(task['test_cases']),
+            'code_length': len(code),
+            'code_sha256': hashlib.sha256(code.encode('utf-8')).hexdigest(),
+        }
+        device_id = getattr(request, 'device_id', None)
+        if device_id:
+            payload['device_id'] = device_id
+        InteractionLog.objects.create(user=request.user, event_type='CODE_RESULT',
+                                      arm=profile.assigned_arm if profile else 'REASONING_VISIBLE',
+                                      problem_id=problem_id, payload=payload)
+        result['practice_metric_version'] = practice.METRIC_VERSION
     return Response(result)
 
 

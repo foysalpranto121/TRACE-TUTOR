@@ -1,0 +1,6 @@
+{
+  "backend": "165 passed; 1 unchanged Windows path test fails on Linux in both baseline and candidate",
+  "baseline_failure_confirmed": true,
+  "frontend": "tests, lint, production build passed",
+  "files": 21
+}
