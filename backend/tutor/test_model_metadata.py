@@ -37,8 +37,6 @@ class TutorModelMetadataTests(ApiTestCase):
         env.start(); self.addCleanup(env.stop)
         retrieval = patch('tutor.views.rag_engine_instance.retrieve', return_value=[])
         retrieval.start(); self.addCleanup(retrieval.stop)
-        review = patch('tutor.solution_policy.review_guidance', return_value=True)
-        review.start(); self.addCleanup(review.stop)
 
     def ask(self):
         return self.client_.post('/api/tutor/query/', {'prompt': 'Explain a loop'}, format='json')
