@@ -90,18 +90,14 @@ class ParticipantJourneyTests(ApiTestCase):
         answer = tutor.json()
         self.assertIn(answer['ai_status'], ('live', 'fallback'))
         self.assertEqual(answer['mode'], alice['arm'])
-        self.assertEqual(answer['teaching_mode'], 'guided')
-        self.assertEqual(answer['coaching_policy'], 'guided-v1')
-        self.assertTrue(answer['coaching']['question'])
         if alice['arm'] == 'REASONING_VISIBLE':
             for key in ('rag_answer', 'independent_ai_answer', 'direct_answer', 'retrieved_passages', 'model'):
                 self.assertIn(key, answer)
             self.assertIsInstance(answer['independent_ai_answer']['problem_breakdown'], list)
         else:
-            # The brief arm gets one learning question with no worked solution.
+            # The control arm gets only the direct answer and a code fix - never the working.
             self.assertIn('direct_answer', answer)
             self.assertIn('code_solution', answer)
-            self.assertEqual(answer['code_solution'], '')
             for leaked in ('rag_answer', 'independent_ai_answer', 'reasoning_trace', 'retrieved_passages'):
                 self.assertNotIn(leaked, answer, f'{leaked} must not reach the control arm')
         # The answered turn was logged server-side, as the profile's arm.

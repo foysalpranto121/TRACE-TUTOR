@@ -1,15 +1,13 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { ReasoningTracePanel } from '../src/components/TutorPanel/ReasoningTracePanel';
-import { AnswerOnlyPanel } from '../src/components/TutorPanel/AnswerOnlyPanel';
 import { AssessmentPage } from '../src/pages/AssessmentPage';
 
-const mocks = vi.hoisted(() => ({ arm: 'REASONING_VISIBLE', getAssessmentItems: vi.fn(), queryTutor: vi.fn() }));
+const mocks = vi.hoisted(() => ({ getAssessmentItems: vi.fn(), queryTutor: vi.fn() }));
 vi.mock('../src/services/api', () => ({ apiService: mocks }));
-vi.mock('../src/context/useAuth', () => ({ useAuth: () => ({ language: 'en', arm: mocks.arm }) }));
+vi.mock('../src/context/useAuth', () => ({ useAuth: () => ({ language: 'en', arm: 'REASONING_VISIBLE' }) }));
 
 beforeEach(() => {
-  mocks.arm = 'REASONING_VISIBLE';
   mocks.getAssessmentItems.mockReset().mockResolvedValue({
     available: ['pre', 'post'],
     items: [{ id: 'loop-concept', type: 'mcq', title: 'Loop concept', chapter: 'Chapter 5',
@@ -17,161 +15,151 @@ beforeEach(() => {
   });
   mocks.queryTutor.mockReset();
 });
+
 afterEach(cleanup);
 
-const concept = 'A loop repeats one action.';
-const question = 'Which value changes in your current attempt?';
-const boundary = 'I will guide one small step at a time without giving a complete answer or program.';
-const fallbackQuestion = 'What have you tried so far, and which part would you like to work out next?';
-const legacy = {
+const conceptNotice = 'The retrieved passages support these concepts; a complete worked solution is not provided.';
+const response = (ragAnswer = {}, extra = {}) => ({
   ai_status: 'live',
-  direct_answer: 'LEGACY_FINAL_ANSWER: the answer is 120.',
-  code_solution: 'LEGACY_PROGRAM: int main(void) { return 120; }',
-  independent_ai_answer: {
-    chat_answer: 'LEGACY_CHAT: Here is the complete solution.',
-    concept_applied: 'LEGACY_CONCEPT: a complete solution recipe',
-    problem_breakdown: ['LEGACY_RECIPE: initialize, multiply, repeat, print the answer.'],
-    pedagogical_justification: 'LEGACY_RATIONALE: this proves the whole algorithm.',
-    code_solution: 'LEGACY_INDEPENDENT_PROGRAM: int main(void) { return 120; }',
-  },
-  reasoning_trace: { chat_answer: 'LEGACY_TRACE: the complete answer.', code_solution: 'LEGACY_TRACE_PROGRAM' },
   rag_answer: {
-    textbook_rule: 'LEGACY_RULE: follow the entire algorithm.',
-    textbook_explanation: 'LEGACY_TEXTBOOK_SOLUTION: multiply all values and print the result.',
-    curriculum_citation: 'LEGACY_CITATION: fabricated worked solution page.',
-    grounded: true, support_level: 'full',
+    textbook_rule: 'Use repetition and a running total.',
+    textbook_explanation: 'A for loop repeats its statements and updates the total on each iteration.',
+    curriculum_citation: 'NCTB ICT, Chapter 5, printed page 175 [1]',
+    ...ragAnswer,
   },
-  grounded_passage: 'LEGACY_GROUNDED_PASSAGE: the answer and full program.',
-  retrieved_passages: [{ id: 'loop-p175', source_ref: 'NCTB HSC ICT (BV) p.175',
-    passage: 'LEGACY_RAW_PASSAGE: complete worked program appears here.', similarity_score: 0.7 }],
-};
-const guided = (extra = {}) => ({
-  ...legacy,
-  teaching_mode: 'guided',
-  coaching_policy: 'guided-v1',
-  coaching: { concept_id: 'loop', focus: 'attempt', concept, question, boundary_message: boundary, line_number: null },
+  retrieved_passages: [{
+    id: 'loop-p175',
+    source_ref: 'NCTB ICT, printed page 175',
+    passage: 'The for loop repeats a block of statements.',
+    similarity_score: 0.7,
+  }],
+  independent_ai_answer: { chat_answer: 'Here is an independent explanation of the complete task.' },
   ...extra,
 });
-const panelProps = { availability: { status: 'available' }, queryText: '', onQueryChange: vi.fn(), onRequestHelp: vi.fn() };
-const mountPanel = (kind, data) => kind === 'reasoning'
-  ? render(<ReasoningTracePanel {...panelProps} traceData={data} />)
-  : render(<AnswerOnlyPanel {...panelProps} solutionData={data} />);
-const expectNoLegacyAnswer = (container) => {
-  expect(container.textContent).not.toContain('LEGACY_');
-  expect(container.querySelector('pre')).toBeNull();
-  expect(screen.queryByRole('button', { name: /Copy (?:Code|Solution)/i })).toBeNull();
-  expect(screen.queryByRole('button', { name: /Direct Solution|Get Fix/i })).toBeNull();
-};
 
-it.each(['reasoning', 'answer-only'])('%s workspace panel renders one guided question and ignores legacy answer fields even in a guided response', (kind) => {
-  const view = mountPanel(kind, guided());
-  expect(screen.getByText(concept)).toBeTruthy();
-  expect(screen.getAllByText(question)).toHaveLength(1);
-  expect(screen.getByText(boundary)).toBeTruthy();
-  expect(screen.getByRole('button', { name: 'Guide my next step', exact: true })).toBeTruthy();
-  expectNoLegacyAnswer(view.container);
-});
+const mount = (traceData) => render(
+  <ReasoningTracePanel traceData={traceData} availability={{ status: 'available' }} queryText=""
+    onQueryChange={vi.fn()} onRequestHelp={vi.fn()} />
+);
 
-it.each(['reasoning', 'answer-only'])('%s workspace panel replaces a legacy complete-answer payload with the static ask-for-attempt fallback', (kind) => {
-  const view = mountPanel(kind, legacy);
-  expect(screen.getByText('Start with your attempt')).toBeTruthy();
-  expect(screen.getByText(fallbackQuestion)).toBeTruthy();
-  expect(screen.queryByText('NCTB HSC ICT (BV) p.175', { exact: false })).toBeNull();
-  expectNoLegacyAnswer(view.container);
-});
+it('keeps useful textbook concepts, citations and passages visible without claiming a complete worked solution', () => {
+  mount(response({ support_level: 'concepts', grounded: true }));
 
-it('renders the brief-arm guided question when the backend omits its concept', () => {
-  const view = mountPanel('answer-only', guided({ coaching: { concept: '', question, focus: 'attempt' } }));
-  expect(screen.getByText(question)).toBeTruthy();
-  expect(screen.queryByText(fallbackQuestion)).toBeNull();
-  expectNoLegacyAnswer(view.container);
-});
+  const badge = screen.getByText('Related textbook concepts');
+  expect(badge.className).toContain('text-amber-400');
+  expect(screen.getByText(conceptNotice)).toBeTruthy();
+  expect(screen.getByText('Use repetition and a running total.')).toBeTruthy();
+  expect(screen.getByText('A for loop repeats its statements and updates the total on each iteration.')).toBeTruthy();
+  expect(screen.getByText('NCTB ICT, Chapter 5, printed page 175 [1]')).toBeTruthy();
+  expect(screen.getByText('[1] NCTB ICT, printed page 175')).toBeTruthy();
+  expect(screen.getByText('The for loop repeats a block of statements.')).toBeTruthy();
+  expect(screen.queryByText('Curriculum Grounded')).toBeNull();
+  expect(screen.queryByText('Not covered by passages')).toBeNull();
 
-it('rejects arbitrary source strings and never renders a source-provided worked answer', () => {
-  const view = mountPanel('reasoning', guided({ retrieved_passages: [
-    { source_ref: 'LEGACY_SOURCE_PROGRAM: int main() { return 120; }', passage: 'LEGACY_PASSAGE' },
-    { source_ref: 'NCTB HSC ICT (BV) p.175', passage: 'LEGACY_WORKED_EXAMPLE' },
-  ] }));
-  expect(screen.getByText(/NCTB HSC ICT \(BV\) p\.175/)).toBeTruthy();
-  expectNoLegacyAnswer(view.container);
-});
-
-it('preserves original passage numbers when the server removes a seed source', () => {
-  const view = mountPanel('reasoning', guided({ retrieved_passages: [
-    { id: 'source-2', source_ref: 'NCTB HSC ICT (BV) p.175', passage: 'LEGACY_WORKED_EXAMPLE' },
-  ] }));
-  expect(screen.getByText('[2] NCTB HSC ICT (BV) p.175')).toBeTruthy();
-  expectNoLegacyAnswer(view.container);
+  fireEvent.click(screen.getByRole('button', { name: 'Textbook', exact: true }));
+  expect(screen.getByText(conceptNotice)).toBeTruthy();
+  expect(screen.queryByText('Here is an independent explanation of the complete task.')).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'AI', exact: true }));
+  expect(screen.queryByText(conceptNotice)).toBeNull();
+  expect(screen.getByText('Here is an independent explanation of the complete task.')).toBeTruthy();
 });
 
 it.each([
-  { teaching_mode: 'answer', coaching: { concept, question } },
-  { teaching_mode: 'guided', coaching: { concept, question: '' } },
-  { teaching_mode: 'guided', coaching_policy: 'legacy', coaching: { concept, question } },
-])('rejects incomplete or non-guided coaching metadata %j instead of exposing old solution fields', (metadata) => {
-  const view = mountPanel('reasoning', { ...legacy, ...metadata });
-  expect(screen.getByText(fallbackQuestion)).toBeTruthy();
-  expectNoLegacyAnswer(view.container);
+  ['full', false, 'Curriculum Grounded'],
+  ['concepts', false, 'Related textbook concepts'],
+  ['none', true, 'Not covered by passages'],
+])('uses the explicit %s support level instead of a conflicting legacy boolean', (supportLevel, grounded, label) => {
+  mount(response({ support_level: supportLevel, grounded }));
+  expect(screen.getByText(label)).toBeTruthy();
+  expect(Boolean(screen.queryByText(conceptNotice))).toBe(supportLevel === 'concepts');
 });
 
-it('keeps the same one-step question in Dual, Textbook and AI views while exposing only bibliography references', () => {
-  const view = mountPanel('reasoning', guided());
-  expect(screen.getByText('Textbook references')).toBeTruthy();
-  expect(screen.getByText(/NCTB HSC ICT \(BV\) p\.175/)).toBeTruthy();
-  expect(screen.getByText('70% similarity')).toBeTruthy();
-  expectNoLegacyAnswer(view.container);
-
-  for (const tab of ['Textbook', 'AI', 'Dual']) {
-    fireEvent.click(screen.getByRole('button', { name: tab, exact: true }));
-    expect(screen.getAllByText(question)).toHaveLength(1);
-    expect(screen.getByText(concept)).toBeTruthy();
-    expectNoLegacyAnswer(view.container);
-  }
+it.each([
+  [undefined, true, 'Curriculum Grounded'],
+  [undefined, false, 'Not covered by passages'],
+  ['future-level', true, 'Curriculum Grounded'],
+  ['future-level', false, 'Not covered by passages'],
+])('preserves legacy badges for support level %s and grounded %s in cached answers', (supportLevel, grounded, label) => {
+  mount(response({ support_level: supportLevel, grounded }, { cached: true }));
+  expect(screen.getByText(label)).toBeTruthy();
+  expect(screen.queryByText(conceptNotice)).toBeNull();
 });
 
-it('keeps a guided hint question without requiring a textbook answer or revealing a full recipe', () => {
-  const view = mountPanel('reasoning', guided({
-    coaching: { concept_id: 'loop', focus: 'attempt', concept, question: 'Which value do you need to keep track of?', boundary_message: boundary },
-    rag_answer: {}, retrieved_passages: [],
-  }));
-  expect(screen.getByText('Which value do you need to keep track of?')).toBeTruthy();
-  expect(screen.queryByText('Textbook references')).toBeNull();
-  expectNoLegacyAnswer(view.container);
+it('identifies a passage-only fallback without claiming that a generated answer is fully supported', () => {
+  mount(response({ support_level: 'full', grounded: true }, { ai_status: 'fallback' }));
+
+  expect(screen.getByText('Retrieved textbook passage')).toBeTruthy();
+  expect(screen.getByText('AI generation is unavailable')).toBeTruthy();
+  expect(screen.getByText('The for loop repeats a block of statements.')).toBeTruthy();
+  expect(screen.getByText('NCTB ICT, Chapter 5, printed page 175 [1]')).toBeTruthy();
+  expect(screen.queryByText('Curriculum Grounded')).toBeNull();
+  expect(screen.queryByText(conceptNotice)).toBeNull();
 });
 
-const askInAssessment = async (tutorResponse, arm = 'REASONING_VISIBLE', prompt = 'Can you guide my next step?') => {
-  mocks.arm = arm;
+it.each([
+  {},
+  { support_level: 'future-level' },
+  { support_level: 'future-level', grounded: 'true' },
+  { grounded: null },
+])('does not turn missing or malformed support metadata %j into a positive grounding claim', (supportMetadata) => {
+  mount(response(supportMetadata));
+
+  const badge = screen.getByText('Support not assessed');
+  expect(badge.className).toContain('text-on-surface-variant');
+  expect(screen.getByText('A for loop repeats its statements and updates the total on each iteration.')).toBeTruthy();
+  expect(screen.queryByText('Curriculum Grounded')).toBeNull();
+  expect(screen.queryByText(conceptNotice)).toBeNull();
+});
+
+it('omits the empty textbook card for a hint while keeping the useful clue', () => {
+  mount(response({}, { rag_answer: {}, independent_ai_answer: { chat_answer: 'Think about the value that changes each time.' } }));
+
+  expect(screen.getByText('Think about the value that changes each time.')).toBeTruthy();
+  expect(screen.queryByText('NCTB Textbook RAG Answer')).toBeNull();
+  expect(screen.queryByText('Curriculum Grounded')).toBeNull();
+  expect(screen.queryByText('Support not assessed')).toBeNull();
+});
+
+const askInAssessment = async (tutorResponse) => {
   mocks.queryTutor.mockResolvedValue(tutorResponse);
-  const view = render(<AssessmentPage />);
+  render(<AssessmentPage />);
   fireEvent.click(await screen.findByRole('button', { name: 'Post-Test (+AI Tutor)', exact: true }));
-  const input = await screen.findByRole('textbox', { name: /Ask the AI assistant|Share your attempt/i });
-  fireEvent.change(input, { target: { value: prompt } });
+  const input = await screen.findByRole('textbox', { name: 'Ask the AI assistant for help, hints or logic' });
+  fireEvent.change(input, { target: { value: 'How can repetition help with this task?' } });
   fireEvent.keyDown(input, { key: 'Enter' });
-  return view;
 };
 
-it.each(['REASONING_VISIBLE', 'ANSWER_ONLY'])('%s assessment tutor renders safe coaching instead of any complete-answer fields', async (arm) => {
-  const view = await askInAssessment(guided(), arm);
-  expect(await screen.findByText(question)).toBeTruthy();
-  expect(screen.getByText(concept)).toBeTruthy();
-  expect(screen.getAllByText(question)).toHaveLength(1);
-  expect(screen.getByRole('button', { name: 'Guide my next step', exact: true })).toBeTruthy();
-  expectNoLegacyAnswer(view.container);
+it('teaches related concepts with citations before showing the coverage limit in the actual assessment tutor', async () => {
+  await askInAssessment(response({ support_level: 'concepts', grounded: true }));
+
+  const badge = await screen.findByText('Related textbook concepts');
+  expect(badge.className).toContain('text-amber-400');
+  const explanation = screen.getByText(/A for loop repeats its statements and updates the total on each iteration\./);
+  const notice = screen.getByText(conceptNotice);
+  expect(explanation.compareDocumentPosition(notice) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(screen.getByText(/NCTB ICT, Chapter 5, printed page 175 \[1\]/)).toBeTruthy();
+  expect(screen.getByText('[1] NCTB ICT, printed page 175')).toBeTruthy();
+  expect(screen.getByText('The for loop repeats a block of statements.')).toBeTruthy();
+  expect(screen.queryByText('Grounded', { exact: true })).toBeNull();
+  expect(screen.queryByText('Curriculum Grounded')).toBeNull();
 });
 
-it.each(['REASONING_VISIBLE', 'ANSWER_ONLY'])('%s assessment tutor blocks malicious legacy complete answers and asks for an attempt', async (arm) => {
-  const view = await askInAssessment(legacy, arm);
-  expect(await screen.findByText(fallbackQuestion)).toBeTruthy();
-  expectNoLegacyAnswer(view.container);
+it.each([
+  [{ support_level: 'full', grounded: true }, 'Curriculum Grounded'],
+  [{ support_level: 'none', grounded: false }, 'Not covered by passages'],
+  [{}, 'Support not assessed'],
+])('applies support metadata %j to the actual assessment tutor badge', async (supportMetadata, label) => {
+  await askInAssessment(response(supportMetadata));
+
+  expect(await screen.findByText(label)).toBeTruthy();
+  expect(screen.queryByText(conceptNotice)).toBeNull();
 });
 
-it('keeps only safe source references across assessment Textbook and Independent AI views', async () => {
-  const view = await askInAssessment(guided());
-  expect(await screen.findByText(question)).toBeTruthy();
-  expect(screen.getByText(/NCTB HSC ICT \(BV\) p\.175/)).toBeTruthy();
-  for (const tab of [/RAG Book/, /Independent AI/, /Dual View/]) {
-    fireEvent.click(screen.getByRole('button', { name: tab }));
-    expect(screen.getAllByText(question)).toHaveLength(1);
-    expectNoLegacyAnswer(view.container);
-  }
+it('does not show a grounded textbook card for an empty assessment hint response', async () => {
+  await askInAssessment(response({}, { rag_answer: {}, independent_ai_answer: { chat_answer: 'Think about the changing value.' } }));
+
+  expect(await screen.findByText('Think about the changing value.')).toBeTruthy();
+  expect(screen.queryByText(/NCTB Textbook RAG Answer/)).toBeNull();
+  expect(screen.queryByText('Grounded', { exact: true })).toBeNull();
+  expect(screen.queryByText('Curriculum Grounded')).toBeNull();
 });

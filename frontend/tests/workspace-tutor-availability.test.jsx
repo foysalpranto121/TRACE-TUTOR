@@ -16,7 +16,7 @@ vi.mock('../src/components/ui/useCelebrate', () => ({ useCelebrate: () => ({ toa
 const dashboard = (available, exam_type = null) => ({ stats: {}, assessments: {}, problems: [], tutor_availability: { available, exam_type } });
 const mount = (strict = false) => render(<MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>{strict ? <StrictMode><Workspace /></StrictMode> : <Workspace />}</MemoryRouter>);
 const input = () => screen.getByRole('textbox', { name: /Ask the tutor/ });
-const button = () => screen.getByRole('button', { name: 'Guide my next step', exact: true });
+const button = () => screen.getByRole('button', { name: mocks.arm === 'ANSWER_ONLY' ? 'Get Fix' : 'Ask', exact: true });
 const ready = async () => waitFor(() => expect(input().readOnly).toBe(false));
 const draft = () => fireEvent.change(input(), { target: { value: 'Why is my loop wrong?' } });
 const deferred = () => { let resolve; const promise = new Promise((done) => { resolve = done; }); return { promise, resolve }; };
@@ -58,8 +58,7 @@ for (const arm of ['ANSWER_ONLY', 'REASONING_VISIBLE']) {
     it('preserves the draft on network and server failures', async () => {
       mocks.queryTutor.mockRejectedValue(new Error('Network unavailable'));
       mount(); await ready(); draft(); fireEvent.click(button());
-      await screen.findByText('AI request failed. Please retry; your draft is preserved.');
-      expect(screen.queryByText('Network unavailable')).toBeNull();
+      await screen.findByText('Network unavailable');
       expect(input().value).toBe('Why is my loop wrong?');
       expect(button().disabled).toBe(false);
     });

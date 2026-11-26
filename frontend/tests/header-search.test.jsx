@@ -292,7 +292,7 @@ describe('shared application header', () => {
     await waitFor(() => expect(route()).toBe('/workspace?problem=' + current.id));
     expect(screen.getByLabelText('Code editor').value).toBe(editedCode);
     expect(screen.getByRole('textbox', { name: /Ask the tutor/ }).value).toBe(question);
-    fireEvent.click(screen.getByRole('button', { name: 'Guide my next step', exact: true }));
+    fireEvent.click(screen.getByRole('button', { name: 'Get Fix', exact: true }));
     await waitFor(() => expect(mocks.queryTutor).toHaveBeenCalledTimes(1));
     expect(mocks.queryTutor.mock.calls[0].slice(0, 3)).toEqual([question, editedCode, current.id]);
   });
@@ -317,7 +317,7 @@ describe('shared application header', () => {
     mountApp('/workspace'); await screen.findByText('Tutor temporarily unavailable');
     query(task.id); await ready(); fireEvent.keyDown(input(), { key: 'Enter' });
     await waitFor(() => expect(screen.getByLabelText('Code editor').getAttribute('data-problem')).toBe(task.id));
-    expect(screen.getByRole('button', { name: 'Guide my next step', exact: true }).disabled).toBe(true);
+    expect(screen.getByRole('button', { name: 'Get Fix', exact: true }).disabled).toBe(true);
     expect(screen.getByText('Tutor temporarily unavailable')).toBeTruthy();
     expect(mocks.queryTutor).not.toHaveBeenCalled(); expect(mocks.getAssessmentItems).not.toHaveBeenCalled();
   });
