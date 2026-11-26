@@ -333,8 +333,9 @@ class GeminiJsonTests(SimpleTestCase):
         config = types.GenerateContentConfig(response_json_schema=TUTOR_RESPONSE_SCHEMA,
                                              response_mime_type='application/json')
         self.assertEqual(config.response_json_schema['required'],
-                         ['rag_answer', 'independent_ai_answer', 'direct_answer'])
-        self.assertIn('chat_answer', config.response_json_schema['properties']['independent_ai_answer']['required'])
+                         ['concept_id', 'focus', 'passage_indices', 'line_number'])
+        self.assertIn('loops', config.response_json_schema['properties']['concept_id']['enum'])
+        self.assertNotIn('code_solution', config.response_json_schema['properties'])
 
 
 class _ApiError(Exception):
@@ -378,10 +379,11 @@ class LlmProviderTests(SimpleTestCase):
         from tutor.views import TUTOR_RESPONSE_SCHEMA
         strict = llm.strict_schema(TUTOR_RESPONSE_SCHEMA)
         self.assertIs(strict['additionalProperties'], False)
-        self.assertIs(strict['properties']['independent_ai_answer']['additionalProperties'], False)
         self.assertNotIn('additionalProperties', TUTOR_RESPONSE_SCHEMA)
-        self.assertEqual(strict['properties']['rag_answer']['required'],
-                         list(TUTOR_RESPONSE_SCHEMA['properties']['rag_answer']['properties']))
+        self.assertEqual(strict['required'], list(TUTOR_RESPONSE_SCHEMA['properties']))
+        nested = {'type': 'object', 'properties': {'step': {'type': 'object', 'properties': {'n': {'type': 'integer'}}}}}
+        self.assertIs(llm.strict_schema(nested)['properties']['step']['additionalProperties'], False)
+        self.assertNotIn('additionalProperties', nested['properties']['step'])
 
     def test_openai_is_held_to_the_schema_and_its_json_is_parsed(self):
         seen = {}
@@ -479,19 +481,24 @@ class TutorArmTests(ApiTestCase):
     REASONING_FIELDS = ('rag_answer', 'independent_ai_answer', 'reasoning_trace',
                         'retrieved_passages', 'grounded_passage')
 
-    def test_the_control_arm_receives_only_the_direct_answer_and_a_code_fix(self):
+    def test_the_control_arm_receives_one_learning_question_without_code(self):
         answer = self.ask(self.control_c).json()
         self.assertEqual(answer['mode'], 'ANSWER_ONLY')
         self.assertIn('direct_answer', answer)
-        self.assertIn('code_solution', answer)
+        self.assertEqual(answer['code_solution'], '')
+        self.assertEqual(answer['teaching_mode'], 'guided')
+        self.assertEqual(answer['direct_answer'], answer['coaching']['question'])
+        self.assertEqual(answer['coaching']['concept'], '')
         for leaked in self.REASONING_FIELDS:
             self.assertNotIn(leaked, answer, f'{leaked} must not reach the control arm')
 
-    def test_the_treatment_arm_receives_the_full_dual_answer(self):
+    def test_the_treatment_arm_receives_guided_learning_in_both_views(self):
         answer = self.ask(self.treat_c).json()
         self.assertEqual(answer['mode'], 'REASONING_VISIBLE')
         for key in ('rag_answer', 'independent_ai_answer', 'reasoning_trace', 'retrieved_passages'):
             self.assertIn(key, answer)
+        self.assertEqual(answer['teaching_mode'], 'guided')
+        self.assertEqual(answer['independent_ai_answer']['code_solution'], '')
 
     def test_a_control_participant_cannot_claim_the_treatment_arm_from_the_body(self):
         answer = self.ask(self.control_c, arm='REASONING_VISIBLE').json()
@@ -534,23 +541,26 @@ class TutorArmTests(ApiTestCase):
         self.addCleanup(stack.stop)
         return patch.object(gemini, 'generate_content', fake_generate_content)
 
-    def test_the_treatment_arm_receives_the_free_ai_answer_with_the_structured_reasoning(self):
+    def test_legacy_full_model_answers_become_one_safe_question(self):
         with self._with_model_reply(self.MODEL_REPLY):
             answer = self.ask(self.treat_c).json()
         self.assertEqual(answer['ai_status'], 'live')
         indep = answer['independent_ai_answer']
-        self.assertTrue(indep['chat_answer'].startswith('Sure! Use a `for` loop'))
-        self.assertEqual(indep['problem_breakdown'], ['Read n', 'Loop 1..n'])
-        self.assertEqual(indep['code_solution'],
-                         '#include <stdio.h>\nint main() { printf("Sum = %d\n", 15); return 0; }',
-                         'an unescaped quote in the program no longer costs the turn')
+        self.assertEqual(indep['chat_answer'], answer['coaching']['question'])
+        self.assertEqual(indep['problem_breakdown'], [])
+        self.assertEqual(indep['code_solution'], '')
+        self.assertNotIn('Sure! Use', str(answer))
+        self.assertNotIn('printf', str(answer))
+        self.assertNotIn('Loop 1..n', str(answer))
 
     def test_the_control_arm_never_sees_the_free_ai_answer(self):
         with self._with_model_reply(self.MODEL_REPLY):
             answer = self.ask(self.control_c).json()
         self.assertEqual(answer['ai_status'], 'live')
         self.assertNotIn('chat_answer', str(answer))
-        self.assertEqual(answer['direct_answer'], 'Loop from 1 to n and add.')
+        self.assertEqual(answer['direct_answer'], answer['coaching']['question'])
+        self.assertNotIn('Loop from 1 to n and add.', str(answer))
+        self.assertEqual(answer['code_solution'], '')
 
     def test_the_view_the_student_asked_from_is_recorded(self):
         with self._with_model_reply(self.MODEL_REPLY):
@@ -586,8 +596,10 @@ class TutorArmTests(ApiTestCase):
         self.assertIn(prompt, model_request)
         self.assertNotIn('Sum of squares', model_request)
         self.assertNotIn('scanf', model_request)
-        self.assertEqual(response.json()['independent_ai_answer']['chat_answer'],
-                         '<br> creates a line break in HTML.')
+        answer = response.json()
+        self.assertEqual(answer['coaching']['concept_id'], 'html_structure')
+        self.assertEqual(answer['independent_ai_answer']['chat_answer'], answer['coaching']['question'])
+        self.assertNotIn('<p>First<br>Second</p>', str(answer))
 
     def test_an_explicit_context_request_includes_the_visible_task_and_code(self):
         model_answer = {

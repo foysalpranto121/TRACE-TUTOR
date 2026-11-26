@@ -1,188 +1,146 @@
-"""Textbook concept coverage through the tutor endpoint, without a database or API calls."""
-from copy import deepcopy
-from types import SimpleNamespace
-from unittest.mock import patch
+"""Textbook support means a cited concept and one question, never a worked solution."""
+import json
+import math
 
 from django.test import SimpleTestCase
-from rest_framework.test import APIRequestFactory, force_authenticate
 
-from trace_backend.cache import cache_key
-from tutor import views
+from tutor.test_coaching import CoachingEndpointHarness, PASSAGES, POISONS, selection
 
 
-PASSAGES = [
-    {'id': 'loop', 'source_ref': 'NCTB HSC ICT (BV) p.182',
-     'chapter': 'C programming', 'passage': 'A for loop initializes, tests, and updates a counter.'},
-    {'id': 'multiply', 'source_ref': 'NCTB HSC ICT (BV) p.166',
-     'chapter': 'C programming', 'passage': 'The * operator multiplies two operands.'},
-]
-PROMPT = 'How do I compute the product from 1 to N?'
-
-
-def model_answer(support='concepts'):
-    return {
-        'rag_answer': {
-            'textbook_rule': 'A for loop repeats statements; * multiplies operands.',
-            'curriculum_citation': '[1] NCTB HSC ICT (BV) p.182; [2] NCTB HSC ICT (BV) p.166',
-            'textbook_explanation': (
-                'Use the loop concepts to visit each value and multiplication to combine values. '
-                'The passages explain these concepts but do not give the complete product program.'),
-            'support_level': support,
-            'grounded': support != 'none',
-        },
-        'independent_ai_answer': {
-            'chat_answer': 'Multiply the integers using an accumulator.',
-            'concept_applied': 'Accumulation', 'problem_breakdown': ['Visit each value.'],
-            'pedagogical_justification': 'Repeated multiplication builds the product.',
-            'code_solution': 'int product = 1;',
-        },
-        'direct_answer': 'Multiply the integers from 1 to N.',
-    }
-
-
-class TextbookSupportTests(SimpleTestCase):
-    def setUp(self):
-        self.factory = APIRequestFactory()
-        self.user = SimpleNamespace(pk=1, is_authenticated=True)
-        self.stored = {}
-        self.resolve_arm = self.mock('resolve_arm', return_value='REASONING_VISIBLE')
-        self.mock('sittings.blocking_paper', return_value=None)
-        self.mock('sittings.open_paper_of', return_value=None)
-        self.log_event = self.mock('_log_tutor_event')
-        self.mock('corpus_version', return_value='textbook-support-corpus')
-        self.retrieve = self.mock('rag_engine_instance.retrieve', return_value=deepcopy(PASSAGES))
-        self.mock('rag_engine_instance.last_backend', 'vector')
-        self.mock('TutorThrottle.allow_request', return_value=True)
-        self.generate = self.mock('llm.generate_json', side_effect=lambda *a, **k: (model_answer(), 'test-model'))
-        self.mock('llm.provider', return_value='openai')
-        self.mock('tiered_get_or_set', side_effect=self.cached_result)
-
-    def mock(self, name, *args, **kwargs):
-        patcher = patch('tutor.views.' + name, *args, **kwargs)
-        mocked = patcher.start()
-        self.addCleanup(patcher.stop)
-        return mocked
-
-    def cached_result(self, key, producer, timeout, **kwargs):
-        if key in self.stored:
-            return deepcopy(self.stored[key]), 'persistent'
-        result = producer()
-        if kwargs.get('should_store', lambda value: True)(result):
-            self.stored[key] = deepcopy(result)
-        return result, 'computed'
-
-    def ask(self, **kwargs):
-        request = self.factory.post('/api/tutor/query/',
-                                    {'prompt': PROMPT, 'language': 'en', **kwargs}, format='json')
-        force_authenticate(request, user=self.user)
-        response = views.query_tutor(request)
-        self.assertEqual(response.status_code, 200)
-        return response.data
-
-    def test_related_concepts_are_returned_with_their_citations_without_a_full_solution(self):
+class TextbookSupportTests(CoachingEndpointHarness, SimpleTestCase):
+    def test_related_textbook_concepts_have_citations_and_the_same_single_learning_question(self):
+        self.generate.side_effect = lambda *a, **k: (selection(passage_indices=[1, 2]), 'test-model')
         result = self.ask()
         rag = result['rag_answer']
         self.assertEqual(rag['support_level'], 'concepts')
-        self.assertTrue(rag['grounded'])
-        self.assertIn('visit each value', rag['textbook_explanation'])
-        self.assertIn('do not give the complete product program', rag['textbook_explanation'])
-        self.assertIn('[2] NCTB', rag['curriculum_citation'])
-        self.assertEqual(result['retrieved_passages'], PASSAGES)
+        self.assertIs(rag['grounded'], True)
+        self.assertEqual(rag['textbook_rule'], result['coaching']['concept'])
+        self.assertEqual(rag['textbook_explanation'], result['coaching']['question'])
+        self.assertEqual(rag['textbook_explanation'].count('?'), 1)
+        self.assertEqual(rag['curriculum_citation'],
+                         '[1] NCTB HSC ICT (BV) p.182; [2] NCTB HSC ICT (BV) p.166')
         self.assertEqual(self.log_event.call_args.kwargs['support_level'], 'concepts')
+        self.assertIs(self.log_event.call_args.kwargs['grounded'], True)
+        self.assert_guided(result)
 
-    def test_full_support_is_distinct_from_concept_only_support(self):
-        self.generate.side_effect = lambda *a, **k: (model_answer('full'), 'test-model')
-        rag = self.ask()['rag_answer']
-        self.assertEqual(rag['support_level'], 'full')
-        self.assertTrue(rag['grounded'])
+    def test_only_safe_bibliography_is_returned_even_when_passages_contain_a_complete_solution(self):
+        self.retrieve.return_value = [{**PASSAGES[0], 'passage': '\n'.join(POISONS)}]
+        result = self.ask()
+        self.assert_guided(result)
+        self.assert_no_answer_leak(result)
+        self.assertEqual(result['retrieved_passages'], [
+            {'id': 'source-1', 'source_ref': 'NCTB HSC ICT (BV) p.182', 'similarity_score': 0.8}])
+        self.assertEqual(result['grounded_passage'], '')
 
-    def test_unrelated_retrieved_passages_do_not_imply_grounding(self):
-        answer = model_answer('none')
-        answer['rag_answer']['grounded'] = True
-        self.generate.side_effect = lambda *a, **k: (deepcopy(answer), 'test-model')
-        rag = self.ask()['rag_answer']
-        self.assertEqual(rag['support_level'], 'none')
-        self.assertFalse(rag['grounded'])
-        self.assertEqual(rag['curriculum_citation'], '')
+    def test_an_exact_worked_example_does_not_unlock_full_support_or_an_answer(self):
+        self.retrieve.return_value[0]['passage'] = POISONS[1]
+        result = self.ask()
+        self.assertEqual(result['rag_answer']['support_level'], 'concepts')
+        self.assertEqual(result['rag_answer']['textbook_explanation'], result['direct_answer'])
+        self.assert_no_answer_leak(result)
+        self.assert_guided(result)
 
-    def test_empty_retrieval_overrides_a_model_claiming_textbook_support(self):
+    def test_empty_retrieval_never_claims_support_but_still_offers_a_learning_question(self):
         self.retrieve.return_value = []
-        self.generate.side_effect = lambda *a, **k: (model_answer('full'), 'test-model')
-        rag = self.ask()['rag_answer']
-        self.assertEqual(rag['support_level'], 'none')
-        self.assertFalse(rag['grounded'])
-        self.assertEqual(rag['curriculum_citation'], '')
-        self.assertNotIn('for loop', rag['textbook_rule'])
-
-    def test_positive_support_requires_a_reference_to_an_actual_supplied_passage(self):
-        for citation in ('', '   ', '[0] Missing', '[99] Invented', '[1] Real; [99] Invented'):
-            with self.subTest(citation=citation):
-                self.stored.clear()
-                answer = model_answer()
-                answer['rag_answer']['curriculum_citation'] = citation
-                self.generate.side_effect = lambda *a, **k: (deepcopy(answer), 'test-model')
-                rag = self.ask()['rag_answer']
-                self.assertEqual(rag['support_level'], 'none')
-                self.assertFalse(rag['grounded'])
-                self.assertEqual(rag['curriculum_citation'], '')
-
-    def test_seed_excerpts_are_not_claimed_as_verified_textbook_sources(self):
-        self.retrieve.return_value = [
-            {**PASSAGES[0], 'id': 'seed_en_01', 'doc': 'seed'},
-            {**PASSAGES[1], 'id': 'seed_bn_01', 'doc': 'seed'},
-        ]
-        rag = self.ask()['rag_answer']
-        self.assertEqual(rag['support_level'], 'none')
-        self.assertFalse(rag['grounded'])
-
-    def test_missing_or_invalid_coverage_metadata_never_implies_full_support(self):
-        for level in (None, 'unknown'):
-            for flag in (None, 'true', False, True):
-                with self.subTest(level=level, flag=flag):
-                    self.stored.clear()
-                    answer = model_answer()
-                    answer['rag_answer']['support_level'] = level
-                    answer['rag_answer']['grounded'] = flag
-                    self.generate.side_effect = lambda *a, **k: (deepcopy(answer), 'test-model')
-                    rag = self.ask()['rag_answer']
-                    self.assertNotIn('support_level', rag)
-                    self.assertEqual(rag['grounded'], flag is True)
-
-    def test_old_refusal_cache_is_bypassed_and_the_new_answer_is_shared_across_arms(self):
-        legacy_key = cache_key('tutor-answer', 'v5-hint-policy', 'textbook-support-corpus',
-                               'en', PROMPT, False, '', '', '', '', '', ['loop', 'multiply'])
-        old = model_answer('none')
-        old['rag_answer']['textbook_explanation'] = 'The complete answer is not in the passages.'
-        self.stored[legacy_key] = {'parsed': old, 'model': 'old-model', 'provider': 'openai',
-                                   'ai_status': 'live', 'error': None}
-        first = self.ask()
-        self.assertEqual(first['rag_answer']['support_level'], 'concepts')
-        self.assertFalse(first['cached'])
-        second = self.ask()
-        self.assertTrue(second['cached'])
-        self.assertEqual(second['rag_answer'], first['rag_answer'])
-        self.resolve_arm.return_value = 'ANSWER_ONLY'
-        control = self.ask()
-        self.assertTrue(control['cached'])
-        self.assertNotIn('rag_answer', control)
-        self.assertNotIn('retrieved_passages', control)
-        self.assertNotIn('support_level', control)
-        self.assertEqual(control['direct_answer'], first['direct_answer'])
-        self.generate.assert_called_once()
-
-    def test_hint_requests_still_suppress_the_textbook_solution_and_grounding_claim(self):
-        result = self.ask(prompt='Give me a hint')
+        self.generate.side_effect = lambda *a, **k: (selection(passage_indices=[1, 2]), 'test-model')
+        result = self.ask()
         self.assertEqual(result['rag_answer'], {})
-        self.assertEqual(result['independent_ai_answer']['code_solution'], '')
-        self.assertEqual(result['independent_ai_answer']['problem_breakdown'], [])
+        self.assertEqual(result['retrieved_passages'], [])
         self.assertFalse(self.log_event.call_args.kwargs['grounded'])
+        self.assert_guided(result)
 
-    def test_provider_failure_retains_the_passage_and_does_not_cache_the_failure(self):
-        self.generate.side_effect = RuntimeError('provider unavailable')
+    def test_retrieval_alone_does_not_claim_support_when_the_selector_does_not_cite_it(self):
+        self.generate.side_effect = lambda *a, **k: (selection(passage_indices=[]), 'test-model')
+        result = self.ask()
+        self.assertEqual(result['rag_answer'], {})
+        self.assertFalse(self.log_event.call_args.kwargs['grounded'])
+        self.assert_guided(result)
+
+    def test_malformed_and_out_of_range_citations_are_ignored_instead_of_becoming_support(self):
+        for indices in (None, '1', [0, 99], [-1, True], ['1', 1.0], [None, {}]):
+            with self.subTest(indices=indices):
+                self.stored.clear()
+                self.generate.side_effect = lambda *a, **k: (selection(passage_indices=indices), 'test-model')
+                result = self.ask()
+                self.assertEqual(result['rag_answer'], {})
+                self.assertFalse(self.log_event.call_args.kwargs['grounded'])
+                self.assert_guided(result)
+
+    def test_duplicate_citations_are_not_repeated_and_only_two_passages_can_be_selected(self):
+        self.generate.side_effect = lambda *a, **k: (selection(passage_indices=[1, 1]), 'test-model')
+        result = self.ask()
+        self.assertEqual(result['rag_answer']['curriculum_citation'].count('[1]'), 1)
+        self.stored.clear()
+        self.retrieve.return_value.append({**PASSAGES[0], 'id': 'third', 'page': 194})
+        self.generate.side_effect = lambda *a, **k: (selection(passage_indices=[1, 2, 3]), 'test-model')
+        citation = self.ask()['rag_answer']['curriculum_citation']
+        self.assertIn('[1]', citation)
+        self.assertIn('[2]', citation)
+        self.assertNotIn('[3]', citation)
+
+    def test_seed_and_empty_excerpts_are_not_claimed_as_textbook_evidence(self):
+        for replacements in ({'id': 'seed_bn_01'}, {'doc': 'seed'}, {'passage': '   '}):
+            with self.subTest(passage=replacements):
+                self.stored.clear()
+                self.retrieve.return_value = [{**PASSAGES[0], **replacements}]
+                result = self.ask()
+                self.assertEqual(result['rag_answer'], {})
+                self.assertFalse(self.log_event.call_args.kwargs['grounded'])
+                self.assert_guided(result)
+                if 'id' in replacements or 'doc' in replacements:
+                    self.assertEqual(result['retrieved_passages'], [])
+
+    def test_a_seed_before_a_real_passage_does_not_shift_the_real_citation_or_source_id(self):
+        self.retrieve.return_value = [
+            {**PASSAGES[0], 'id': 'seed_bn_01', 'doc': 'seed'}, PASSAGES[1],
+        ]
+        self.generate.side_effect = lambda *a, **k: (selection(passage_indices=[2]), 'test-model')
+        result = self.ask()
+        self.assertEqual(result['rag_answer']['curriculum_citation'], '[2] NCTB HSC ICT (BV) p.166')
+        self.assertEqual(result['retrieved_passages'], [
+            {'id': 'source-2', 'source_ref': 'NCTB HSC ICT (BV) p.166', 'similarity_score': 0.7}])
+        self.assert_guided(result)
+
+    def test_source_labels_are_rebuilt_without_poisoned_ids_chapters_or_free_text(self):
+        self.retrieve.return_value = [{**PASSAGES[0], 'id': POISONS[0],
+                                       'source_ref': POISONS[1], 'chapter': POISONS[2],
+                                       'topic': POISONS[3], 'page': 175}]
+        result = self.ask()
+        self.assertEqual(result['rag_answer']['curriculum_citation'], '[1] NCTB HSC ICT p.175')
+        self.assert_no_answer_leak(result)
+        self.assert_guided(result)
+
+    def test_bad_similarity_metadata_cannot_put_nonfinite_values_or_text_in_the_response(self):
+        for score in (float('nan'), float('inf'), -5, 10, POISONS[0], {}):
+            with self.subTest(score=score):
+                self.stored.clear()
+                self.retrieve.return_value = [{**PASSAGES[0], 'similarity_score': score}]
+                result = self.ask()
+                actual = result['retrieved_passages'][0]['similarity_score']
+                self.assertTrue(math.isfinite(actual))
+                self.assertGreaterEqual(actual, 0)
+                self.assertLessEqual(actual, 1)
+                self.assert_no_answer_leak(result)
+                json.dumps(result, allow_nan=False)
+
+    def test_hint_requests_keep_concept_support_but_only_one_question_in_either_language(self):
+        for language, prompt in (('en', 'Give me a hint'), ('bn', 'একটি ইঙ্গিত দাও')):
+            with self.subTest(language=language):
+                result = self.ask(prompt=prompt, language=language)
+                self.assert_guided(result)
+                self.assertEqual(result['rag_answer']['textbook_explanation'], result['direct_answer'])
+                self.assertEqual(result['direct_answer'].count('?'), 1)
+                self.assert_no_answer_leak(result)
+
+    def test_provider_failure_uses_safe_uncited_coaching_instead_of_an_excerpt(self):
+        self.generate.side_effect = RuntimeError(POISONS[0])
         result = self.ask()
         self.assertEqual(result['ai_status'], 'fallback')
-        self.assertIn(PASSAGES[0]['passage'], result['rag_answer']['textbook_explanation'])
-        self.assertNotEqual(result['rag_answer'].get('support_level'), 'full')
-        self.assertFalse(result['rag_answer']['grounded'])
+        self.assertEqual(result['rag_answer'], {})
+        self.assertFalse(self.log_event.call_args.kwargs['grounded'])
+        self.assert_guided(result)
+        self.assert_no_answer_leak(result)
+        self.assertNotIn(PASSAGES[0]['passage'], json.dumps(result))
         self.ask()
         self.assertEqual(self.generate.call_count, 2)
+        self.assertEqual(self.stored, {})

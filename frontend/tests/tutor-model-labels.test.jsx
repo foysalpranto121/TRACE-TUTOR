@@ -55,7 +55,7 @@ it('a selected fallback model is distinguished from the configured primary', asy
   mocks.queryTutor.mockResolvedValue({ ai_status: 'live', provider: 'openai', model: 'backup-model', direct_answer: 'Answer' });
   mount(<Workspace />); await screen.findByText('OpenAI · gpt-configured');
   const input = screen.getByRole('textbox', { name: /Ask the tutor/ }); fireEvent.change(input, { target: { value: 'Explain loops' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Get Fix' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Guide my next step' }));
   await screen.findByText('OpenAI · backup-model (fallback model)');
   expect(screen.getByTitle(/Configured primary: OpenAI · gpt-configured; Response model:/)).toBeTruthy();
   await waitFor(() => expect(input.value).toBe(''));
@@ -83,31 +83,33 @@ it('Workspace clears old response metadata through loading and preserves cached 
   mocks.queryTutor.mockResolvedValueOnce({ ai_status: 'live', provider: 'gemini', model: 'old-response', direct_answer: 'First answer', cached: true }).mockReturnValueOnce(pending);
   mount(<Workspace />); await screen.findByText('OpenAI · gpt-configured');
   const input = screen.getByRole('textbox', { name: /Ask the tutor/ });
-  fireEvent.change(input, { target: { value: 'First question' } }); fireEvent.click(screen.getByRole('button', { name: 'Get Fix' }));
+  fireEvent.change(input, { target: { value: 'First question' } }); fireEvent.click(screen.getByRole('button', { name: 'Guide my next step' }));
   await screen.findByText('Gemini · old-response · cached'); await waitFor(() => expect(input.value).toBe(''));
-  fireEvent.change(input, { target: { value: 'Second question' } }); fireEvent.click(screen.getByRole('button', { name: 'Get Fix' }));
+  fireEvent.change(input, { target: { value: 'Second question' } }); fireEvent.click(screen.getByRole('button', { name: 'Guide my next step' }));
   await screen.findByText('OpenAI · gpt-configured · pending'); expect(screen.queryByText('Gemini · old-response · cached')).toBeNull();
-  expect(screen.getByRole('status').textContent).toContain('Generating');
+  expect(screen.getByRole('status').textContent).toContain('Preparing your next guiding question');
   await act(async () => resolve({ ai_status: 'live', provider: 'openai', model: 'new-response', direct_answer: 'Second answer', cached: true }));
   await screen.findByText('OpenAI · new-response · cached');
 });
-it('teacher AI, Textbook, and Dual tabs preserve response provenance and separate answer content', async () => {
+it('teacher AI, Textbook, and Dual tabs preserve provenance and the same bounded coaching question', async () => {
   mocks.arm = 'REASONING_VISIBLE'; mocks.role = 'EXPERT_TEACHER';
-  mocks.queryTutor.mockResolvedValue({ ai_status: 'live', provider: 'openai', model: 'actual-response', direct_answer: 'Answer',
-    rag_answer: { textbook_rule: 'Textbook rule', textbook_explanation: 'Disposable textbook evidence' },
-    independent_ai_answer: { chat_answer: 'Disposable AI answer' }, retrieved_passages: [{ id: 'qa', source_ref: 'QA p.1', passage: 'QA passage' }] });
+  mocks.queryTutor.mockResolvedValue({ ai_status: 'live', provider: 'openai', model: 'actual-response', teaching_mode: 'guided', coaching_policy: 'guided-v1',
+    coaching: { concept_id: 'operators', focus: 'attempt', concept: 'Remainders describe what is left.',
+      question: 'What have you tried to find the remainder?', boundary_message: 'I will guide one small step at a time.' },
+    rag_answer: { textbook_rule: 'Legacy full answer', textbook_explanation: 'Legacy full explanation' },
+    independent_ai_answer: { chat_answer: 'Legacy independent answer' },
+    retrieved_passages: [{ id: 'qa', source_ref: 'NCTB HSC ICT p.1', passage: 'Legacy raw passage' }] });
   mount(<Workspace />); await screen.findByText('OpenAI · gpt-configured');
   fireEvent.change(screen.getByRole('textbox', { name: /Ask the tutor/ }), { target: { value: '7 % 2' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Ask', exact: true })); await screen.findByText('Disposable textbook evidence');
-  expect(screen.getByText('Disposable AI answer')).toBeTruthy();
-  fireEvent.click(screen.getByRole('button', { name: 'Textbook', exact: true })); expect(screen.queryByText('Disposable AI answer')).toBeNull();
-  expect(screen.getByText('OpenAI · actual-response')).toBeTruthy();
-  expect(screen.getByText('QA passage')).toBeTruthy();
-  fireEvent.click(screen.getByRole('button', { name: /Retrieved passages/ })); expect(screen.queryByText('QA passage')).toBeNull();
-  fireEvent.click(screen.getByRole('button', { name: /Retrieved passages/ })); expect(screen.getByText('QA passage')).toBeTruthy();
-  fireEvent.click(screen.getByRole('button', { name: 'AI', exact: true })); expect(screen.queryByText('Disposable textbook evidence')).toBeNull();
-  expect(screen.getByText('Disposable AI answer')).toBeTruthy();
-  fireEvent.click(screen.getByRole('button', { name: 'Dual', exact: true })); expect(screen.getByText('Disposable textbook evidence')).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: 'Guide my next step', exact: true }));
+  await screen.findByText('What have you tried to find the remainder?');
+  expect(screen.getByText(/NCTB HSC ICT p\.1/)).toBeTruthy();
+  for (const tab of ['Textbook', 'AI', 'Dual']) {
+    fireEvent.click(screen.getByRole('button', { name: tab, exact: true }));
+    expect(screen.getByText('OpenAI · actual-response')).toBeTruthy();
+    expect(screen.getAllByText('What have you tried to find the remainder?')).toHaveLength(1);
+    expect(screen.queryByText(/Legacy full|Legacy independent|Legacy raw/)).toBeNull();
+  }
 });
 
 it('Dashboard missing scores remain unavailable instead of becoming null percentages or zero marks', async () => {

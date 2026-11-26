@@ -1,5 +1,5 @@
 import { describeTutorModel } from '../services/tutorModel';
-import { describeTextbookSupport, hasTextbookAnswer } from '../services/textbookSupport';
+import { boundedCoachingHistory, guidedLearning } from '../services/guidedLearning';
 import { formatTimingDate } from '../services/assessmentTiming';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { apiService } from '../services/api';
@@ -30,7 +30,7 @@ import {
   ArrowRightLeft
 } from 'lucide-react';
 import { Button, Badge } from '../components/ui';
-import { ChatMarkdown } from '../components/TutorPanel/ChatMarkdown';
+import { GuidedLearningCard } from '../components/TutorPanel/ReasoningTracePanel';
 
 // Grading runs on the server after the answers are saved; poll at this cadence, and give
 // up waiting (never resubmit - the answers are already stored) after this long.
@@ -70,37 +70,19 @@ const referencesCurrentProblem = (text) => {
   ].some((marker) => value.includes(marker));
 };
 
-/**
- * The opening message in the tutor panel.
- *
- * Plain text only, and deliberately so. This used to ship a hardcoded `rag_answer` -
- * an invented textbook rule with an invented "NCTB Board Textbook - Chapter 5"
- * citation - rendered in the same panel as genuine retrieved answers, in the arm where
- * tutor access is the manipulation. Every participant saw the same fabricated citation
- * regardless of the chapter they were working in. Nothing in this panel may claim a
- * curriculum source that retrieval did not actually return.
- */
-const welcomeMessage = (examType, cleared = false, answerOnly = false) => ({
+// Welcome messages are authored here; historical answer payloads never become guidance.
+const welcomeMessage = (examType, cleared = false) => ({
   sender: 'ai',
-  text: answerOnly
-    ? (cleared
-        ? 'Chat history cleared. Ask about this task and I will give you the direct solution.'
-        : `TRACE Tutor is available during the ${PHASE_LABEL[examType] || 'assessment'}. `
-          + 'Ask about a concept, an error or your code and I will give you the direct answer and a working solution.')
-    : (cleared
-        ? 'Chat history cleared. Ask a question about this task and I will answer from the NCTB textbook passages I retrieve, alongside my own reasoning.'
-        : `TRACE Tutor is available during the ${PHASE_LABEL[examType] || 'assessment'}. `
-          + 'Ask about a concept, an error or your code. Each answer shows the NCTB textbook '
-          + 'passage it is grounded in, with its page citation, next to independent reasoning.'),
+  isNotice: true,
+  text: cleared
+    ? 'Chat history cleared. Share your attempt for a guiding question.'
+    : `${PHASE_LABEL[examType] || 'Assessment'} tutoring uses one question at a time. Share your attempt to work out the next step.`,
   time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
 });
 
 export const AssessmentPage = () => {
   const { language, arm } = useAuth();
-  // The manipulation: the treatment arm sees the reasoning trace and retrieved passages;
-  // the control arm gets only the direct answer and a working solution. The server also
-  // strips the reasoning fields for ANSWER_ONLY, so this decides what is *shown*, never
-  // what is trusted.
+  // Both study arms now receive guided questions; the arm only selects the panel layout.
   const isReasoningArm = arm !== 'ANSWER_ONLY';
   const [examType, setExamType] = useState('pre'); // 'pre', 'post', 'transfer', 'withdrawal'
   // Which papers this participant may open, as reported by the server.
@@ -129,13 +111,17 @@ export const AssessmentPage = () => {
   const [chatMessages, setChatMessages] = useState([]);
   const [inputQuery, setInputQuery] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const aiRequestBusy = useRef(false);
+  const aiRequestGeneration = useRef(0);
   const [chatFilterMode, setChatFilterMode] = useState('dual'); // 'dual' | 'rag' | 'independent'
   const chatContainerRef = useRef(null);
 
   useEffect(() => {
     // Reset AI Assistant Chat when the exam phase changes. Deliberately NOT keyed on the current
     // question - navigating between questions must not wipe the conversation.
-    setChatMessages([welcomeMessage(examType, false, !isReasoningArm)]);
+    setChatMessages([welcomeMessage(examType)]);
+    setIsAiLoading(false);
+    return () => { aiRequestGeneration.current += 1; aiRequestBusy.current = false; };
   }, [examType, isReasoningArm]);
 
   useEffect(() => {
@@ -155,7 +141,10 @@ export const AssessmentPage = () => {
   }, [currentIndex]);
 
   const handleClearChat = () => {
-    setChatMessages([welcomeMessage(examType, true, !isReasoningArm)]);
+    aiRequestGeneration.current += 1;
+    aiRequestBusy.current = false;
+    setIsAiLoading(false);
+    setChatMessages([welcomeMessage(examType, true)]);
   };
 
   const loadItems = useCallback(async (type, isRetake = false) => {
@@ -381,119 +370,48 @@ export const AssessmentPage = () => {
 
   const handleSendAiMessage = async (queryText) => {
     const textToSend = queryText || inputQuery;
-    if (!textToSend.trim()) return;
-
-    const userMsg = {
-      sender: 'user',
-      text: textToSend,
+    if (!textToSend.trim() || aiRequestBusy.current) return;
+    const generation = aiRequestGeneration.current;
+    const history = boundedCoachingHistory(chatMessages.flatMap((message) => {
+      if (message.sender === 'user') return [{ role: 'user', text: message.text }];
+      if (message.response) return [{ role: 'assistant', text: guidedLearning(message.response).question }];
+      return [];
+    }));
+    aiRequestBusy.current = true;
+    setChatMessages((previous) => [...previous, {
+      sender: 'user', text: textToSend,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-
-    setChatMessages((prev) => [...prev, userMsg]);
+    }]);
     if (!queryText) setInputQuery('');
     setIsAiLoading(true);
-
-    const currentItem = filteredItems[currentIndex];
-    const currentCode = userCodeAnswers[currentItem?.id] || currentItem?.code_snippet || '';
-
+    const item = filteredItems[currentIndex];
+    const currentCode = userCodeAnswers[item?.id] || item?.code_snippet || '';
     try {
-      const response = await apiService.queryTutor(
-        textToSend,
-        currentCode,
-        currentItem?.id || 'prob_assessment',
-        arm,   // the participant's real arm; the server resolves it from the profile regardless
-        {
+      const response = await apiService.queryTutor(textToSend, currentCode,
+        item?.id || 'prob_assessment', arm, {
           language,
-          problem_title: currentItem?.title || '',
-          problem_description: currentItem?.question || '',
+          problem_title: item?.title || '',
+          problem_description: item?.question || '',
           use_problem_context: Boolean(queryText) || referencesCurrentProblem(textToSend),
-        }
-      );
-
-      // Control arm: the server returns only direct_answer + code_solution, and this
-      // renders exactly that - no reasoning trace, no retrieved passages, no view modes.
-      if (!isReasoningArm) {
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            sender: 'ai',
-            text: response.direct_answer || 'The AI assistant could not produce an answer.',
-            code_solution: response.code_solution || '',
-            answer_only: true,
-            model: response.model,
-            provider: response.provider,
-            cached: response.cached,
-            ai_status: response.ai_status,
-            ai_error: response.error,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          },
-        ]);
-        return;
-      }
-
-      let replyText = '';
-      if (response.answer) {
-        replyText = response.answer;
-      } else if (response.direct_answer) {
-        replyText = response.direct_answer;
-      } else if (response.reasoning_trace) {
-        const rt = response.reasoning_trace;
-        const promptLower = textToSend.toLowerCase();
-
-        if (promptLower.includes('hint')) {
-          replyText = `💡 **NCTB Pedagogical Hint for ${currentItem?.title || 'this question'}**:\n\n• **Core Concept**: ${rt.concept_applied || 'Loop & Control Logic'}\n\n• **Key Steps**:\n${(rt.problem_breakdown || []).slice(0, 3).join('\n')}\n\n• **Pro Tip**: ${rt.pedagogical_justification || 'Pay close attention to initial variable values and loop termination conditions.'}`;
-        } else if (promptLower.includes('concept')) {
-          replyText = `📖 **NCTB Concept Rule & Standard**:\n\n• **Applied Concept**: ${rt.concept_applied || 'Curriculum Control Structure'}\n\n• **Rule Explanation**: ${rt.pedagogical_justification || 'Follow standard NCTB HSC ICT guidelines.'}`;
-        } else if (promptLower.includes('logic')) {
-          replyText = `⚙️ **Step-by-Step Logic Breakdown**:\n\n${(rt.problem_breakdown || []).map((step) => `• ${step}`).join('\n')}`;
-        } else {
-          replyText = `💡 **NCTB Guidance for ${currentItem?.title || 'this question'}**:\n\n📌 **Concept**: ${rt.concept_applied || 'NCTB Programming Standard'}\n\n📝 **Logic Breakdown**:\n${(rt.problem_breakdown || []).map((step) => `• ${step}`).join('\n')}\n\n💡 **Rationale**: ${rt.pedagogical_justification || 'Follow standard variable initialization and loop conditions.'}`;
-
-          if (rt.code_solution) {
-            replyText += `\n\n💻 **Worked Solution Code**:\n\`\`\`c\n${rt.code_solution}\n\`\`\``;
-          }
-        }
-      } else if (typeof response === 'string') {
-        replyText = response;
-      } else {
-        replyText = `Here is the guidance for ${currentItem?.title || 'this question'}:\n\n• Focus on initializing variables properly.\n• Configure loop boundaries correctly (e.g. i <= N vs i < N).\n• Test with sample inputs.`;
-      }
-
-      if (response.grounded_passage?.passage || (typeof response.grounded_passage === 'string' && response.grounded_passage)) {
-        const passageStr = typeof response.grounded_passage === 'string' ? response.grounded_passage : response.grounded_passage.passage;
-        if (passageStr) {
-          replyText += `\n\n📌 **NCTB Textbook Reference**:\n"${passageStr.substring(0, 220)}..."`;
-        }
-      }
-
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          sender: 'ai',
-          text: replyText,
-          rag_answer: response.rag_answer,
-          independent_ai_answer: response.independent_ai_answer || response.reasoning_trace,
-          retrieved_passages: response.retrieved_passages || [],
-          model: response.model,
-            provider: response.provider,
-            cached: response.cached,
-          ai_status: response.ai_status,
-          ai_error: response.error,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        },
-      ]);
-    } catch (err) {
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          sender: 'ai',
-          text: `AI request failed: ${err.message}`,
-          isError: true,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        },
-      ]);
+          coaching_history: history,
+        });
+      if (generation !== aiRequestGeneration.current) return;
+      setChatMessages((previous) => [...previous, {
+        sender: 'ai', response,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      }]);
+    } catch (_) {
+      if (generation !== aiRequestGeneration.current) return;
+      setChatMessages((previous) => [...previous, {
+        sender: 'ai', isNotice: true, isError: true,
+        text: 'Could not get the next question. Please retry with your attempt.',
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      }]);
     } finally {
-      setIsAiLoading(false);
+      if (generation === aiRequestGeneration.current) {
+        aiRequestBusy.current = false;
+        setIsAiLoading(false);
+      }
     }
   };
 
@@ -686,7 +604,7 @@ export const AssessmentPage = () => {
           <div className="flex items-center gap-3">
             <Sparkles className="w-5 h-5 shrink-0 text-emerald-400 animate-pulse" />
             <span>
-              <strong>AI Tutor Assistant Enabled ({examType === 'post' ? 'Post-Test' : 'Transfer Test'}):</strong> You can chat with TRACE AI Assistant on the right panel to ask for explanations, hints, or logic steps like ChatGPT!
+              <strong>Guided AI Tutor Enabled ({examType === 'post' ? 'Post-Test' : 'Transfer Test'}):</strong> Share your attempt with TRACE Tutor to work through one next-step question at a time.
             </span>
           </div>
           <span className="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold text-[11px] border border-emerald-500/40 shrink-0">
@@ -985,7 +903,7 @@ export const AssessmentPage = () => {
                       <Bot className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-xs font-bold text-on-surface">TRACE Tutor AI Assistant</h3>
+                      <h3 className="text-xs font-bold text-on-surface">TRACE Guided Tutor</h3>
                       <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Active in {examType === 'post' ? 'Post-Test' : 'Transfer Test'}
                       </span>
@@ -1005,7 +923,7 @@ export const AssessmentPage = () => {
                         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                         : 'bg-amber-500/10 text-amber-500 border-amber-500/30'
                     }`}>
-                      {isReasoningArm ? 'Dual RAG + AI' : 'Answer-Only'}
+                      {isReasoningArm ? 'Dual RAG + AI' : 'Guided AI'}
                     </span>
                   </div>
                 </div>
@@ -1047,193 +965,64 @@ export const AssessmentPage = () => {
                 )}
               </div>
 
-              {/* Suggested Quick Prompts. The reasoning arm's hint/concept/logic prompts each
-                  elicit the reasoning trace, so the control arm gets a single direct-answer prompt. */}
+              {/* Every prompt requests one bounded coaching question in either arm. */}
               <div className="p-2.5 bg-surface-container-lowest border-b border-outline-variant/20 flex items-center gap-1.5 overflow-x-auto text-[11px] font-mono">
                 {isReasoningArm ? (
                   <>
                     <button
-                      onClick={() => handleSendAiMessage('Give me a hint for this question without spoiling the full answer')}
+                      onClick={() => handleSendAiMessage('Give me one small hint without giving the answer.')}
                       className="px-2.5 py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-primary whitespace-nowrap border border-primary/20 flex items-center gap-1"
                     >
                       <Lightbulb className="w-3 h-3" /> Hint
                     </button>
                     <button
-                      onClick={() => handleSendAiMessage('Explain the core concept and NCTB textbook rule for this problem')}
+                      onClick={() => handleSendAiMessage('Help me identify one useful concept for my attempt.')}
                       className="px-2.5 py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-sky-400 whitespace-nowrap border border-sky-500/20 flex items-center gap-1"
                     >
                       <BookOpen className="w-3 h-3" /> Concept Rule
                     </button>
                     <button
-                      onClick={() => handleSendAiMessage('How should I structure the main logic and loop condition?')}
+                      onClick={() => handleSendAiMessage('Ask me one question about the part I should think through next.')}
                       className="px-2.5 py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-purple-400 whitespace-nowrap border border-purple-500/20 flex items-center gap-1"
                     >
-                      <Code className="w-3 h-3" /> Logic Structure
+                      <Code className="w-3 h-3" /> Guide my next step
                     </button>
                   </>
                 ) : (
                   <button
-                    onClick={() => handleSendAiMessage('Give me the direct solution to this task')}
+                    onClick={() => handleSendAiMessage('Help me work out one next step from my attempt.')}
                     className="px-2.5 py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-amber-500 whitespace-nowrap border border-amber-500/20 flex items-center gap-1"
                   >
-                    <Code className="w-3 h-3" /> Direct Solution
+                    <Code className="w-3 h-3" /> Guide my next step
                   </button>
                 )}
               </div>
 
               {/* Chat History Body */}
               <div ref={chatContainerRef} className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-3.5 text-xs">
-                {chatMessages.map((msg, idx) => {
-                  const textbookSupport = describeTextbookSupport(msg.rag_answer, msg.ai_status);
-                  const hasRagAnswer = hasTextbookAnswer(msg.rag_answer);
-                  return (
-                  <div
-                    key={idx}
-                    className={`flex items-start gap-2.5 ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}
-                  >
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                      msg.sender === 'user' ? 'bg-primary text-on-primary' : 'bg-emerald-500/20 text-emerald-400'
-                    }`}>
+                {chatMessages.map((msg, idx) => (
+                  <div key={idx} className={`flex items-start gap-2.5 ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}>
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${msg.sender === 'user' ? 'bg-primary text-on-primary' : 'bg-emerald-500/20 text-emerald-400'}`}>
                       {msg.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                     </div>
-
-                    <div className={`max-w-[88%] space-y-2 ${
-                      msg.sender === 'user'
-                        ? 'bg-primary text-on-primary p-3 rounded-2xl rounded-tr-none'
-                        : 'bg-surface-container-lowest text-on-surface border border-outline-variant/20 p-3.5 rounded-2xl rounded-tl-none space-y-3'
-                    }`}>
-                      {msg.sender === 'user' ? (
-                        <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                    <div className={`max-w-[88%] space-y-2 p-3.5 rounded-2xl ${msg.sender === 'user' ? 'bg-primary text-on-primary rounded-tr-none' : 'bg-surface-container-lowest text-on-surface border border-outline-variant/20 rounded-tl-none'}`}>
+                      {msg.sender === 'user' || msg.isNotice ? (
+                        <p className={`leading-relaxed whitespace-pre-wrap ${msg.isError ? 'text-rose-400' : ''}`}>{msg.text}</p>
                       ) : (
-                        <div className="space-y-3">
-                          {/* SECTION A: RAG NCTB TEXTBOOK GROUNDED ANSWER */}
-                          {isReasoningArm && (chatFilterMode === 'dual' || chatFilterMode === 'rag') && hasRagAnswer && (
-                            <div className="bg-sky-500/10 border border-sky-500/30 rounded-xl p-3 space-y-1.5">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-extrabold text-sky-400 font-mono flex items-center gap-1">
-                                  <BookOpen className="w-3.5 h-3.5" /> 📖 NCTB Textbook RAG Answer
-                                </span>
-                                <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-bold ${
-                                  textbookSupport.tone === 'neutral'
-                                    ? 'bg-surface-container-high text-on-surface-variant'
-                                    : textbookSupport.tone === 'caution'
-                                      ? 'bg-amber-500/20 text-amber-400'
-                                      : 'bg-sky-500/20 text-sky-300'
-                                }`}>
-                                  {textbookSupport.label}
-                                </span>
-                              </div>
-                              <h5 className="font-bold text-on-surface text-xs">{msg.rag_answer.textbook_rule}</h5>
-                              {msg.rag_answer.curriculum_citation && (
-                                <p className="text-[10px] text-on-surface-variant font-mono">📍 {msg.rag_answer.curriculum_citation}</p>
-                              )}
-                              <p className="text-[11px] italic bg-surface-container p-2.5 rounded-lg border border-outline-variant/20 leading-relaxed text-on-surface whitespace-pre-wrap">
-                                &ldquo;{msg.rag_answer.textbook_explanation}&rdquo;
-                              </p>
-                              {textbookSupport.level === 'concepts' && (
-                                <p className="text-[11px] text-amber-400 leading-relaxed">
-                                  The retrieved passages support these concepts; a complete worked solution is not provided.
-                                </p>
-                              )}
-                              {msg.retrieved_passages?.length > 0 && (
-                                <details className="text-[10px] text-on-surface-variant">
-                                  <summary className="cursor-pointer font-mono font-bold text-sky-400">Retrieved passages ({msg.retrieved_passages.length})</summary>
-                                  <div className="mt-1 space-y-1">
-                                    {msg.retrieved_passages.map((p, i) => (
-                                      <div key={p.id || i} className="bg-surface-container p-2 rounded-lg border border-outline-variant/20">
-                                        <span className="font-mono font-bold text-on-surface">[{i + 1}] {p.source_ref}</span>
-                                        <span className="ml-1 text-sky-400">{Math.round((p.similarity_score || 0) * 100)}%</span>
-                                        <p className="line-clamp-3 whitespace-pre-wrap mt-0.5">{p.passage}</p>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </details>
-                              )}
-                            </div>
-                          )}
-
-                          {msg.ai_status === 'fallback' && (
-                            <p className="text-[10px] text-amber-500 bg-amber-500/10 border border-amber-500/30 rounded-lg p-2">
-                              AI generation is unavailable — showing textbook material. {msg.ai_error}
-                            </p>
-                          )}
-
-                          {/* SECTION B: INDEPENDENT AI REASONING & CODE */}
-                          {isReasoningArm && (chatFilterMode === 'dual' || chatFilterMode === 'independent') && msg.independent_ai_answer && (
-                            <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-3 space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-extrabold text-purple-400 font-mono flex items-center gap-1">
-                                  <Sparkles className="w-3.5 h-3.5" /> 🤖 Independent AI Explanation
-                                </span>
-                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold">
-                                  {describeTutorModel(null, msg).label}
-                                </span>
-                              </div>
-
-                              {msg.independent_ai_answer.chat_answer && (
-                                <div className="bg-surface-container p-3 rounded-lg border border-outline-variant/30">
-                                  <ChatMarkdown
-                                    text={msg.independent_ai_answer.chat_answer}
-                                    className="text-xs text-on-surface font-medium"
-                                  />
-                                </div>
-                              )}
-
-                              {msg.independent_ai_answer.concept_applied && (
-                                <p className="text-xs font-bold text-on-surface">
-                                  💡 Concept: <span className="text-purple-300 font-semibold">{msg.independent_ai_answer.concept_applied}</span>
-                                </p>
-                              )}
-
-                              {msg.independent_ai_answer.problem_breakdown && (
-                                <div className="space-y-1">
-                                  <span className="text-[10px] font-mono uppercase text-purple-400 font-bold block">Logic Breakdown:</span>
-                                  {msg.independent_ai_answer.problem_breakdown.map((st, i) => (
-                                    <p key={i} className="text-xs text-on-surface leading-snug">• {st}</p>
-                                  ))}
-                                </div>
-                              )}
-
-                              {msg.independent_ai_answer.pedagogical_justification && (
-                                <p className="text-[11px] text-on-surface font-medium bg-surface-container p-2 rounded-lg leading-relaxed">
-                                  🧠 {msg.independent_ai_answer.pedagogical_justification}
-                                </p>
-                              )}
-
-                              {msg.independent_ai_answer.code_solution && (
-                                <div className="bg-slate-900 p-2.5 rounded-lg font-mono text-[11px] text-cyan-300 overflow-x-auto">
-                                  <pre>{msg.independent_ai_answer.code_solution}</pre>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Answer-only view (control arm) and any plain text reply */}
-                          {(msg.answer_only || (!hasRagAnswer && !msg.independent_ai_answer)) && (
-                            <div className="space-y-2">
-                              <p className={`leading-relaxed whitespace-pre-wrap ${msg.isError ? 'text-rose-400 font-mono' : ''}`}>{msg.text}</p>
-                              {msg.code_solution && (
-                                <div className="bg-slate-900 p-2.5 rounded-lg font-mono text-[11px] text-amber-300 overflow-x-auto">
-                                  <pre>{msg.code_solution}</pre>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
+                        <>
+                          <p className="text-[10px] font-mono text-on-surface-variant">{describeTutorModel(null, msg.response).label} · guided learning</p>
+                          <GuidedLearningCard response={msg.response} showSources={chatFilterMode !== 'independent'} />
+                        </>
                       )}
-
-                      <span className={`text-[9px] font-mono block text-right ${msg.sender === 'user' ? 'text-on-primary/70' : 'text-on-surface-variant'}`}>
-                        {msg.time}
-                      </span>
+                      <span className={`text-[9px] font-mono block text-right ${msg.sender === 'user' ? 'text-on-primary/70' : 'text-on-surface-variant'}`}>{msg.time}</span>
                     </div>
                   </div>
-                  );
-                })}
+                ))}
 
                 {isAiLoading && (
                   <div className="flex items-center gap-2 text-xs text-primary font-mono animate-pulse p-2">
                     <Bot className="w-4 h-4 text-primary" />
-                    <span>{isReasoningArm ? 'TRACE AI is retrieving RAG passages & generating AI concept response...' : 'TRACE AI is generating the direct solution...'}</span>
+                    <span>Preparing your next guiding question...</span>
                   </div>
                 )}
               </div>
@@ -1245,12 +1034,13 @@ export const AssessmentPage = () => {
                   value={inputQuery}
                   onChange={(e) => setInputQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSendAiMessage()}
-                  placeholder="Ask AI Assistant for help, hints or logic..."
+                  placeholder="Share your attempt or the step you are stuck on..."
                   aria-label="Ask the AI assistant for help, hints or logic"
                   className="flex-1 bg-surface-container-lowest text-on-surface text-xs rounded-xl px-3.5 py-2.5 border border-outline-variant/30 outline-none focus:border-primary"
                 />
                 <button
                   onClick={() => handleSendAiMessage()}
+                  aria-label="Send my attempt"
                   disabled={isAiLoading || !inputQuery.trim()}
                   className="p-2.5 rounded-xl bg-primary text-on-primary hover:bg-primary-container disabled:opacity-40 transition-all shrink-0"
                 >
