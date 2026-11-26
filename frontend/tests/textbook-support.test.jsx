@@ -20,6 +20,7 @@ afterEach(cleanup);
 
 const conceptNotice = 'The retrieved passages support these concepts; a complete worked solution is not provided.';
 const response = (ragAnswer = {}, extra = {}) => ({
+  tutoring_policy: 'no-full-solution-v1',
   ai_status: 'live',
   rag_answer: {
     textbook_rule: 'Use repetition and a running total.',

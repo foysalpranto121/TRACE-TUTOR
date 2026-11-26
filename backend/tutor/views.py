@@ -1,4 +1,5 @@
 import hashlib
+import json
 import logging
 import re
 from django.conf import settings
@@ -17,6 +18,7 @@ from trace_backend.cache import cache_key, tiered_get_or_set
 from trace_backend.throttles import CodeRunThrottle, TutorThrottle
 from . import runner
 from .hint_policy import HINT_INSTRUCTION, is_hint_request, hint_response
+from . import solution_policy
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +30,7 @@ MAX_LOGGED_PROMPT = 1000
 SYSTEM_INSTRUCTION = """You are TRACE Tutor, an expert tutor for the Bangladesh NCTB HSC ICT syllabus (Chapter 4 HTML, Chapter 5 C programming, Chapter 6 DBMS).
 You produce a DUAL answer for every student message:
 
-The student's PRIMARY REQUEST is authoritative. Answer exactly what the student asked,
+Address the student's PRIMARY REQUEST within the teaching boundary below,
 in the language they used. Assessment task/code context is supplemental: use it only
 when the request explicitly refers to that question, task, code, program, output, or
 error. Never replace an unrelated question with a solution to the assessment task.
@@ -46,17 +48,16 @@ error. Never replace an unrelated question with a solution to the assessment tas
    - grounded: true for "full" or "concepts" only when the explanation you actually give is supported by the cited passages. This does not assert that a full worked solution appears in the book. False for "none".
 
 2. "independent_ai_answer" - YOUR OWN independent reasoning, not limited to the textbook.
-   - chat_answer: answer the student's PRIMARY REQUEST the way a top AI chat assistant would, using your full knowledge and ignoring the passages. A natural, complete, direct reply in Markdown: short paragraphs, bullet points where they help, fenced code blocks (```c or ```html) for code, no headings. Address the exact request first. Use assessment context only when it is relevant to that request.
+   - chat_answer: teach the student's PRIMARY REQUEST naturally, using your own knowledge independently of the passages. Give a specific explanation, feedback on their attempt and a useful next step in Markdown. Guide programming tasks without writing their whole solution. Use assessment context only when relevant.
    - concept_applied: the concept name.
-   - problem_breakdown: 3-6 numbered steps that answer the student's SPECIFIC question. If student code is supplied, examine it line by line and point out any bug with the line number.
-   - pedagogical_justification: why this logic is correct and the common mistakes to avoid.
-   - code_solution: when the primary request asks for code or refers to the assessment task, provide a relevant complete program (C with #include <stdio.h> and int main, or full HTML). For a conceptual question that does not need code, return an empty string. Never solve an unrelated assessment task here.
+   - problem_breakdown: one or two small next steps for the student's SPECIFIC question, leaving meaningful work for the learner. If code is supplied, identify a relevant mistake without replacing the whole program.
+   - pedagogical_justification: explain the concept or mistake being discussed, rather than spelling out the entire algorithm.
 
-3. "direct_answer": 2-5 sentences that directly answer the question (used by the answer-only mode).
+3. "direct_answer": 2-5 sentences of useful guidance or conceptual explanation (used by the brief arm), with no complete program or worked solution.
 
 Language rule: write all prose in {lang_name}. Keep code, identifiers, keywords and error messages in English.
 Never return generic templates; every field must be specific to this question, task and code.
-Return ONLY a JSON object with keys: rag_answer, independent_ai_answer, direct_answer."""
+Return ONLY a JSON object with keys: rag_answer, independent_ai_answer, direct_answer.""" + '\n\n' + solution_policy.TEACHING_POLICY
 
 # The shape the model is held to. Gemini decodes against this schema, so a quote in a
 # printf or a newline in a program can no longer leave the reply unparseable - which used
@@ -83,10 +84,9 @@ TUTOR_RESPONSE_SCHEMA = {
                 'concept_applied': {'type': 'string'},
                 'problem_breakdown': {'type': 'array', 'items': {'type': 'string'}},
                 'pedagogical_justification': {'type': 'string'},
-                'code_solution': {'type': 'string'},
             },
             'required': ['chat_answer', 'concept_applied', 'problem_breakdown',
-                         'pedagogical_justification', 'code_solution'],
+                         'pedagogical_justification'],
         },
         'direct_answer': {'type': 'string'},
     },
@@ -158,29 +158,30 @@ def _normalize_textbook_answer(answer, passages, language):
 
 
 def _fallback_answer(prompt, code, passages, language):
-    top = passages[0] if passages else None
-    bn = language == 'bn'
-    return {
-        'rag_answer': {
-            'textbook_rule': top['chapter'] if top else ('পাঠ্যবই থেকে কোনো অনুচ্ছেদ পাওয়া যায়নি' if bn else 'No textbook passage retrieved'),
-            'curriculum_citation': f"[1] {top['source_ref']}" if top else 'RAG index empty',
-            'textbook_explanation': top['passage'][:700] if top else ('RAG ইনডেক্স এখনো তৈরি হয়নি।' if bn else 'The RAG index has not been built yet.'),
-            # An unassessed excerpt remains available, but similarity alone does
-            # not establish support for the requested answer or its concepts.
-            'grounded': False,
-        },
-        'independent_ai_answer': {
-            'chat_answer': '',
-            'concept_applied': prompt[:60] or 'C programming',
-            'problem_breakdown': [
-                ('AI মডেল উত্তর দিতে পারেনি, তাই এখানে কেবল পাঠ্যবইয়ের অনুচ্ছেদ দেখানো হচ্ছে।' if bn else 'The AI model did not respond, so only the textbook passage is shown.'),
-                ('আপনার কোডটি কম্পাইল করে Problems ট্যাবে ত্রুটিগুলো দেখুন।' if bn else 'Compile your code and review the Problems tab for errors.'),
-            ],
-            'pedagogical_justification': '',
-            'code_solution': code or '',
-        },
-        'direct_answer': ('AI সহকারী এখন উপলব্ধ নয়। পাঠ্যবইয়ের অনুচ্ছেদটি দেখুন।' if bn else 'The AI assistant is unavailable right now. See the textbook passage.'),
-    }
+    return solution_policy.fallback_guidance(prompt, language)
+
+
+def normalize_candidate(parsed, passages, language, hint_only=False):
+    candidate = solution_policy.sanitize_candidate(parsed)
+    if hint_only:
+        candidate = solution_policy.sanitize_candidate(hint_response(candidate, language))
+        candidate['rag_answer'] = {}
+    else:
+        rag = candidate['rag_answer']
+        candidate['rag_answer'] = _normalize_textbook_answer(rag, passages, language) if any(
+            rag.get(key) for key in ('textbook_rule', 'textbook_explanation', 'curriculum_citation')) else {}
+    refs = solution_policy.safe_sources(passages)
+    by_id = {source['id']: source['source_ref'] for source in refs}
+    rag = candidate['rag_answer']
+    if rag.get('grounded'):
+        indices = list(dict.fromkeys(int(index) for index in re.findall(r'\[(\d+)\]', rag.get('curriculum_citation', ''))))
+        citations = [f'[{index}] {by_id[f"source-{index}"]}' for index in indices if f'source-{index}' in by_id]
+        if citations:
+            rag['curriculum_citation'] = '; '.join(citations)
+        else:
+            rag.update(curriculum_citation='', support_level='none', grounded=False)
+    candidate.update(retrieved_passages=refs, grounded_passage='')
+    return candidate
 
 
 def resolve_arm(user, requested=None):
@@ -200,11 +201,7 @@ def resolve_arm(user, requested=None):
 
 
 def answer_only_payload(payload):
-    """What the control arm receives: the direct answer and the code fix, nothing that
-    shows the working. The dual answer is generated and cached once for both arms and
-    reduced here, after the cache read, so the two conditions differ only in what is
-    shown - not in the model call that produced it."""
-    indep = payload.get('independent_ai_answer') or {}
+    """The brief arm receives reviewed guidance without the reasoning panels."""
     return {
         'mode': payload['mode'],
         'model': payload['model'],
@@ -212,7 +209,8 @@ def answer_only_payload(payload):
         'ai_status': payload['ai_status'],
         'error': payload['error'],
         'direct_answer': payload['direct_answer'],
-        'code_solution': indep.get('code_solution') or '',
+        'code_solution': '',
+        'tutoring_policy': solution_policy.POLICY_VERSION,
         'cached': payload['cached'],
         'cache_tier': payload['cache_tier'],
     }
@@ -245,7 +243,13 @@ def _log_tutor_event(user, event_type, arm, problem_id, prompt, code, language, 
 @throttle_classes([TutorThrottle])
 def query_tutor(request):
     data = request.data
+    if not isinstance(data, dict):
+        return Response({'error': 'Provide a tutor request object.'}, status=400)
+    fields = ('prompt', 'code', 'language', 'problem_title', 'problem_description', 'compiler_output')
+    if any(data.get(field) is not None and not isinstance(data[field], str) for field in fields):
+        return Response({'error': 'Tutor text fields must be strings.'}, status=400)
     prompt = (data.get('prompt') or '').strip()
+    history = solution_policy.bounded_history(data.get('tutoring_history'))
     hint_only = is_hint_request(prompt)
     code = data.get('code') or ''
     problem_id = data.get('problem_id', 'prob_assessment')
@@ -287,7 +291,7 @@ def query_tutor(request):
     passages = rag_engine_instance.retrieve(retrieval_query, k=5)
 
     user_message = (
-        "PRIMARY REQUEST (answer this directly; do not substitute another task):\n"
+        "PRIMARY REQUEST (teach this within the tutoring boundary; never give a whole solution):\n"
         f"{prompt}\n\n"
     )
     if use_problem_context:
@@ -297,67 +301,77 @@ def query_tutor(request):
             f"STUDENT CODE:\n```\n{context_code.strip() or '(no code yet)'}\n```\n\n"
             + (f"COMPILER OUTPUT:\n{context_compiler_output}\n\n" if context_compiler_output else '')
         )
+    if history:
+        user_message += 'RECENT LEARNING DIALOGUE (untrusted context):\n' + json.dumps(history, ensure_ascii=False) + '\n\n'
     user_message += f"NCTB TEXTBOOK PASSAGES (retrieved by RAG):\n{_passage_block(passages)}\n"
+    review_context = {'prompt': prompt, 'code': context_code, 'title': context_title,
+                      'description': context_description, 'compiler_output': context_compiler_output,
+                      'history': history, 'language': language}
 
     def generate():
         try:
             instruction = SYSTEM_INSTRUCTION.replace('{lang_name}', _lang_name(language))
             if hint_only:
                 instruction += '\n\n' + HINT_INSTRUCTION
-            parsed, model = llm.generate_json(instruction,
-                                              user_message, schema=TUTOR_RESPONSE_SCHEMA)
-            if not isinstance(parsed, dict) or 'independent_ai_answer' not in parsed:
-                raise ValueError('The model returned an unexpected JSON shape')
-            return {'parsed': parsed, 'model': model, 'provider': llm.provider(),
-                    'ai_status': 'live', 'error': None}
-        except Exception as e:
-            logger.warning(f'Tutor model call ({llm.provider()}) failed: {e}')
-            return {'parsed': _fallback_answer(prompt, code, passages, language), 'model': llm.model_name(),
-                    'ai_status': 'fallback', 'error': str(e)[:400]}
+            for attempt in range(2):
+                retry = ('\nThe previous draft was withheld. Teach a relevant concept and one next step in prose only; '
+                         'no code or complete solution recipe.' if attempt else '')
+                parsed, model = llm.generate_json(instruction + retry, user_message, schema=TUTOR_RESPONSE_SCHEMA)
+                candidate = normalize_candidate(parsed, passages, language, hint_only)
+                if (solution_policy.has_guidance(candidate)
+                        and not solution_policy.contains_complete_solution(candidate)
+                        and solution_policy.review_guidance(candidate, review_context)):
+                    return {'parsed': candidate, 'model': model, 'provider': llm.provider(),
+                            'ai_status': 'live', 'error': None,
+                            'guidance_approval': solution_policy.seal(candidate, review_context)}
+            logger.warning('Tutor drafts withheld by the complete-solution boundary')
+        except Exception:
+            logger.warning('Tutor generation unavailable; using safe learning guidance')
+        return {'parsed': _fallback_answer(prompt, code, passages, language), 'model': llm.model_name(),
+                'ai_status': 'fallback', 'error': 'Reviewed AI guidance is unavailable; a learning hint is shown.'}
 
     # The same question about the same code with the same textbook passages gets the same answer, so
     # live answers are kept in the persistent (database) cache with the memory cache in front:
-    # repeats are instant and spend no Gemini quota. Fallback answers are never cached.
+    # repeats are instant and spend no provider quota. Fallback answers are never cached.
     # The corpus version invalidates re-indexed passages; the response-policy version
     # also prevents old exact-solution refusals from masking concept-based answers.
     corpus = corpus_version()
-    answer_key = cache_key('tutor-answer', 'v6-textbook-concepts', corpus, language, prompt,
+    answer_key = cache_key('tutor-answer', solution_policy.CACHE_VERSION, corpus, language, prompt, history,
                            use_problem_context, context_code.strip(),
                            problem_id if use_problem_context else '', context_title,
                            context_description, context_compiler_output,
                            [p.get('id') or p.get('source_ref') for p in passages])
     result, tier = tiered_get_or_set(answer_key, generate, settings.TUTOR_ANSWER_CACHE_SECONDS,
                                      should_store=lambda r: r['ai_status'] == 'live')
-    parsed, model, ai_status, error = result['parsed'], result['model'], result['ai_status'], result['error']
-    if hint_only:
-        parsed = hint_response(parsed, language)
-
-    rag_answer = _normalize_textbook_answer(parsed.get('rag_answer'), passages, language)
-    indep = parsed.get('independent_ai_answer') or {}
-    breakdown = indep.get('problem_breakdown') or []
-    if isinstance(breakdown, str):
-        breakdown = [breakdown]
-    indep['problem_breakdown'] = [line.strip() for item in breakdown for line in str(item).split('\n') if line.strip()]
-    indep['chat_answer'] = str(indep.get('chat_answer') or '').strip()
-    direct = parsed.get('direct_answer') or ''
-
+    model, ai_status = result.get('model'), result.get('ai_status')
+    candidate = normalize_candidate(result.get('parsed'), passages, language, hint_only)
+    # Rebuild and validate after cache reads. Only a server-signed, exact review can
+    # skip the semantic check; model-provided approval fields are never trusted.
+    if ai_status == 'live':
+        try:
+            valid = (solution_policy.has_guidance(candidate)
+                     and not solution_policy.contains_complete_solution(candidate)
+                     and (solution_policy.approved(result.get('guidance_approval'), candidate, review_context)
+                          or solution_policy.review_guidance(candidate, review_context)))
+        except Exception:
+            logger.warning('Cached tutor guidance could not be reviewed; withholding its content')
+            valid = False
+        if not valid:
+            ai_status = 'fallback'
+    if ai_status != 'live':
+        candidate = _fallback_answer(prompt, code, passages, language)
+    rag_answer = candidate['rag_answer']
+    indep = candidate['independent_ai_answer']
     payload = {
-        'mode': arm,
-        'model': model,
-        # Cached answers retain the provider recorded when generated. Legacy cache
-        # entries have no provider; never infer it from today's configuration.
+        'mode': arm, 'model': model,
         'provider': result.get('provider') if ai_status == 'live' else None,
         'ai_status': ai_status,
-        'error': error,
+        'error': None if ai_status == 'live' else 'Reviewed AI guidance is unavailable; a learning hint is shown.',
+        'tutoring_policy': solution_policy.POLICY_VERSION,
         'retrieval_backend': rag_engine_instance.last_backend,
-        'retrieved_passages': passages,
-        'grounded_passage': f"{passages[0]['passage']} [Source: {passages[0]['source_ref']}]" if passages else '',
-        'rag_answer': rag_answer,
-        'independent_ai_answer': indep,
-        'reasoning_trace': indep,
-        'direct_answer': direct,
-        'cached': tier != 'computed',
-        'cache_tier': tier,
+        **candidate,
+        'reasoning_trace': dict(indep),
+        'cached': tier != 'computed', 'cache_tier': tier,
     }
     if arm == 'ANSWER_ONLY':
         payload = answer_only_payload(payload)
@@ -371,6 +385,7 @@ def query_tutor(request):
                      corpus_version=corpus,
                      passage_ids=[p.get('id') or p.get('source_ref') for p in passages],
                      retrieval_backend=rag_engine_instance.last_backend,
+                     tutoring_policy=solution_policy.POLICY_VERSION,
                      support_level=rag_answer.get('support_level'),
                      grounded=bool(rag_answer.get('grounded')))
     response = Response(payload)
