@@ -3,8 +3,8 @@ import { describeTextbookSupport, hasTextbookAnswer } from '../../services/textb
 import { TutorAvailabilityNotice } from './TutorAvailabilityNotice';
 import { TutorQuestionForm } from './TutorQuestionForm';
 import { useState } from 'react';
-import { Brain, BookOpen, Sparkles, ChevronDown, ChevronUp, Layers, HelpCircle, ShieldCheck, AlertTriangle, FileText, MessageSquare } from 'lucide-react';
-import { safeTutorResponse, RETRY_GUIDANCE } from '../../services/tutorGuidance';
+import { Brain, BookOpen, Sparkles, CheckCircle2, Copy, Check, ChevronDown, ChevronUp, Layers, HelpCircle, ShieldCheck, AlertTriangle, FileText, MessageSquare } from 'lucide-react';
+import { apiService } from '../../services/api';
 import { ChatMarkdown } from './ChatMarkdown';
 
 const PLACEHOLDERS = {
@@ -15,6 +15,7 @@ const PLACEHOLDERS = {
 
 export const ReasoningTracePanel = ({
   traceData,
+  groundedPassage,
   isLoading,
   error,
   modelMetadata,
@@ -23,14 +24,27 @@ export const ReasoningTracePanel = ({
   queryText,
   onQueryChange,
   onRequestHelp,
+  onCopyCode,
 }) => {
+  const [copied, setCopied] = useState(false);
   const [showPassages, setShowPassages] = useState(true);
   const [viewTab, setViewTab] = useState('dual'); // 'dual' | 'rag' | 'independent'
 
-  const response = safeTutorResponse(traceData);
-  const ragData = response?.rag_answer || {};
-  const indepData = response?.independent_ai_answer || {};
-  const passages = response?.retrieved_passages || [];
+  const handleCopy = (code) => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    apiService.logTelemetry('COPY_PASTE', { code_length: code.length });
+    if (onCopyCode) onCopyCode(code);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+
+  const ragData = traceData?.rag_answer || {
+    curriculum_citation: '',
+    textbook_explanation: typeof groundedPassage === 'string' ? groundedPassage : groundedPassage?.passage || '',
+  };
+  const indepData = traceData?.independent_ai_answer || {};
+  const passages = traceData?.retrieved_passages || [];
   const modelInfo = describeTutorModel(modelMetadata, traceData, isLoading);
   const modelLabel = modelInfo.label;
   const isFallback = traceData?.ai_status === 'fallback';
@@ -96,20 +110,19 @@ export const ReasoningTracePanel = ({
         {!isLoading && !error && !traceData && (
           <div className="text-xs text-on-surface-variant italic py-6 text-center">
             {viewTab === 'independent'
-              ? 'Ask the AI about your attempt. It explains the relevant concept and helps you work out the next step.'
+              ? 'Ask the AI anything, like a chat assistant. It answers from its own knowledge, with a worked solution for your code.'
               : viewTab === 'rag'
                 ? 'Ask what the textbook says. You will get an answer grounded in the NCTB passages, with page citations.'
                 : 'Ask a question about your code or an NCTB concept. You will get a textbook-grounded answer (with page citations) and an independent AI explanation.'}
           </div>
         )}
 
-        {!isLoading && response && (
+        {!isLoading && traceData && (
           <div className="space-y-4">
-            {response.response_needs_retry && <p role="status" className="text-xs text-amber-500">{RETRY_GUIDANCE}</p>}
             {isFallback && (
               <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-[11px] text-amber-500 flex items-start gap-2">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span><strong>AI generation is unavailable</strong> ? showing the available guidance. Try again when the model is available.</span>
+                <span><strong>AI generation is unavailable</strong> - showing the retrieved textbook passage only. {traceData.error}</span>
               </div>
             )}
 
@@ -150,12 +163,12 @@ export const ReasoningTracePanel = ({
                   </button>
                   {showPassages && (
                     <div className="mt-2 space-y-1.5">
-                      {passages.length === 0 && <div className="text-[11px] text-amber-500">No textbook references are available for this question yet.</div>}
+                      {passages.length === 0 && <div className="text-[11px] text-amber-500">No passages in the index yet. Run RAG ingestion from the RAG Inspector page.</div>}
                       {passages.map((p, i) => (
                         <div key={p.id || i} className="bg-surface-container p-2.5 rounded-lg border border-outline-variant/20 text-[11px]">
                           <div className="flex items-center justify-between gap-2 mb-1">
-                            <span className="font-mono font-bold text-on-surface">[{p.number || i + 1}] {p.source_ref}</span>
-                            <span className="font-mono text-sky-400 shrink-0">{Math.round((p.similarity_score || 0) * 100)}% similarity</span>
+                            <span className="font-mono font-bold text-on-surface">[{i + 1}] {p.source_ref}</span>
+                            <span className="font-mono text-sky-400 shrink-0">{Math.round((p.similarity_score || 0) * 100)}%</span>
                           </div>
                           <div className="text-on-surface-variant leading-relaxed line-clamp-4 whitespace-pre-wrap">{p.passage}</div>
                         </div>
@@ -175,11 +188,13 @@ export const ReasoningTracePanel = ({
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30">{modelLabel}</span>
                 </div>
 
-                {/* Contextual guidance from the model, checked by the server before rendering. */}
+                {/* The free-form answer: what the model would say in a chat, from its own
+                    knowledge, not held to the textbook. The structured breakdown below it
+                    is the same answer shown as reasoning steps. */}
                 {indepData.chat_answer && (
                   <div className="bg-surface-container p-3.5 rounded-xl border border-outline-variant/30 space-y-1.5">
                     <span className="text-[10px] font-mono uppercase text-purple-400 font-extrabold flex items-center gap-1">
-                      <MessageSquare className="w-3.5 h-3.5" /> AI Guidance
+                      <MessageSquare className="w-3.5 h-3.5" /> AI Answer
                     </span>
                     <ChatMarkdown text={indepData.chat_answer} className="text-xs text-on-surface font-medium" />
                   </div>
@@ -197,7 +212,7 @@ export const ReasoningTracePanel = ({
 
                 {indepData.problem_breakdown?.length > 0 && (
                   <div className="space-y-2">
-                    <h5 className="text-[11px] font-extrabold text-on-surface uppercase tracking-wider font-mono">Reasoning Hints:</h5>
+                    <h5 className="text-[11px] font-extrabold text-on-surface uppercase tracking-wider font-mono">Logic & Problem Breakdown:</h5>
                     <div className="space-y-1.5">
                       {indepData.problem_breakdown.map((step, idx) => (
                         <div key={idx} className="bg-surface-container p-3 rounded-xl border border-outline-variant/30 flex items-start gap-2.5 text-xs text-on-surface font-medium">
@@ -218,7 +233,25 @@ export const ReasoningTracePanel = ({
                   </div>
                 )}
 
-
+                {indepData.code_solution && (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-extrabold text-on-surface font-mono flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Worked Code Solution
+                      </span>
+                      <button
+                        onClick={() => handleCopy(indepData.code_solution)}
+                        className="px-2 py-0.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-[10px] font-mono text-primary font-bold flex items-center gap-1 transition-colors border border-outline-variant/20 shadow-sm"
+                      >
+                        {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                        {copied ? 'Copied!' : 'Copy Code'}
+                      </button>
+                    </div>
+                    <div className="bg-slate-900 dark:bg-surface-container-lowest p-3.5 rounded-xl border border-outline-variant/30 overflow-x-auto shadow-inner">
+                      <pre className="font-mono text-xs text-cyan-300 dark:text-primary leading-relaxed whitespace-pre-wrap">{indepData.code_solution}</pre>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -52,48 +52,48 @@ it('missing metadata uses a neutral label in both screens', async () => {
   expect(screen.getByText('AI Tutor')).toBeTruthy(); expect(screen.queryByText('Gemini')).toBeNull();
 });
 it('a selected fallback model is distinguished from the configured primary', async () => {
-  mocks.queryTutor.mockResolvedValue({ tutoring_policy: 'no-full-solution-v1', ai_status: 'live', provider: 'openai', model: 'backup-model', direct_answer: 'Answer' });
+  mocks.queryTutor.mockResolvedValue({ ai_status: 'live', provider: 'openai', model: 'backup-model', direct_answer: 'Answer' });
   mount(<Workspace />); await screen.findByText('OpenAI · gpt-configured');
   const input = screen.getByRole('textbox', { name: /Ask the tutor/ }); fireEvent.change(input, { target: { value: 'Explain loops' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Get Guidance' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Get Fix' }));
   await screen.findByText('OpenAI · backup-model (fallback model)');
   expect(screen.getByTitle(/Configured primary: OpenAI · gpt-configured; Response model:/)).toBeTruthy();
   await waitFor(() => expect(input.value).toBe(''));
 });
 it('provider response labels never overwrite the configured primary description', () => {
-  const info = describeTutorModel(metadata(), { tutoring_policy: 'no-full-solution-v1', ai_status: 'live', provider: 'gemini', model: 'gemini-response', cached: true });
+  const info = describeTutorModel(metadata(), { ai_status: 'live', provider: 'gemini', model: 'gemini-response', cached: true });
   expect(info.label).toBe('Gemini · gemini-response'); expect(info.title).toContain('Configured primary: OpenAI · gpt-configured');
   expect(info.title).toContain('cached answer');
 });
 it('textbook fallback and legacy responses do not fabricate provider/model provenance', () => {
   expect(describeTutorModel(metadata(), { ai_status: 'fallback', model: 'gpt-configured' }).label).toBe('Textbook fallback');
-  expect(describeTutorModel(metadata(), { tutoring_policy: 'no-full-solution-v1', ai_status: 'live', model: 'legacy-model', cached: true }).label).toBe('legacy-model');
+  expect(describeTutorModel(metadata(), { ai_status: 'live', model: 'legacy-model', cached: true }).label).toBe('legacy-model');
   expect(describeTutorModel(null, { model: 'unverified-model' }).label).toBe('AI Tutor');
   expect(configuredTutorLabel({ provider: 'openai', primary_model: 'gpt-configured', configured: false })).toBe('AI Tutor');
 });
 
 it('pending metadata uses the configured primary and never attributes an old cached model to a new request', () => {
-  const pending = describeTutorModel(metadata(), { tutoring_policy: 'no-full-solution-v1', ai_status: 'live', provider: 'gemini', model: 'old-response', cached: true }, true);
+  const pending = describeTutorModel(metadata(), { ai_status: 'live', provider: 'gemini', model: 'old-response', cached: true }, true);
   expect(pending.label).toBe('OpenAI · gpt-configured · pending');
   expect(pending.title).toContain('Response pending'); expect(pending.title).not.toContain('old-response');
   expect(describeTutorModel(null, null, true).label).toBe('AI Tutor · pending');
 });
 it('Workspace clears old response metadata through loading and preserves cached completed provenance', async () => {
   let resolve; const pending = new Promise((done) => { resolve = done; });
-  mocks.queryTutor.mockResolvedValueOnce({ tutoring_policy: 'no-full-solution-v1', ai_status: 'live', provider: 'gemini', model: 'old-response', direct_answer: 'First answer', cached: true }).mockReturnValueOnce(pending);
+  mocks.queryTutor.mockResolvedValueOnce({ ai_status: 'live', provider: 'gemini', model: 'old-response', direct_answer: 'First answer', cached: true }).mockReturnValueOnce(pending);
   mount(<Workspace />); await screen.findByText('OpenAI · gpt-configured');
   const input = screen.getByRole('textbox', { name: /Ask the tutor/ });
-  fireEvent.change(input, { target: { value: 'First question' } }); fireEvent.click(screen.getByRole('button', { name: 'Get Guidance' }));
+  fireEvent.change(input, { target: { value: 'First question' } }); fireEvent.click(screen.getByRole('button', { name: 'Get Fix' }));
   await screen.findByText('Gemini · old-response · cached'); await waitFor(() => expect(input.value).toBe(''));
-  fireEvent.change(input, { target: { value: 'Second question' } }); fireEvent.click(screen.getByRole('button', { name: 'Get Guidance' }));
+  fireEvent.change(input, { target: { value: 'Second question' } }); fireEvent.click(screen.getByRole('button', { name: 'Get Fix' }));
   await screen.findByText('OpenAI · gpt-configured · pending'); expect(screen.queryByText('Gemini · old-response · cached')).toBeNull();
   expect(screen.getByRole('status').textContent).toContain('Generating');
-  await act(async () => resolve({ tutoring_policy: 'no-full-solution-v1', ai_status: 'live', provider: 'openai', model: 'new-response', direct_answer: 'Second answer', cached: true }));
+  await act(async () => resolve({ ai_status: 'live', provider: 'openai', model: 'new-response', direct_answer: 'Second answer', cached: true }));
   await screen.findByText('OpenAI · new-response · cached');
 });
 it('teacher AI, Textbook, and Dual tabs preserve response provenance and separate answer content', async () => {
   mocks.arm = 'REASONING_VISIBLE'; mocks.role = 'EXPERT_TEACHER';
-  mocks.queryTutor.mockResolvedValue({ tutoring_policy: 'no-full-solution-v1', ai_status: 'live', provider: 'openai', model: 'actual-response', direct_answer: 'Answer',
+  mocks.queryTutor.mockResolvedValue({ ai_status: 'live', provider: 'openai', model: 'actual-response', direct_answer: 'Answer',
     rag_answer: { textbook_rule: 'Textbook rule', textbook_explanation: 'Disposable textbook evidence' },
     independent_ai_answer: { chat_answer: 'Disposable AI answer' }, retrieved_passages: [{ id: 'qa', source_ref: 'QA p.1', passage: 'QA passage' }] });
   mount(<Workspace />); await screen.findByText('OpenAI · gpt-configured');

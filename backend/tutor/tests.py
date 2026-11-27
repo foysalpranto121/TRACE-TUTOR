@@ -470,9 +470,6 @@ class TutorArmTests(ApiTestCase):
         super().setUp()
         self.control, self.control_c = self._enrol('control', 'ANSWER_ONLY')
         self.treat, self.treat_c = self._enrol('treat', 'REASONING_VISIBLE')
-        review = patch('tutor.solution_policy.review_guidance', return_value=True)
-        review.start()
-        self.addCleanup(review.stop)
 
     def ask(self, client, **body):
         payload = {'prompt': 'What does a for loop do?', 'problem_id': 'p1'}
@@ -482,13 +479,11 @@ class TutorArmTests(ApiTestCase):
     REASONING_FIELDS = ('rag_answer', 'independent_ai_answer', 'reasoning_trace',
                         'retrieved_passages', 'grounded_passage')
 
-    def test_the_control_arm_receives_brief_guidance_without_a_code_solution(self):
+    def test_the_control_arm_receives_only_the_direct_answer_and_a_code_fix(self):
         answer = self.ask(self.control_c).json()
         self.assertEqual(answer['mode'], 'ANSWER_ONLY')
         self.assertIn('direct_answer', answer)
         self.assertIn('code_solution', answer)
-        self.assertEqual(answer['code_solution'], '')
-        self.assertEqual(answer['tutoring_policy'], 'no-full-solution-v1')
         for leaked in self.REASONING_FIELDS:
             self.assertNotIn(leaked, answer, f'{leaked} must not reach the control arm')
 
@@ -546,9 +541,9 @@ class TutorArmTests(ApiTestCase):
         indep = answer['independent_ai_answer']
         self.assertTrue(indep['chat_answer'].startswith('Sure! Use a `for` loop'))
         self.assertEqual(indep['problem_breakdown'], ['Read n', 'Loop 1..n'])
-        self.assertEqual(indep['code_solution'], '')
-        self.assertNotIn('#include', str(answer))
-        self.assertNotIn('int main()', str(answer))
+        self.assertEqual(indep['code_solution'],
+                         '#include <stdio.h>\nint main() { printf("Sum = %d\n", 15); return 0; }',
+                         'an unescaped quote in the program no longer costs the turn')
 
     def test_the_control_arm_never_sees_the_free_ai_answer(self):
         with self._with_model_reply(self.MODEL_REPLY):

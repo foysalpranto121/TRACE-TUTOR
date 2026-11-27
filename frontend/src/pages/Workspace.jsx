@@ -5,7 +5,6 @@ import { CodeEditor } from '../components/Editor/CodeEditor';
 import { ReasoningTracePanel } from '../components/TutorPanel/ReasoningTracePanel';
 import { AnswerOnlyPanel } from '../components/TutorPanel/AnswerOnlyPanel';
 import { apiService } from '../services/api';
-import { appendTutoringTurn, boundedTutoringHistory } from '../services/tutorGuidance';
 import { useResetOnChange } from '../hooks/useResetOnChange';
 import { NCTB_PROBLEMS } from '../data/problems';
 import { useSearchParams } from 'react-router-dom';
@@ -28,8 +27,6 @@ export const Workspace = () => {
   const celebrate = useCelebrate();
   const progressRef = useRef(null);
   const requestBusy = useRef(false);
-  const requestGeneration = useRef(0);
-  const [tutoringHistory, setTutoringHistory] = useState([]);
   const [queryText, setQueryText] = useState('');
   const [tutorModel, setTutorModel] = useState(null);
   const onDashboard = useCallback((data) => {
@@ -65,15 +62,6 @@ export const Workspace = () => {
   useResetOnChange(activeProblem?.id, () => {
     setCurrentCode(activeProblem.starterCode);
     setLastCompile(null);
-  });
-
-  useEffect(() => {
-    requestGeneration.current += 1;
-    requestBusy.current = false;
-  }, [arm, activeProblem.id]);
-  useResetOnChange(`${arm}:${activeProblem.id}`, () => {
-    setTutoringHistory([]);
-    setTutorState({ isLoading: false, traceData: null, groundedPassage: null, error: null });
   });
 
   useEffect(() => {
@@ -115,12 +103,10 @@ export const Workspace = () => {
   // turn - today the view (dual / rag / independent) the question was asked from.
   const handleRequestHelp = async (queryText, extra = {}) => {
     if (requestBusy.current || availability.status !== 'available') return false;
-    const generation = requestGeneration.current;
     requestBusy.current = true;
     setTutorState({ isLoading: true, traceData: null, groundedPassage: null, error: null });
     // Check again before generating: another tab/device may have opened a paper.
     const confirmed = await refreshAvailability();
-    if (generation !== requestGeneration.current) return false;
     if (confirmed.status !== 'available') {
       requestBusy.current = false;
       setTutorState({ isLoading: false, traceData: null, groundedPassage: null, error: null });
@@ -142,20 +128,16 @@ export const Workspace = () => {
         compiler_output: compilerOutput,
         use_problem_context: true,
         ...extra,
-        tutoring_history: boundedTutoringHistory(tutoringHistory),
       });
-      if (generation !== requestGeneration.current) return false;
-      setTutoringHistory(appendTutoringTurn(tutoringHistory, queryText, res));
       setTutorState({ isLoading: false, traceData: res, groundedPassage: res.grounded_passage, error: null });
       return true;
     } catch (err) {
-      if (generation !== requestGeneration.current) return false;
       const locked = err.body?.reason === 'paper_in_progress';
       if (locked) reportLocked(err.body);
       setTutorState({ isLoading: false, traceData: null, groundedPassage: null, error: locked ? null : err.message });
       return false;
     } finally {
-      if (generation === requestGeneration.current) requestBusy.current = false;
+      requestBusy.current = false;
     }
   };
 
