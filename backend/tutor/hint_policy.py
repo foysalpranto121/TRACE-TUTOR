@@ -5,8 +5,9 @@ HINT_INSTRUCTION = '''HINT-ONLY REQUEST: This overrides all complete-answer inst
 Give only one small conceptual clue or guiding question, in the student's language.
 Do not reveal the final answer, complete algorithm, pseudocode, or any code.
 Put the clue in independent_ai_answer.chat_answer and direct_answer.
-Set rag_answer to {}, code_solution and pedagogical_justification to empty strings,
-and problem_breakdown to []. Do not expand the clue into a solution in other fields.'''
+Keep textbook strings empty and support_level="none", grounded=false. Keep
+pedagogical_justification empty and problem_breakdown=[]. Never add a code_solution
+field. Do not expand the clue into a solution in other fields.'''
 
 
 def is_hint_request(prompt):

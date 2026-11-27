@@ -55,6 +55,9 @@ class TextbookSupportTests(SimpleTestCase):
         self.mock('TutorThrottle.allow_request', return_value=True)
         self.generate = self.mock('llm.generate_json', side_effect=lambda *a, **k: (model_answer(), 'test-model'))
         self.mock('llm.provider', return_value='openai')
+        review = patch('tutor.solution_policy.review_guidance', return_value=True)
+        review.start()
+        self.addCleanup(review.stop)
         self.mock('tiered_get_or_set', side_effect=self.cached_result)
 
     def mock(self, name, *args, **kwargs):
@@ -87,7 +90,8 @@ class TextbookSupportTests(SimpleTestCase):
         self.assertIn('visit each value', rag['textbook_explanation'])
         self.assertIn('do not give the complete product program', rag['textbook_explanation'])
         self.assertIn('[2] NCTB', rag['curriculum_citation'])
-        self.assertEqual(result['retrieved_passages'], PASSAGES)
+        self.assertEqual(result['retrieved_passages'][0]['source_ref'], PASSAGES[0]['source_ref'])
+        self.assertEqual(result['independent_ai_answer']['code_solution'], '')
         self.assertEqual(self.log_event.call_args.kwargs['support_level'], 'concepts')
 
     def test_full_support_is_distinct_from_concept_only_support(self):
@@ -145,8 +149,8 @@ class TextbookSupportTests(SimpleTestCase):
                     answer['rag_answer']['grounded'] = flag
                     self.generate.side_effect = lambda *a, **k: (deepcopy(answer), 'test-model')
                     rag = self.ask()['rag_answer']
-                    self.assertNotIn('support_level', rag)
-                    self.assertEqual(rag['grounded'], flag is True)
+                    self.assertEqual(rag['support_level'], 'none')
+                    self.assertFalse(rag['grounded'])
 
     def test_old_refusal_cache_is_bypassed_and_the_new_answer_is_shared_across_arms(self):
         legacy_key = cache_key('tutor-answer', 'v5-hint-policy', 'textbook-support-corpus',
@@ -177,12 +181,13 @@ class TextbookSupportTests(SimpleTestCase):
         self.assertEqual(result['independent_ai_answer']['problem_breakdown'], [])
         self.assertFalse(self.log_event.call_args.kwargs['grounded'])
 
-    def test_provider_failure_retains_the_passage_and_does_not_cache_the_failure(self):
+    def test_provider_failure_uses_a_learning_hint_without_echoing_passage_or_code(self):
         self.generate.side_effect = RuntimeError('provider unavailable')
         result = self.ask()
         self.assertEqual(result['ai_status'], 'fallback')
-        self.assertIn(PASSAGES[0]['passage'], result['rag_answer']['textbook_explanation'])
+        self.assertEqual(result['rag_answer'], {})
+        self.assertTrue(result['independent_ai_answer']['chat_answer'])
         self.assertNotEqual(result['rag_answer'].get('support_level'), 'full')
-        self.assertFalse(result['rag_answer']['grounded'])
+        self.assertEqual(result['independent_ai_answer']['code_solution'], '')
         self.ask()
         self.assertEqual(self.generate.call_count, 2)

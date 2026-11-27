@@ -16,7 +16,7 @@ vi.mock('../src/components/ui/useCelebrate', () => ({ useCelebrate: () => ({ toa
 const dashboard = (available, exam_type = null) => ({ stats: {}, assessments: {}, problems: [], tutor_availability: { available, exam_type } });
 const mount = (strict = false) => render(<MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>{strict ? <StrictMode><Workspace /></StrictMode> : <Workspace />}</MemoryRouter>);
 const input = () => screen.getByRole('textbox', { name: /Ask the tutor/ });
-const button = () => screen.getByRole('button', { name: mocks.arm === 'ANSWER_ONLY' ? 'Get Fix' : 'Ask', exact: true });
+const button = () => screen.getByRole('button', { name: mocks.arm === 'ANSWER_ONLY' ? 'Get Guidance' : 'Ask', exact: true });
 const ready = async () => waitFor(() => expect(input().readOnly).toBe(false));
 const draft = () => fireEvent.change(input(), { target: { value: 'Why is my loop wrong?' } });
 const deferred = () => { let resolve; const promise = new Promise((done) => { resolve = done; }); return { promise, resolve }; };
@@ -24,7 +24,7 @@ const deferred = () => { let resolve; const promise = new Promise((done) => { re
 beforeEach(() => {
   mocks.arm = 'ANSWER_ONLY';
   mocks.getDashboard.mockReset().mockResolvedValue(dashboard(true));
-  mocks.queryTutor.mockReset().mockResolvedValue({ direct_answer: 'Use the correct loop condition.' });
+  mocks.queryTutor.mockReset().mockResolvedValue({ tutoring_policy: 'no-full-solution-v1', direct_answer: 'Use the correct loop condition.' });
   mocks.getCodeStatus.mockResolvedValue({ ready: true, c: 'Clang' });
   mocks.logTelemetry.mockResolvedValue({});
 });
@@ -68,7 +68,7 @@ for (const arm of ['ANSWER_ONLY', 'REASONING_VISIBLE']) {
       await waitFor(() => expect(mocks.queryTutor).toHaveBeenCalledTimes(1));
       expect(input().value).toBe('Why is my loop wrong?');
       expect(button().disabled).toBe(true);
-      await act(async () => { request.resolve({ direct_answer: 'Accepted' }); });
+      await act(async () => { request.resolve({ tutoring_policy: 'no-full-solution-v1', direct_answer: 'Accepted' }); });
       await waitFor(() => expect(input().value).toBe(''));
     });
   });
