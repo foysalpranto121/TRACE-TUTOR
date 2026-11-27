@@ -164,7 +164,9 @@ class ArmSwitchTests(ApiTestCase):
         self.assertEqual(response.json()['arm'], 'REASONING_VISIBLE')
 
     def test_the_session_explains_the_lock_and_then_the_unlock(self):
-        before = self.student.get('/api/accounts/me/').json()
+        response = self.student.get('/api/accounts/me/')
+        self.assertEqual(response['Cache-Control'], 'no-store')
+        before = response.json()
         self.assertFalse(before['arm_self_select'])
         self.assertEqual(before['arm_switch_reason'], 'after_protocol')
         self.assertEqual(before['arm_switch_policy'], 'after_protocol')

@@ -158,10 +158,6 @@ def get_items(request):
             # paper again instead of leaving another tab's stale sitting in control.
             sittings.open_paper(request.user, requested, arm=arm)
         sitting = sittings.describe(request.user, requested)
-        if not is_retake and sitting['status'] != sittings.COMPLETED and sittings.already_submitted(request.user, requested) and not sittings.is_paper_open(request.user, requested):
-            # Submitted before sittings existed: report it as completed anyway.
-            latest = ExamSubmission.objects.filter(student=request.user, exam_type=requested).order_by('-submitted_at').first()
-            sitting = {**sitting, 'status': sittings.COMPLETED, 'submission_id': latest.pk}
 
     return Response({
         'exam_type': requested,
@@ -231,8 +227,8 @@ def submit_exam(request):
     # To take a paper again, the participant clicks Retake Assessment which reopens the sitting.
     if not is_staff:
         sitting = PaperSitting.objects.filter(student=student, exam_type=exam_type).first()
-        if sitting is not None and not sitting.is_open:
-            existing = sitting.submission or ExamSubmission.objects.filter(student=student, exam_type=exam_type).order_by('-submitted_at').first()
+        if sitting is not None and not sittings.is_paper_open(student, exam_type):
+            existing = ExamSubmission.objects.filter(student=student, exam_type=exam_type).order_by('-submitted_at', '-pk').first()
             return Response({'error': 'You have already submitted this paper.',
                              'submission_id': existing.pk if existing else None,
                              'grading_status': existing.grading_status if existing else None},

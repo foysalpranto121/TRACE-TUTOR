@@ -109,7 +109,7 @@ export const Workspace = () => {
       problem_id: activeProblem.id,
       timestamp: new Date().toISOString(),
     });
-  }, [arm, user, activeProblem.id]);
+  }, [arm, user?.id, activeProblem.id]);
 
   // `extra` carries anything the panel knows that the server should record with the
   // turn - today the view (dual / rag / independent) the question was asked from.

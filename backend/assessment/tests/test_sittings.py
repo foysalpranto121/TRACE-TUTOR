@@ -208,6 +208,165 @@ class TutorGatingTests(ApiTestCase):
         self.assertEqual(self.ask(client).status_code, 200)
 
 
+class EffectiveCompletionTests(ApiTestCase):
+    """Submission receipts settle stale sittings without rewriting study history."""
+
+    def setUp(self):
+        super().setUp()
+        self.user, self.client_ = enrol('effective-completion')
+        self.now = timezone.now()
+        for name, options in (
+                ('tutor.views.rag_engine_instance.retrieve', {'return_value': []}),
+                ('tutor.views.llm.generate_json', {'side_effect': RuntimeError('No provider calls in this test')})):
+            mocked = patch(name, **options)
+            mocked.start()
+            self.addCleanup(mocked.stop)
+
+    def stale_attempt(self, exam_type='pre', grading_status=ExamSubmission.GRADED):
+        with patch('django.utils.timezone.now', return_value=self.now - timedelta(hours=1)):
+            sitting = sittings.open_paper(self.user, exam_type)
+        with patch('django.utils.timezone.now', return_value=self.now - timedelta(minutes=30)):
+            receipt = ExamSubmission.objects.create(
+                student=self.user, exam_type=exam_type, score_pct=50, grading_status=grading_status)
+        return sitting, receipt
+
+    def complete_all_forms(self):
+        for exam_type in ('pre', 'post', 'transfer', 'withdrawal'):
+            self.stale_attempt(exam_type)
+
+    def tutor_status(self):
+        response = self.client_.post('/api/tutor/query/', {'prompt': 'Explain variables'}, format='json')
+        return response.status_code
+
+    def availability(self):
+        response = self.client_.get('/api/dashboard/')
+        self.assertEqual(response.status_code, 200)
+        return response.json()['tutor_availability']
+
+    def test_missing_sitting_uses_existing_submission_without_inventing_an_opening(self):
+        receipt = ExamSubmission.objects.create(student=self.user, exam_type='pre', score_pct=50)
+        body = self.client_.get('/api/assessment/items/?type=pre').json()
+        self.assertEqual(body['sitting']['status'], sittings.COMPLETED)
+        self.assertEqual(body['sitting']['submission_id'], receipt.pk)
+        self.assertEqual(body['sitting']['submitted_at'], receipt.submitted_at.isoformat())
+        self.assertIsNone(body['sitting']['first_opened_at'])
+        self.assertFalse(PaperSitting.objects.filter(student=self.user).exists())
+        self.assertTrue(self.availability()['available'])
+        self.assertEqual(self.tutor_status(), 200)
+
+    def test_new_unsubmitted_paper_is_still_locked(self):
+        body = self.client_.get('/api/assessment/items/?type=pre').json()
+        self.assertEqual(body['sitting']['status'], sittings.OPEN)
+        self.assertTrue(sittings.is_paper_open(self.user, 'pre'))
+        self.assertEqual(self.availability()['exam_type'], 'pre')
+        self.assertEqual(self.tutor_status(), 403)
+
+    def test_stale_open_flag_yields_completed_result_and_never_refreshes_activity(self):
+        sitting, receipt = self.stale_attempt()
+        before = PaperSitting.objects.filter(pk=sitting.pk).values().get()
+        events = InteractionLog.objects.filter(user=self.user, event_type='PAPER_OPENED').count()
+        body = self.client_.get('/api/assessment/items/?type=pre').json()
+        self.assertEqual(body['sitting']['status'], sittings.COMPLETED)
+        self.assertEqual(body['sitting']['submission_id'], receipt.pk)
+        self.assertEqual(body['sitting']['submitted_at'], receipt.submitted_at.isoformat())
+        self.assertEqual(PaperSitting.objects.filter(pk=sitting.pk).values().get(), before)
+        self.assertEqual(InteractionLog.objects.filter(user=self.user, event_type='PAPER_OPENED').count(), events)
+        self.assertFalse(sittings.is_paper_open(self.user, 'pre'))
+        self.assertIsNone(sittings.blocking_paper(self.user))
+        self.assertTrue(self.availability()['available'])
+        self.assertEqual(self.tutor_status(), 200)
+
+    def test_pending_grading_already_completes_the_attempt(self):
+        sitting, receipt = self.stale_attempt(grading_status=ExamSubmission.PENDING)
+        self.assertFalse(sittings.is_paper_open(self.user, 'pre'))
+        self.assertEqual(sittings.describe(self.user, 'pre')['submission_id'], receipt.pk)
+        self.assertTrue(self.availability()['available'])
+        sitting.refresh_from_db()
+        self.assertIsNone(sitting.submitted_at)
+        self.assertIsNone(sitting.submission_id)
+
+    def test_all_submitted_forms_ignore_stale_open_flags_and_allow_mode_switching(self):
+        self.complete_all_forms()
+        self.assertTrue(self.client_.get('/api/accounts/me/').json()['arm_self_select'])
+        for exam_type in ('pre', 'post', 'transfer', 'withdrawal'):
+            body = self.client_.get(f'/api/assessment/items/?type={exam_type}').json()
+            self.assertEqual(body['sitting']['status'], sittings.COMPLETED)
+            self.assertIsNotNone(body['sitting']['submission_id'])
+        self.assertTrue(self.availability()['available'])
+        self.assertEqual(self.tutor_status(), 200)
+        self.assertEqual(PaperSitting.objects.filter(student=self.user, submitted_at__isnull=True).count(), 4,
+                         'Historical sitting flags must not be rewritten by these reads')
+
+    def test_a_completed_sitting_keeps_its_recorded_result(self):
+        sitting, receipt = self.stale_attempt()
+        sittings.close_paper(self.user, 'pre', receipt)
+        before = PaperSitting.objects.filter(pk=sitting.pk).values().get()
+        result = sittings.describe(self.user, 'pre')
+        self.assertEqual(result['status'], sittings.COMPLETED)
+        self.assertEqual(result['submission_id'], receipt.pk)
+        self.assertEqual(PaperSitting.objects.filter(pk=sitting.pk).values().get(), before)
+
+    def test_equal_submission_and_opening_timestamp_counts_as_submitted(self):
+        sitting, receipt = self.stale_attempt()
+        ExamSubmission.objects.filter(pk=receipt.pk).update(submitted_at=sitting.first_opened_at)
+        self.assertFalse(sittings.is_paper_open(self.user, 'pre'))
+        self.assertIsNone(sittings.open_paper_of(self.user))
+        self.assertEqual(sittings.describe(self.user, 'pre')['status'], sittings.COMPLETED)
+
+    def test_real_pre_and_withdrawal_retakes_remain_locked_until_new_submission(self):
+        self.complete_all_forms()
+        for exam_type in ('pre', 'withdrawal'):
+            with self.subTest(exam_type=exam_type):
+                response = self.client_.post('/api/assessment/retake/', {'exam_type': exam_type}, format='json')
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.json()['sitting']['status'], sittings.OPEN)
+                self.assertIsNone(response.json()['sitting']['submission_id'])
+                self.assertTrue(sittings.is_paper_open(self.user, exam_type))
+                self.assertEqual(self.availability()['exam_type'], exam_type)
+                self.assertEqual(self.tutor_status(), 403)
+                body = self.client_.get(f'/api/assessment/items/?type={exam_type}').json()
+                self.assertEqual(body['sitting']['status'], sittings.OPEN)
+                self.assertEqual(self.tutor_status(), 403)
+                receipt = ExamSubmission.objects.create(student=self.user, exam_type=exam_type, score_pct=50)
+                self.assertFalse(sittings.is_paper_open(self.user, exam_type))
+                self.assertEqual(sittings.describe(self.user, exam_type)['submission_id'], receipt.pk)
+                self.assertTrue(self.availability()['available'])
+                self.assertEqual(self.tutor_status(), 200)
+
+    def test_stale_open_attempt_cannot_be_submitted_again_without_retake(self):
+        _, receipt = self.stale_attempt()
+        response = submit(self.client_, 'pre')
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.json()['submission_id'], receipt.pk)
+        self.assertEqual(ExamSubmission.objects.filter(student=self.user, exam_type='pre').count(), 1)
+
+    def test_other_student_or_other_form_receipt_does_not_unlock_unfinished_pre(self):
+        sittings.open_paper(self.user, 'pre')
+        other, _ = enrol('other-receipt-student')
+        ExamSubmission.objects.create(student=other, exam_type='pre', score_pct=50)
+        ExamSubmission.objects.create(student=self.user, exam_type='post', score_pct=50)
+        self.assertTrue(sittings.is_paper_open(self.user, 'pre'))
+        self.assertEqual(self.availability()['exam_type'], 'pre')
+        self.assertEqual(self.tutor_status(), 403)
+
+    def test_completed_newest_flag_does_not_mask_an_unfinished_older_no_ai_paper(self):
+        sitting, _ = self.stale_attempt('pre')
+        with patch('django.utils.timezone.now', return_value=self.now - timedelta(minutes=45)):
+            unfinished = sittings.open_paper(self.user, 'withdrawal')
+        PaperSitting.objects.filter(pk=sitting.pk).update(last_opened_at=self.now)
+        self.assertEqual(sittings.open_paper_of(self.user), 'withdrawal')
+        self.assertEqual(sittings.blocking_paper(self.user), 'withdrawal')
+        PaperSitting.objects.filter(pk=unfinished.pk).update(last_opened_at=self.now - timedelta(hours=5))
+        self.assertIsNone(sittings.blocking_paper(self.user), 'The original activity TTL still applies')
+
+    def test_effective_open_queries_remain_one_query_each(self):
+        self.complete_all_forms()
+        with self.assertNumQueries(1):
+            self.assertFalse(sittings.is_paper_open(self.user, 'pre'))
+        with self.assertNumQueries(1):
+            self.assertIsNone(sittings.open_paper_of(self.user))
+
+
 class ManifestTests(ApiTestCase):
     def setUp(self):
         super().setUp()

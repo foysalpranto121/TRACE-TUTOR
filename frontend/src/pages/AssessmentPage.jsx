@@ -186,6 +186,7 @@ export const AssessmentPage = () => {
       setAllItems(itemsList);
       // A paper is sat once by default unless retaking. If this one is already in, show the recorded result
       if (!isRetake && data?.sitting?.status === 'completed' && data.sitting.submission_id) {
+        setIsSubmitted(true);
         const done = await apiService.getSubmission(data.sitting.submission_id);
         setGradingState(done.grading_status);
         setScoreResult({
@@ -195,7 +196,6 @@ export const AssessmentPage = () => {
           results: done.results || [],
           submissionId: done.submission_id,
         });
-        setIsSubmitted(true);
       }
     } catch (err) {
       // A locked paper comes back 403 with the list of papers that are open.
@@ -618,7 +618,7 @@ export const AssessmentPage = () => {
       </div>
 
       {/* Phase Banner Notification */}
-      {examType === 'pre' && (
+      {examType === 'pre' && !isSubmitted && currentItem && (
         <div className="bg-primary/10 border border-primary/30 p-4 rounded-xl flex items-center gap-3 text-xs text-primary font-medium shadow-sm">
           <ShieldAlert className="w-5 h-5 shrink-0" />
           <span>
@@ -627,7 +627,7 @@ export const AssessmentPage = () => {
         </div>
       )}
 
-      {isAiAllowed && (
+      {isAiAllowed && !isSubmitted && currentItem && (
         <div className="bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-xl flex items-center justify-between gap-3 text-xs text-emerald-400 font-medium shadow-sm">
           <div className="flex items-center gap-3">
             <Sparkles className="w-5 h-5 shrink-0 text-emerald-400 animate-pulse" />
@@ -641,7 +641,7 @@ export const AssessmentPage = () => {
         </div>
       )}
 
-      {examType === 'withdrawal' && (
+      {examType === 'withdrawal' && !isSubmitted && currentItem && (
         <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl flex items-center justify-between gap-3 text-xs text-amber-300 font-medium shadow-sm">
           <div className="flex items-center gap-3">
             <Lock className="w-5 h-5 shrink-0 text-amber-400" />
@@ -1216,6 +1216,12 @@ export const AssessmentPage = () => {
             <p className="text-xs text-on-surface-variant leading-relaxed">
               You completed {scoreResult.correct} out of {scoreResult.total} items correctly in this {examType.toUpperCase()} assessment session.
             </p>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              This assessment is submitted. You can return to the workspace; an unfinished no-AI assessment may still restrict AI access.
+            </p>
+            <a href="/workspace" className="px-6 py-3 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold text-xs inline-flex items-center gap-2 border border-outline-variant/30">
+              <Bot className="w-4 h-4" /> Open AI Workspace
+            </a>
 
             {nextExam && availableExams.includes(nextExam.type) && (
               <button

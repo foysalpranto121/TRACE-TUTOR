@@ -150,8 +150,10 @@ export const AppShell = ({ children }) => {
             <div
               className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-surface-container-high border border-outline-variant/40 text-[10px]"
               title={user?.arm_switch_reason === 'after_protocol'
-                ? 'চারটি পরীক্ষা শেষ হলে টিউটর মোড বদলাতে পারবেন (you can switch after completing all four papers)'
-                : 'আপনার টিউটর মোড গবেষণার জন্য নির্ধারিত (your tutor mode is assigned by the study)'}
+                ? (bn ? 'চারটি পরীক্ষা জমা দিলে টিউটর মোড বদলাতে পারবেন। এই তালা শুধু মোড বদলানোর জন্য, AI ব্যবহার বন্ধ করার জন্য নয়।'
+                  : 'Switching tutor mode unlocks after all four assessments are submitted. This lock does not disable your assigned AI tutor.')
+                : (bn ? 'গবেষণার জন্য টিউটর মোড নির্ধারিত। এই তালা শুধু মোড বদলানোর জন্য, AI ব্যবহার বন্ধ করার জন্য নয়।'
+                  : 'Your tutor mode is assigned by the study. This lock controls mode switching, not AI access.')}
             >
               <span className="flex items-center gap-1.5 font-mono font-bold">
                 <span className={`w-2 h-2 rounded-full ${arm === 'REASONING_VISIBLE' ? 'bg-success animate-pulse' : 'bg-warning'}`} />

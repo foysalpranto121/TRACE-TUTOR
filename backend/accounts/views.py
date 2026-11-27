@@ -215,7 +215,9 @@ def logout_view(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def me_view(request):
-    return Response(serialize_user(request.user, _profile_for(request.user)))
+    response = Response(serialize_user(request.user, _profile_for(request.user)))
+    response['Cache-Control'] = 'no-store'
+    return response
 
 
 @api_view(['GET', 'PATCH'])

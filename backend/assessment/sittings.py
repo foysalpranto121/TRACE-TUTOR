@@ -13,10 +13,15 @@ PAPER_SITTING_TTL_HOURS, so an abandoned tab cannot lock someone out for good) t
 endpoint refuses. The newest recently opened sitting is active, which prevents a stale
 unfinished sitting from disabling AI in a later post/transfer retake. Staff browsing the
 bank never get sittings.
+
+A submission receipt also settles an attempt when an older sitting was never closed.
+These reads leave historical rows intact; a real retake stays open because its opening
+is later than the participant's earlier submissions.
 """
 from datetime import timedelta
 
 from django.conf import settings
+from django.db.models import Exists, OuterRef
 from django.utils import timezone
 
 from logging_app.models import InteractionLog
@@ -90,9 +95,22 @@ def retake_paper(user, exam_type, arm=''):
 
 
 def is_paper_open(user, exam_type):
-    """Whether user currently has an open (unsubmitted) sitting for this paper."""
-    sitting = PaperSitting.objects.filter(student=user, exam_type=exam_type).first()
-    return sitting is not None and sitting.is_open
+    """An unfinished attempt, including a retake, rather than a stale open flag."""
+    return _open_sittings(user).filter(exam_type=exam_type).exists()
+
+
+def _open_sittings(user):
+    """A later receipt completes the current attempt even if its sitting was not closed.
+
+    Older submissions do not complete a retake: retake_paper moves first_opened_at
+    beyond those receipts. This read-only interpretation preserves the original
+    timing and submission records while avoiding one query per sitting.
+    """
+    receipt = ExamSubmission.objects.filter(
+        student_id=OuterRef('student_id'), exam_type=OuterRef('exam_type'),
+        submitted_at__gte=OuterRef('first_opened_at'))
+    return (PaperSitting.objects.filter(student=user, submitted_at__isnull=True)
+            .annotate(has_submission=Exists(receipt)).filter(has_submission=False))
 
 
 def open_paper_of(user, exam_types=None):
@@ -103,8 +121,7 @@ def open_paper_of(user, exam_types=None):
     is how a tutor turn gets stamped with the paper it was asked during.
     """
     since = timezone.now() - ttl()
-    queryset = PaperSitting.objects.filter(student=user, submitted_at__isnull=True,
-                                           last_opened_at__gte=since)
+    queryset = _open_sittings(user).filter(last_opened_at__gte=since)
     if exam_types is not None:
         queryset = queryset.filter(exam_type__in=exam_types)
     return queryset.order_by('-last_opened_at').values_list('exam_type', flat=True).first()
@@ -125,13 +142,25 @@ def blocking_paper(user):
 def describe(user, exam_type):
     """What the client needs to know about this participant's sitting of a paper."""
     sitting = PaperSitting.objects.filter(student=user, exam_type=exam_type).first()
+    receipts = ExamSubmission.objects.filter(student=user, exam_type=exam_type)
+    if sitting is not None and sitting.is_open:
+        receipts = receipts.filter(submitted_at__gte=sitting.first_opened_at)
+    submission = receipts.order_by('-submitted_at', '-pk').first()
     if sitting is None:
-        return {'status': NEW, 'submission_id': None, 'first_opened_at': None, 'submitted_at': None}
+        return {
+            'status': COMPLETED if submission else NEW,
+            'submission_id': submission.pk if submission else None,
+            'first_opened_at': None,
+            'submitted_at': submission.submitted_at.isoformat() if submission else None,
+            'no_ai': exam_type in no_ai_papers(),
+        }
+    completed = not sitting.is_open or submission is not None
+    submitted_at = submission.submitted_at if submission else sitting.submitted_at
     return {
-        'status': OPEN if sitting.is_open else COMPLETED,
-        'submission_id': sitting.submission_id,
+        'status': COMPLETED if completed else OPEN,
+        'submission_id': submission.pk if submission else sitting.submission_id if completed else None,
         'first_opened_at': sitting.first_opened_at.isoformat(),
-        'submitted_at': sitting.submitted_at.isoformat() if sitting.submitted_at else None,
+        'submitted_at': submitted_at.isoformat() if submitted_at else None,
         'no_ai': exam_type in no_ai_papers(),
     }
 

@@ -43,7 +43,9 @@ async function fetchApi(endpoint, options = {}) {
       } catch (_) {
         /* non-JSON error body */
       }
-      if (response.status === 401 && token && /token|credentials/i.test(detail)) {
+      // A late response for an old token must not sign out a newer login.
+      if (response.status === 401 && token && token === getToken()
+          && headers.Authorization === `Token ${token}` && /token|credentials/i.test(detail)) {
         clearSession();
         window.dispatchEvent(new CustomEvent('trace:session-expired'));
         detail = 'Your session has expired. Please sign in again.';
